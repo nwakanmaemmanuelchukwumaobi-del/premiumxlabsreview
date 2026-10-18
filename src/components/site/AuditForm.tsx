@@ -16,7 +16,7 @@ function toBase64(file: File) {
   });
 }
 
-export function AuditForm() {
+export function AuditForm({ glass = false }: { glass?: boolean }) {
   const send = useServerFn(submitAudit);
   const [ads, setAds] = useState("");
   const [busy, setBusy] = useState(false);
