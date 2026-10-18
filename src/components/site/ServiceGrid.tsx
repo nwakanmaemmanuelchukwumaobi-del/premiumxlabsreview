@@ -17,7 +17,7 @@ export function ServiceGroups() {
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {g.items.map((s) => (
-              <div key={s.title} className="flex flex-col rounded-2xl border border-border bg-card p-6 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-navy/5">
+              <div key={s.title} className="flex flex-col rounded-2xl border border-steel/25 bg-card p-6 transition duration-300 hover:-translate-y-1.5 hover:border-cta/50 hover:shadow-[0_24px_50px_-16px_oklch(0.55_0.17_258/0.35)]">
                 <h4 className="text-lg font-bold">{s.title}</h4>
                 <p className="mt-2 flex-1 text-sm text-muted-foreground">{s.desc}</p>
                 <Link to="/services" search={{ service: s.title }} hash="request" className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-cta hover:gap-2.5 transition-all">
