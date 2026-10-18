@@ -14,7 +14,114 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      audit_requests: {
+        Row: {
+          ad_platform: string | null
+          ad_spend: string | null
+          business_name: string
+          challenge: string
+          created_at: string
+          email: string
+          id: string
+          industry_location: string
+          links: string | null
+          name: string
+          report_preference: string
+          running_ads: string
+          screenshot_path: string | null
+          whatsapp: string
+        }
+        Insert: {
+          ad_platform?: string | null
+          ad_spend?: string | null
+          business_name: string
+          challenge: string
+          created_at?: string
+          email: string
+          id?: string
+          industry_location: string
+          links?: string | null
+          name: string
+          report_preference: string
+          running_ads: string
+          screenshot_path?: string | null
+          whatsapp: string
+        }
+        Update: {
+          ad_platform?: string | null
+          ad_spend?: string | null
+          business_name?: string
+          challenge?: string
+          created_at?: string
+          email?: string
+          id?: string
+          industry_location?: string
+          links?: string | null
+          name?: string
+          report_preference?: string
+          running_ads?: string
+          screenshot_path?: string | null
+          whatsapp?: string
+        }
+        Relationships: []
+      }
+      contact_messages: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          phone: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          phone?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          phone?: string | null
+        }
+        Relationships: []
+      }
+      service_requests: {
+        Row: {
+          business_name: string | null
+          contact: string
+          created_at: string
+          description: string
+          id: string
+          name: string
+          service: string
+        }
+        Insert: {
+          business_name?: string | null
+          contact: string
+          created_at?: string
+          description: string
+          id?: string
+          name: string
+          service: string
+        }
+        Update: {
+          business_name?: string | null
+          contact?: string
+          created_at?: string
+          description?: string
+          id?: string
+          name?: string
+          service?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
