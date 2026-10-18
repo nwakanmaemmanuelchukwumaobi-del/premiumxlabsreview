@@ -46,6 +46,7 @@
   --navy: oklch(0.27 0.075 266);
   --navy-foreground: oklch(1 0 0);
   --steel: oklch(0.42 0.07 266);
+  --steel-bright: oklch(0.78 0.09 255);
   --soft: oklch(0.96 0.006 285);
   --cta: oklch(0.55 0.17 258);
   --cta-foreground: oklch(1 0 0);
