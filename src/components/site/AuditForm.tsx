@@ -69,7 +69,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
   const L = "mb-1.5 block text-sm font-medium";
 
   return (
-    <form onSubmit={onSubmit} className="rounded-3xl border border-border bg-card p-6 shadow-2xl shadow-navy/10 sm:p-8">
+    <form onSubmit={onSubmit} className={`relative rounded-3xl border p-6 shadow-2xl sm:p-8 ${glass ? "border-navy-foreground/15 bg-navy-foreground/95 shadow-navy/40 backdrop-blur-xl" : "border-border bg-card shadow-navy/10"}`}>
       <div className="mb-5">
         <span className="inline-block rounded-full bg-accent px-3 py-1 text-xs font-bold uppercase tracking-wider text-steel">100% Free · No login</span>
         <h3 className="mt-3 text-xl font-bold">Request your free business audit</h3>
