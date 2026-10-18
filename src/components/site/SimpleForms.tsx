@@ -43,7 +43,7 @@ function Submit({ busy, label }: { busy: boolean; label: string }) {
   );
 }
 
-export function ServiceRequestForm({ preset }: { preset?: string }) {
+export function ServiceRequestForm({ preset }: { preset?: string | undefined }) {
   const { busy, error, done, onSubmit } = useSubmit(serviceSchema, useServerFn(submitService));
   if (done) return <Done text="Thanks! We've received your request and will reach out shortly." />;
   return (

@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 const s = (max: number) => z.string().trim().max(max);
+const o = (max: number) => s(max).optional().transform((v) => v || null);
 
 export const auditSchema = z.object({
   name: s(100).min(1, "Please enter your name"),
@@ -9,11 +10,11 @@ export const auditSchema = z.object({
   email: s(255).email("Enter a valid email"),
   whatsapp: s(30).min(7, "Enter a valid WhatsApp number"),
   industry_location: s(200).min(1, "Tell us your industry and location"),
-  links: s(1000).optional(),
+  links: o(1000),
   challenge: z.enum(["Few customers", "Low sales", "No online presence", "Weak branding", "Other"]),
   running_ads: z.enum(["Yes and getting results", "Yes but not getting results", "No, never", "Used to"]),
-  ad_platform: s(150).optional(),
-  ad_spend: s(100).optional(),
+  ad_platform: o(150),
+  ad_spend: o(100),
   report_preference: z.enum(["WhatsApp", "Email"]),
   screenshot: z
     .object({ name: s(200), type: s(100), base64: z.string().max(7_000_000) })
@@ -45,7 +46,7 @@ export const submitAudit = createServerFn({ method: "POST" })
 
 export const serviceSchema = z.object({
   name: s(100).min(1, "Please enter your name"),
-  business_name: s(150).optional(),
+  business_name: o(150),
   contact: s(255).min(5, "Enter your WhatsApp number or email"),
   service: s(100).min(1, "Choose a service"),
   description: s(1500).min(5, "Tell us briefly what you need"),
@@ -63,7 +64,7 @@ export const submitService = createServerFn({ method: "POST" })
 export const contactSchema = z.object({
   name: s(100).min(1, "Please enter your name"),
   email: s(255).email("Enter a valid email"),
-  phone: s(30).optional(),
+  phone: o(30),
   message: s(2000).min(5, "Please write a message"),
 });
 
