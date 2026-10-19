@@ -14,6 +14,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuditRouteImport } from './routes/audit'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ServicesRouteImport } from './routes/services'
+import { Route as WebDesignAbujaRouteImport } from './routes/web-design-abuja'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,6 +41,11 @@ const ServicesRoute = ServicesRouteImport.update({
   path: '/services',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WebDesignAbujaRoute = WebDesignAbujaRouteImport.update({
+  id: '/web-design-abuja',
+  path: '/web-design-abuja',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,6 +53,7 @@ export interface FileRoutesByFullPath {
   '/audit': typeof AuditRoute
   '/contact': typeof ContactRoute
   '/services': typeof ServicesRoute
+  '/web-design-abuja': typeof WebDesignAbujaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +61,7 @@ export interface FileRoutesByTo {
   '/audit': typeof AuditRoute
   '/contact': typeof ContactRoute
   '/services': typeof ServicesRoute
+  '/web-design-abuja': typeof WebDesignAbujaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,13 +70,22 @@ export interface FileRoutesById {
   '/audit': typeof AuditRoute
   '/contact': typeof ContactRoute
   '/services': typeof ServicesRoute
+  '/web-design-abuja': typeof WebDesignAbujaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/audit' | '/contact' | '/services'
+  fullPaths:
+    '/' | '/about' | '/audit' | '/contact' | '/services' | '/web-design-abuja'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/audit' | '/contact' | '/services'
-  id: '__root__' | '/' | '/about' | '/audit' | '/contact' | '/services'
+  to: '/' | '/about' | '/audit' | '/contact' | '/services' | '/web-design-abuja'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/audit'
+    | '/contact'
+    | '/services'
+    | '/web-design-abuja'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -77,6 +94,7 @@ export interface RootRouteChildren {
   AuditRoute: typeof AuditRoute
   ContactRoute: typeof ContactRoute
   ServicesRoute: typeof ServicesRoute
+  WebDesignAbujaRoute: typeof WebDesignAbujaRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -116,6 +134,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServicesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/web-design-abuja': {
+      id: '/web-design-abuja'
+      path: '/web-design-abuja'
+      fullPath: '/web-design-abuja'
+      preLoaderRoute: typeof WebDesignAbujaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -125,6 +150,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuditRoute: AuditRoute,
   ContactRoute: ContactRoute,
   ServicesRoute: ServicesRoute,
+  WebDesignAbujaRoute: WebDesignAbujaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
