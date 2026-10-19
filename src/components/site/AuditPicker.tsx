@@ -198,7 +198,7 @@ export function OnlinePresencePicker({
 
   const add = (platform: string) => {
     onChange([...entries, { platform, key: nextKey.current++ }]);
-    if (remaining.length <= 1) setOpen(false);
+    setOpen(false);
   };
 
   return (
