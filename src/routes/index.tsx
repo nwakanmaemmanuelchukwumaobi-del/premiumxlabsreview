@@ -6,6 +6,7 @@ import { AuditButton } from "@/components/site/Chrome";
 import { ServiceGroups } from "@/components/site/ServiceGrid";
 
 export const Route = createFileRoute("/")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "Free Website, Social, Google Presence, Branding & Ads Audit | premiumxlabs" },

@@ -12,3 +12,5 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+Sitemap: https://premiumxlabsreview.lovable.app/sitemap.xml
