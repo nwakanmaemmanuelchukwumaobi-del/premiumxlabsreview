@@ -7,12 +7,12 @@ export const Route = createFileRoute("/services")({
   validateSearch: z.object({ service: z.string().optional() }),
   head: () => ({
     meta: [
-      { title: "Services | premiumxlabs" },
+      { title: "Marketing & Digital Services | premiumxlabs" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "description", content: "Marketing, ads, branding, websites, apps and AI automation from premiumxlabs." },
-      { property: "og:title", content: "Services | premiumxlabs" },
-      { property: "og:description", content: "Marketing and digital solutions to grow your business." },
+      { name: "description", content: "Explore premiumxlabs services: campaigns, ads, social media, AI video, branding, business launches, websites, software, mobile apps and AI automation." },
+      { property: "og:title", content: "Marketing & Digital Services | premiumxlabs" },
+      { property: "og:description", content: "Explore premiumxlabs services: campaigns, ads, social media, AI video, branding, business launches, websites, software, mobile apps and AI automation." },
     ],
   }),
   component: Services,
