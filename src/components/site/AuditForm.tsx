@@ -3,9 +3,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { auditSchema, submitAudit } from "@/lib/forms.functions";
 import { WHATSAPP_URL } from "@/lib/site";
-import { AD_OPTIONS, AD_PLATFORMS, AUDIT_GOALS, ONLINE_PLATFORMS, hasAdHistory } from "@/lib/audit-fields";
-import { AuditChips } from "@/components/site/AuditChips";
-import { AuditOnlinePresence } from "@/components/site/AuditOnlinePresence";
+import { AD_OPTIONS, AD_PLATFORMS, AUDIT_GOALS, ONLINE_FIELDS, ONLINE_PLATFORMS, hasAdHistory } from "@/lib/audit-fields";
+import { MultiPicker, OnlinePresencePicker, type OnlineEntry } from "@/components/site/AuditPicker";
 
 const CHALLENGES = ["Few customers", "Low sales", "No online presence", "Weak branding", "Other"];
 
