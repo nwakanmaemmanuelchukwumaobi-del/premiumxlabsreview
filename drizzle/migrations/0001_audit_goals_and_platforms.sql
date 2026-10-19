@@ -1,0 +1,3 @@
+ALTER TABLE public.audit_requests ADD COLUMN goals text[] NOT NULL DEFAULT '{}', ADD COLUMN goals_other text, ADD COLUMN ad_platforms text[] NOT NULL DEFAULT '{}', ADD COLUMN ad_platform_other text;
+UPDATE public.audit_requests SET ad_platforms = ARRAY[ad_platform] WHERE ad_platform IS NOT NULL AND ad_platform <> '';
+COMMENT ON COLUMN public.audit_requests.ad_platform IS 'DEPRECATED: replaced by ad_platforms and ad_platform_other';
