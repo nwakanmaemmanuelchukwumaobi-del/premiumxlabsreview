@@ -28,7 +28,7 @@ function Services() {
           <h1 className="mt-3 max-w-3xl text-4xl font-extrabold text-navy sm:text-5xl">Marketing and digital solutions, planned and delivered.</h1>
         </div>
       </section>
-      <section className="px-4 py-16"><div className="mx-auto max-w-6xl"><ServiceGroups detailed /></div></section>
+      <section className="px-4 py-16"><div className="mx-auto max-w-6xl"><ServiceGroups detailed /><Link to="/web-design-abuja" className="mt-8 inline-block font-semibold text-cta underline">Explore web design in Abuja →</Link></div></section>
       <section id="request" className="scroll-mt-20 bg-soft px-4 py-16 md:py-24">
         <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-2">
           <div>
