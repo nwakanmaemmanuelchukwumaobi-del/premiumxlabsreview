@@ -6,6 +6,8 @@ export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
       { title: "About | premiumxlabs" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "description", content: "premiumxlabs helps businesses of every size grow with smart marketing and the right digital tools." },
       { property: "og:title", content: "About | premiumxlabs" },
       { property: "og:description", content: "We plan it, build it and deliver it." },

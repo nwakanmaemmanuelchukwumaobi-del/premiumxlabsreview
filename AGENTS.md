@@ -8,3 +8,6 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep audit choices and conditional validation in the browser-safe audit-fields module, shared by both forms and the server, so saved answers match the available choices.
+- Store multi-select audit answers as arrays with separate Other text fields; normalize hidden ad answers before saving to avoid stale submissions.

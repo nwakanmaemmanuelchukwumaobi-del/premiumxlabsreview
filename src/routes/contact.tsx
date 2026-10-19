@@ -7,6 +7,8 @@ export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
       { title: "Contact | premiumxlabs" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "description", content: "Contact premiumxlabs by WhatsApp, email or our contact form. Based in Abuja, Nigeria." },
       { property: "og:title", content: "Contact | premiumxlabs" },
       { property: "og:description", content: "Talk to premiumxlabs about growing your business." },

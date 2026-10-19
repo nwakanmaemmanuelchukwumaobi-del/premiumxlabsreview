@@ -8,6 +8,8 @@ export const Route = createFileRoute("/services")({
   head: () => ({
     meta: [
       { title: "Services | premiumxlabs" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "description", content: "Marketing, ads, branding, websites, apps and AI automation from premiumxlabs." },
       { property: "og:title", content: "Services | premiumxlabs" },
       { property: "og:description", content: "Marketing and digital solutions to grow your business." },

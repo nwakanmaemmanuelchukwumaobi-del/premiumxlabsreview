@@ -9,6 +9,8 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Free Business Audit | premiumxlabs" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "description", content: "Find out what's holding your business back. Get a free written audit of your website, social, Google presence, branding and ads within 48 hours." },
       { property: "og:title", content: "Free Business Audit | premiumxlabs" },
       { property: "og:description", content: "Get a clear, free report on what's not working in your marketing — within 48 hours." },
