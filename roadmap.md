@@ -1,5 +1,5 @@
 # Audit form update
-- [ ] Research, create and verify one supported Abuja-focused service page linked from Services.
+- [x] Research, create and verify one supported Abuja-focused service page linked from Services.
 - [x] Expand and verify all ten services-page explanations without changing homepage summaries.
 - [x] Add shared multi-select goals and ad-platform controls and save answers.
 - [x] Verify tests and real submissions on Home and /audit.
