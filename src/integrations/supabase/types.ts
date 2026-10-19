@@ -30,6 +30,7 @@ export type Database = {
           industry_location: string
           links: string | null
           name: string
+          online_links: Json
           report_preference: string
           running_ads: string
           screenshot_path: string | null
@@ -50,6 +51,7 @@ export type Database = {
           industry_location: string
           links?: string | null
           name: string
+          online_links?: Json
           report_preference: string
           running_ads: string
           screenshot_path?: string | null
@@ -70,6 +72,7 @@ export type Database = {
           industry_location?: string
           links?: string | null
           name?: string
+          online_links?: Json
           report_preference?: string
           running_ads?: string
           screenshot_path?: string | null

@@ -15,6 +15,13 @@
       "when": 1792395076728,
       "tag": "0001_audit_goals_and_platforms",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792395430390,
+      "tag": "0002_audit_online_presence",
+      "breakpoints": true
     }
   ]
 }
