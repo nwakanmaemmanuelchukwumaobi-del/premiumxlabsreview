@@ -5,17 +5,17 @@ export const CONTACT_EMAIL = "premuimxlabs@gmail.com";
 export const LOCATION = "Abuja, Nigeria";
 
 export const MARKETING_SERVICES = [
-  { title: "Campaign Planning & Launches", desc: "Strategy, timelines and execution for campaigns that move the needle." },
-  { title: "Ads", desc: "Paid campaigns on Meta, Google and TikTok, built to bring real customers." },
-  { title: "Social Media Management", desc: "Consistent content, community and growth across your channels." },
-  { title: "AI Video Content", desc: "Scroll-stopping videos produced faster with AI-assisted workflows." },
-  { title: "Branding", desc: "Names, logos and visual identities that make you look established." },
-  { title: "New Business Launch Support", desc: "Everything you need to open your doors with momentum." },
+  { title: "Campaign Planning & Launches", desc: "Strategy, timelines and execution for campaigns that move the needle.", includes: "Campaign strategy, a launch timeline and execution of the planned marketing activity. The focus is on bringing the plan and launch together, rather than treating each activity in isolation.", audience: "Businesses preparing a new campaign or launch that need both planning and delivery support." },
+  { title: "Ads", desc: "Paid campaigns on Meta, Google and TikTok, built to bring real customers.", includes: "Paid advertising campaigns on Meta, Google and TikTok. This service focuses on promoting your business through paid placements, distinct from the ongoing content and community work of social media management.", audience: "Businesses ready to promote their offer through paid advertising, or already running ads and looking for support." },
+  { title: "Social Media Management", desc: "Consistent content, community and growth across your channels.", includes: "Ongoing social content and community management across your business channels. The emphasis is on a consistent presence and engagement with your audience, rather than a one-off campaign launch.", audience: "Businesses that need support keeping their social channels active and maintaining contact with their audience." },
+  { title: "AI Video Content", desc: "Scroll-stopping videos produced faster with AI-assisted workflows.", includes: "Video content production using AI-assisted workflows. This offering focuses on creating the video material itself; paid distribution is covered by the Ads service.", audience: "Businesses that need video content for their marketing and social channels." },
+  { title: "Branding", desc: "Names, logos and visual identities that make you look established.", includes: "Business naming, logo design and visual identity work. These elements establish how your business is presented visually, separate from building a website or running a marketing campaign.", audience: "New businesses establishing their identity and existing businesses looking to update how they present themselves." },
+  { title: "New Business Launch Support", desc: "Everything you need to open your doors with momentum.", includes: "Planning and delivery support for bringing a new business to market, drawing on our marketing and digital solutions. The combination of services is agreed around the launch, rather than assuming every business needs the same package.", audience: "Startups and business owners preparing to launch who need help connecting their marketing plans with the right digital tools." },
 ];
 export const DIGITAL_SERVICES = [
-  { title: "Websites", desc: "Fast, modern websites designed to turn visitors into enquiries." },
-  { title: "Software", desc: "Custom tools that fit how your business actually works." },
-  { title: "Mobile Apps", desc: "iOS and Android apps your customers will enjoy using." },
-  { title: "AI Automation", desc: "Automate repetitive tasks and respond to customers 24/7." },
+  { title: "Websites", desc: "Fast, modern websites designed to turn visitors into enquiries.", includes: "Website design and development focused on presenting your business online and giving visitors a way to enquire. This is a public-facing website offering, distinct from custom operational software or a mobile app.", audience: "Businesses that need a website to introduce their offer and receive enquiries from visitors." },
+  { title: "Software", desc: "Custom tools that fit how your business actually works.", includes: "Custom software tools shaped around the way your business works. The focus is on a business-specific tool rather than a general promotional website; the functions needed are defined around your workflow.", audience: "Businesses whose working processes need a tailored digital tool." },
+  { title: "Mobile Apps", desc: "iOS and Android apps your customers will enjoy using.", includes: "Customer-facing mobile app development for iOS and Android. This service is for an app experience on mobile devices, rather than simply presenting your business through a website.", audience: "Businesses that want customers to access their offering through a mobile app." },
+  { title: "AI Automation", desc: "Automate repetitive tasks and respond to customers 24/7.", includes: "AI-assisted automation for repetitive tasks and customer responses. The work focuses on identifying which recurring activities can be automated; the tasks and response needs are agreed for your business.", audience: "Businesses handling repeat tasks or recurring customer enquiries that want to reduce manual work." },
 ];
 export const ALL_SERVICES = [...MARKETING_SERVICES, ...DIGITAL_SERVICES].map((s) => s.title);
