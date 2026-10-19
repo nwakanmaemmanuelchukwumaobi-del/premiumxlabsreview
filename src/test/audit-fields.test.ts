@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AD_PLATFORMS, AUDIT_GOALS, auditSchema, hasAdHistory } from "@/lib/audit-fields";
+import { AD_PLATFORMS, AUDIT_GOALS, ONLINE_PLATFORMS, auditSchema, hasAdHistory } from "@/lib/audit-fields";
 
 const base = { name: "Test", business_name: "Test business", email: "test@example.com", whatsapp: "+2349034340796", industry_location: "Retail, Abuja", challenge: "Low sales", running_ads: "Used to", report_preference: "Email" };
 
@@ -7,7 +7,7 @@ describe("Audit answers", () => {
   it("can validate client-normalized optional answers again on the server", () => {
     const client = auditSchema.parse({ ...base, goals: ["Increase sales"], ad_platforms: ["Google Ads"] });
     expect(auditSchema.parse(client)).toEqual(client);
-    expect(client.links).toBeNull();
+    expect(client.online_links).toEqual([]);
   });
   it.each(["Yes and getting results", "Yes but not getting results", "Used to"])("shows ad follow-ups for %s", (answer) => {
     expect(hasAdHistory(answer)).toBe(true);
@@ -49,5 +49,30 @@ describe("Audit answers", () => {
   it("rejects unsupported choices", () => {
     expect(auditSchema.safeParse({ ...base, goals: ["Unsupported"] }).success).toBe(false);
     expect(auditSchema.safeParse({ ...base, ad_platforms: ["Unsupported"] }).success).toBe(false);
+  });
+  it("saves each online link separately and accepts handles", () => {
+    const result = auditSchema.parse({ ...base, online_links: [
+      { platform: "Website", link: " https://example.com " },
+      { platform: "Instagram", link: " @testbusiness " },
+      { platform: "Other", link: "https://pinterest.com/testbusiness", other_name: " Pinterest " },
+    ] });
+    expect(result.online_links).toEqual([
+      { platform: "Website", link: "https://example.com", other_name: null },
+      { platform: "Instagram", link: "@testbusiness", other_name: null },
+      { platform: "Other", link: "https://pinterest.com/testbusiness", other_name: "Pinterest" },
+    ]);
+    expect(auditSchema.parse(result).online_links).toEqual(result.online_links);
+  });
+  it("accepts all ten requested online platforms", () => {
+    const result = auditSchema.parse({ ...base, online_links: ONLINE_PLATFORMS.map((platform) => ({ platform, link: "https://example.com", other_name: "Custom" })) });
+    expect(result.online_links.map((entry) => entry.platform)).toEqual(["Website", "Instagram", "Facebook", "TikTok", "X (Twitter)", "YouTube", "LinkedIn", "Snapchat", "Google Business Profile", "Other"]);
+  });
+  it("requires both name and link for Other", () => {
+    expect(auditSchema.safeParse({ ...base, online_links: [{ platform: "Other", link: "https://example.com" }] }).success).toBe(false);
+    expect(auditSchema.safeParse({ ...base, online_links: [{ platform: "Other", other_name: "Pinterest", link: " " }] }).success).toBe(false);
+  });
+  it("rejects unsupported or repeated platforms", () => {
+    expect(auditSchema.safeParse({ ...base, online_links: [{ platform: "Unknown", link: "@test" }] }).success).toBe(false);
+    expect(auditSchema.safeParse({ ...base, online_links: [{ platform: "Website", link: "https://example.com" }, { platform: "Website", link: "https://example.org" }] }).success).toBe(false);
   });
 });
