@@ -9,7 +9,7 @@ export function hasAdHistory(answer: string) {
 }
 
 const s = (max: number) => z.string().trim().max(max);
-const o = (max: number) => s(max).optional().transform((v) => v || null);
+const o = (max: number) => s(max).nullish().transform((v) => v || null);
 
 export const auditSchema = z.object({
   name: s(100).min(1, "Please enter your name"),

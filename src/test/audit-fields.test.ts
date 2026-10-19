@@ -4,6 +4,11 @@ import { AD_PLATFORMS, AUDIT_GOALS, auditSchema, hasAdHistory } from "@/lib/audi
 const base = { name: "Test", business_name: "Test business", email: "test@example.com", whatsapp: "+2349034340796", industry_location: "Retail, Abuja", challenge: "Low sales", running_ads: "Used to", report_preference: "Email" };
 
 describe("Audit answers", () => {
+  it("can validate client-normalized optional answers again on the server", () => {
+    const client = auditSchema.parse({ ...base, goals: ["Increase sales"], ad_platforms: ["Google Ads"] });
+    expect(auditSchema.parse(client)).toEqual(client);
+    expect(client.links).toBeNull();
+  });
   it.each(["Yes and getting results", "Yes but not getting results", "Used to"])("shows ad follow-ups for %s", (answer) => {
     expect(hasAdHistory(answer)).toBe(true);
   });
