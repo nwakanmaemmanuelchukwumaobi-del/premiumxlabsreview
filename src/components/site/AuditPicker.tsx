@@ -220,6 +220,7 @@ export function OnlinePresencePicker({
         <div className="grid gap-3 border-t border-border pt-3">
           {entries.map(({ platform, key }) => {
             const field = fields[platform];
+            if (!field) return null;
             return (
               <div
                 key={key}
