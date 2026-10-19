@@ -22,7 +22,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
   const [ads, setAds] = useState("");
   const [goals, setGoals] = useState<string[]>([]);
   const [platforms, setPlatforms] = useState<string[]>([]);
-  const [onlinePlatforms, setOnlinePlatforms] = useState<string[]>([]);
+  const [onlineEntries, setOnlineEntries] = useState<OnlineEntry[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState<{ name: string; biz: string; pref: string } | null>(null);
@@ -37,7 +37,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
     const payload = {
       name: get("name"), business_name: get("business_name"), email: get("email"), whatsapp: get("whatsapp"),
       industry_location: get("industry_location"), challenge: get("challenge"),
-      online_links: ONLINE_PLATFORMS.filter((platform) => onlinePlatforms.includes(platform)).map((platform) => ({
+      online_links: onlineEntries.map(({ platform }) => ({
         platform, link: get(`online_link_${platform}`), other_name: platform === "Other" ? get("online_other_name") : null,
       })),
       goals, goals_other: get("goals_other"),
@@ -89,7 +89,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
         <div><label className={L}>Email</label><input name="email" type="email" className="field" required /></div>
         <div><label className={L}>WhatsApp number</label><input name="whatsapp" type="tel" className="field" placeholder="+234…" required /></div>
         <div className="sm:col-span-2"><label className={L}>Industry & location</label><input name="industry_location" className="field" placeholder="e.g. Restaurant, Abuja" required /></div>
-        <AuditOnlinePresence selected={onlinePlatforms} onChange={setOnlinePlatforms} />
+        <OnlinePresencePicker entries={onlineEntries} onChange={setOnlineEntries} fields={ONLINE_FIELDS} platforms={ONLINE_PLATFORMS} />
         <div className="sm:col-span-2">
           <label className={L}>Biggest challenge</label>
           <select name="challenge" className="field" required defaultValue="">
@@ -97,7 +97,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
             {CHALLENGES.map((c) => <option key={c}>{c}</option>)}
           </select>
         </div>
-        <AuditChips label="What do you want to achieve?" options={AUDIT_GOALS} value={goals} onChange={setGoals} otherName="goals_other" otherLabel="Other goal" />
+        <MultiPicker label="What do you want to achieve?" options={AUDIT_GOALS} value={goals} onChange={setGoals} otherName="goals_other" otherLabel="Other goal" />
         <div className="sm:col-span-2">
           <label className={L}>Are you running ads now?</label>
           <select name="running_ads" className="field" required value={ads} onChange={(e) => setAds(e.target.value)}>
@@ -107,7 +107,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
         </div>
         {hasAds && (
           <>
-            <AuditChips label="Which platforms?" options={AD_PLATFORMS} value={platforms} onChange={setPlatforms} otherName="ad_platform_other" otherLabel="Other platform" />
+            <MultiPicker label="Which platforms?" options={AD_PLATFORMS} value={platforms} onChange={setPlatforms} otherName="ad_platform_other" otherLabel="Other platform" />
             <div className="sm:col-span-2"><label className={L}>Rough monthly ad spend</label><input name="ad_spend" className="field" placeholder="e.g. ₦150,000" /></div>
             <div className="sm:col-span-2"><label className={L}>Ad results screenshot (optional)</label><input name="screenshot" type="file" accept="image/*" className="field text-sm" /></div>
           </>
