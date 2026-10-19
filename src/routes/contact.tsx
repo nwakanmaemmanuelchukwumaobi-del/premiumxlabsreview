@@ -4,6 +4,7 @@ import { ContactForm } from "@/components/site/SimpleForms";
 import { CONTACT_EMAIL, LOCATION, WHATSAPP_URL } from "@/lib/site";
 
 export const Route = createFileRoute("/contact")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "Contact | premiumxlabs" },

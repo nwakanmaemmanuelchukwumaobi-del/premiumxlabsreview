@@ -4,6 +4,7 @@ import logo from "@/assets/logo.png.asset.json";
 import { AuditForm } from "@/components/site/AuditForm";
 
 export const Route = createFileRoute("/audit")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "Get Your Free Business Audit | premiumxlabs" },

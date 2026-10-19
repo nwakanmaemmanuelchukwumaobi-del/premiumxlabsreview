@@ -5,6 +5,7 @@ import { DIGITAL_SERVICES, LOCATION, WHATSAPP_URL } from "@/lib/site";
 import logo from "@/assets/logo.png.asset.json";
 
 export const Route = createFileRoute("/web-design-abuja")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "Web Design in Abuja | premiumxlabs" },

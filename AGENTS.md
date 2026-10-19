@@ -14,3 +14,4 @@
 - Store online presence as platform-labeled JSON entries with separate link and optional custom platform name; collect only selected fields so deselected links never reach storage.
 - Keep service summaries and expanded scope/audience descriptions together in the shared service catalog; render expanded content on service pages, not the homepage, to preserve its overview.
 - Focused local service routes reuse scope and audience from the shared catalog and link to the existing preselected service request form, so claims and enquiries remain consistent.
+- Derive sitemap URLs from router inventory with required staticData.sitemap decisions on every route; omit lastmod unless authoritative page-specific dates exist.

@@ -3,6 +3,7 @@ import { Rocket, Target, Wrench } from "lucide-react";
 import { AuditButton } from "@/components/site/Chrome";
 
 export const Route = createFileRoute("/about")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "About | premiumxlabs" },

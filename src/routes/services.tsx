@@ -4,6 +4,7 @@ import { ServiceGroups } from "@/components/site/ServiceGrid";
 import { ServiceRequestForm } from "@/components/site/SimpleForms";
 
 export const Route = createFileRoute("/services")({
+  staticData: { sitemap: true },
   validateSearch: z.object({ service: z.string().optional() }),
   head: () => ({
     meta: [
