@@ -17,11 +17,15 @@ export type Database = {
       audit_requests: {
         Row: {
           ad_platform: string | null
+          ad_platform_other: string | null
+          ad_platforms: string[]
           ad_spend: string | null
           business_name: string
           challenge: string
           created_at: string
           email: string
+          goals: string[]
+          goals_other: string | null
           id: string
           industry_location: string
           links: string | null
@@ -33,11 +37,15 @@ export type Database = {
         }
         Insert: {
           ad_platform?: string | null
+          ad_platform_other?: string | null
+          ad_platforms?: string[]
           ad_spend?: string | null
           business_name: string
           challenge: string
           created_at?: string
           email: string
+          goals?: string[]
+          goals_other?: string | null
           id?: string
           industry_location: string
           links?: string | null
@@ -49,11 +57,15 @@ export type Database = {
         }
         Update: {
           ad_platform?: string | null
+          ad_platform_other?: string | null
+          ad_platforms?: string[]
           ad_spend?: string | null
           business_name?: string
           challenge?: string
           created_at?: string
           email?: string
+          goals?: string[]
+          goals_other?: string | null
           id?: string
           industry_location?: string
           links?: string | null

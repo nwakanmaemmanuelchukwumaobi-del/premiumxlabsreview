@@ -3,9 +3,10 @@ import { useServerFn } from "@tanstack/react-start";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { auditSchema, submitAudit } from "@/lib/forms.functions";
 import { WHATSAPP_URL } from "@/lib/site";
+import { AD_OPTIONS, AD_PLATFORMS, AUDIT_GOALS, hasAdHistory } from "@/lib/audit-fields";
+import { AuditChips } from "@/components/site/AuditChips";
 
 const CHALLENGES = ["Few customers", "Low sales", "No online presence", "Weak branding", "Other"];
-const ADS = ["Yes and getting results", "Yes but not getting results", "No, never", "Used to"];
 
 function toBase64(file: File) {
   return new Promise<string>((res, rej) => {
@@ -19,6 +20,8 @@ function toBase64(file: File) {
 export function AuditForm({ glass = false }: { glass?: boolean }) {
   const send = useServerFn(submitAudit);
   const [ads, setAds] = useState("");
+  const [goals, setGoals] = useState<string[]>([]);
+  const [platforms, setPlatforms] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState<{ name: string; biz: string; pref: string } | null>(null);
@@ -33,7 +36,9 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
     const payload = {
       name: get("name"), business_name: get("business_name"), email: get("email"), whatsapp: get("whatsapp"),
       industry_location: get("industry_location"), links: get("links"), challenge: get("challenge"),
-      running_ads: get("running_ads"), ad_platform: get("ad_platform"), ad_spend: get("ad_spend"),
+      goals, goals_other: get("goals_other"),
+      running_ads: get("running_ads"), ad_platforms: hasAdHistory(ads) ? platforms : [],
+      ad_platform_other: get("ad_platform_other"), ad_spend: get("ad_spend"),
       report_preference: get("report_preference"),
       screenshot: file && file.size > 0 ? { name: file.name, type: file.type, base64: await toBase64(file) } : undefined,
     };
@@ -65,7 +70,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
       </div>
     );
 
-  const hasAds = ads.startsWith("Yes") || ads === "Used to";
+  const hasAds = hasAdHistory(ads);
   const L = "mb-1.5 block text-sm font-medium";
 
   return (
@@ -88,17 +93,18 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
             {CHALLENGES.map((c) => <option key={c}>{c}</option>)}
           </select>
         </div>
+        <AuditChips label="What do you want to achieve?" options={AUDIT_GOALS} value={goals} onChange={setGoals} otherName="goals_other" otherLabel="Other goal" />
         <div className="sm:col-span-2">
           <label className={L}>Are you running ads now?</label>
           <select name="running_ads" className="field" required value={ads} onChange={(e) => setAds(e.target.value)}>
             <option value="" disabled>Select one</option>
-            {ADS.map((c) => <option key={c}>{c}</option>)}
+            {AD_OPTIONS.map((c) => <option key={c}>{c}</option>)}
           </select>
         </div>
         {hasAds && (
           <>
-            <div><label className={L}>Which platform?</label><input name="ad_platform" className="field" placeholder="Meta, Google, TikTok…" /></div>
-            <div><label className={L}>Rough monthly spend</label><input name="ad_spend" className="field" placeholder="e.g. ₦150,000" /></div>
+            <AuditChips label="Which platforms?" options={AD_PLATFORMS} value={platforms} onChange={setPlatforms} otherName="ad_platform_other" otherLabel="Other platform" />
+            <div className="sm:col-span-2"><label className={L}>Rough monthly ad spend</label><input name="ad_spend" className="field" placeholder="e.g. ₦150,000" /></div>
             <div className="sm:col-span-2"><label className={L}>Ad results screenshot (optional)</label><input name="screenshot" type="file" accept="image/*" className="field text-sm" /></div>
           </>
         )}

@@ -8,6 +8,13 @@
       "when": 1792321587632,
       "tag": "0000_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792395076728,
+      "tag": "0001_audit_goals_and_platforms",
+      "breakpoints": true
     }
   ]
 }
