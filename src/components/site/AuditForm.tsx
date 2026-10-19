@@ -3,8 +3,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { auditSchema, submitAudit } from "@/lib/forms.functions";
 import { WHATSAPP_URL } from "@/lib/site";
-import { AD_OPTIONS, AD_PLATFORMS, AUDIT_GOALS, hasAdHistory } from "@/lib/audit-fields";
+import { AD_OPTIONS, AD_PLATFORMS, AUDIT_GOALS, ONLINE_PLATFORMS, hasAdHistory } from "@/lib/audit-fields";
 import { AuditChips } from "@/components/site/AuditChips";
+import { AuditOnlinePresence } from "@/components/site/AuditOnlinePresence";
 
 const CHALLENGES = ["Few customers", "Low sales", "No online presence", "Weak branding", "Other"];
 
@@ -22,6 +23,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
   const [ads, setAds] = useState("");
   const [goals, setGoals] = useState<string[]>([]);
   const [platforms, setPlatforms] = useState<string[]>([]);
+  const [onlinePlatforms, setOnlinePlatforms] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState<{ name: string; biz: string; pref: string } | null>(null);
@@ -35,7 +37,10 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
     if (file && file.size > 5 * 1024 * 1024) return setError("Screenshot must be under 5MB.");
     const payload = {
       name: get("name"), business_name: get("business_name"), email: get("email"), whatsapp: get("whatsapp"),
-      industry_location: get("industry_location"), links: get("links"), challenge: get("challenge"),
+      industry_location: get("industry_location"), challenge: get("challenge"),
+      online_links: ONLINE_PLATFORMS.filter((platform) => onlinePlatforms.includes(platform)).map((platform) => ({
+        platform, link: get(`online_link_${platform}`), other_name: platform === "Other" ? get("online_other_name") : null,
+      })),
       goals, goals_other: get("goals_other"),
       running_ads: get("running_ads"), ad_platforms: hasAdHistory(ads) ? platforms : [],
       ad_platform_other: get("ad_platform_other"), ad_spend: get("ad_spend"),
@@ -85,7 +90,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
         <div><label className={L}>Email</label><input name="email" type="email" className="field" required /></div>
         <div><label className={L}>WhatsApp number</label><input name="whatsapp" type="tel" className="field" placeholder="+234…" required /></div>
         <div className="sm:col-span-2"><label className={L}>Industry & location</label><input name="industry_location" className="field" placeholder="e.g. Restaurant, Abuja" required /></div>
-        <div className="sm:col-span-2"><label className={L}>Website & social media links</label><textarea name="links" rows={2} className="field" placeholder="Website, Instagram, Facebook, TikTok…" /></div>
+        <AuditOnlinePresence selected={onlinePlatforms} onChange={setOnlinePlatforms} />
         <div className="sm:col-span-2">
           <label className={L}>Biggest challenge</label>
           <select name="challenge" className="field" required defaultValue="">

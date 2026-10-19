@@ -1,13 +1,15 @@
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import type { ReactNode } from "react";
 
-export function AuditChips({ label, options, value, onChange, otherName, otherLabel }: {
+export function AuditChips({ label, options, value, onChange, otherName, otherLabel, children }: {
   label: string;
   options: readonly string[];
   value: string[];
   onChange: (value: string[]) => void;
-  otherName: string;
-  otherLabel: string;
+  otherName?: string;
+  otherLabel?: string;
+  children?: ReactNode;
 }) {
   return (
     <fieldset className="min-w-0 sm:col-span-2">
@@ -24,7 +26,8 @@ export function AuditChips({ label, options, value, onChange, otherName, otherLa
           );
         })}
       </div>
-      {value.includes("Other") && (
+      {children}
+      {otherName && value.includes("Other") && (
         <div className="mt-3">
           <label htmlFor={otherName} className="mb-1.5 block text-sm font-medium">{otherLabel}</label>
           <input id={otherName} name={otherName} className="field" maxLength={500} required />

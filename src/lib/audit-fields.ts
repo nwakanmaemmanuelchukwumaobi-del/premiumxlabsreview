@@ -3,6 +3,30 @@ import { z } from "zod";
 export const AD_OPTIONS = ["Yes and getting results", "Yes but not getting results", "No, never", "Used to"] as const;
 export const AD_PLATFORMS = ["Facebook / Instagram (Meta)", "Google Ads", "TikTok", "YouTube", "Snapchat", "X (Twitter)", "LinkedIn", "Influencer or promoted posts", "Other"] as const;
 export const AUDIT_GOALS = ["Generate more leads", "Increase sales", "Get more website visitors", "Build brand awareness", "Get more followers and engagement", "Get more calls or WhatsApp enquiries", "Get more foot traffic to my location", "Launch a new product or business", "Improve my online reputation", "Make my ads perform better", "Other"] as const;
+export const ONLINE_PLATFORMS = ["Website", "Instagram", "Facebook", "TikTok", "X (Twitter)", "YouTube", "LinkedIn", "Snapchat", "Google Business Profile", "Other"] as const;
+export const ONLINE_FIELDS: Record<(typeof ONLINE_PLATFORMS)[number], { label: string; placeholder: string }> = {
+  Website: { label: "Website URL", placeholder: "https://yourbusiness.com" },
+  Instagram: { label: "Instagram handle or link", placeholder: "@yourbusiness or https://instagram.com/yourbusiness" },
+  Facebook: { label: "Facebook page name or link", placeholder: "Your page name or https://facebook.com/yourbusiness" },
+  TikTok: { label: "TikTok handle or link", placeholder: "@yourbusiness or https://tiktok.com/@yourbusiness" },
+  "X (Twitter)": { label: "X (Twitter) handle or link", placeholder: "@yourbusiness or https://x.com/yourbusiness" },
+  YouTube: { label: "YouTube channel name or link", placeholder: "@yourbusiness or https://youtube.com/@yourbusiness" },
+  LinkedIn: { label: "LinkedIn page name or link", placeholder: "Your page name or https://linkedin.com/company/yourbusiness" },
+  Snapchat: { label: "Snapchat username or link", placeholder: "Your username or https://snapchat.com/add/yourbusiness" },
+  "Google Business Profile": { label: "Google Business Profile link", placeholder: "Paste your Google Maps or business profile link" },
+  Other: { label: "Other platform link", placeholder: "https://platform.com/yourbusiness" },
+};
+export const onlineLinksSchema = z.array(z.object({
+  platform: z.enum(ONLINE_PLATFORMS),
+  link: z.string().trim().min(1, "Please enter your selected platform’s handle or link").max(1000),
+  other_name: z.string().trim().max(150).nullish(),
+}).superRefine((entry, ctx) => {
+  if (entry.platform === "Other" && !entry.other_name)
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["other_name"], message: "Please enter the other platform’s name" });
+}).transform((entry) => ({ ...entry, other_name: entry.platform === "Other" ? entry.other_name ?? null : null })))
+  .max(ONLINE_PLATFORMS.length)
+  .refine((entries) => new Set(entries.map((entry) => entry.platform)).size === entries.length, "Each platform can only be selected once")
+  .default([]);
 
 export function hasAdHistory(answer: string) {
   return answer === AD_OPTIONS[0] || answer === AD_OPTIONS[1] || answer === "Used to";
@@ -17,7 +41,7 @@ export const auditSchema = z.object({
   email: s(255).email("Enter a valid email"),
   whatsapp: s(30).min(7, "Enter a valid WhatsApp number"),
   industry_location: s(200).min(1, "Tell us your industry and location"),
-  links: o(1000),
+  online_links: onlineLinksSchema,
   challenge: z.enum(["Few customers", "Low sales", "No online presence", "Weak branding", "Other"]),
   goals: z.array(z.enum(AUDIT_GOALS)).max(AUDIT_GOALS.length).default([]),
   goals_other: o(500),
