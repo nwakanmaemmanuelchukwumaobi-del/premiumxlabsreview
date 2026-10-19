@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Megaphone, Code2, ArrowRight } from "lucide-react";
 import { MARKETING_SERVICES, DIGITAL_SERVICES } from "@/lib/site";
 
-export function ServiceGroups() {
+export function ServiceGroups({ detailed = false }: { detailed?: boolean }) {
   const groups = [
     { title: "Marketing", icon: Megaphone, items: MARKETING_SERVICES },
     { title: "Digital Solutions", icon: Code2, items: DIGITAL_SERVICES },
@@ -19,7 +19,20 @@ export function ServiceGroups() {
             {g.items.map((s) => (
               <div key={s.title} className="flex flex-col rounded-2xl border border-steel/25 bg-card p-6 transition duration-300 hover:-translate-y-1.5 hover:border-cta/50 hover:shadow-[0_24px_50px_-16px_oklch(0.55_0.17_258/0.35)]">
                 <h4 className="text-lg font-bold">{s.title}</h4>
-                <p className="mt-2 flex-1 text-sm text-muted-foreground">{s.desc}</p>
+                {detailed ? (
+                  <dl className="mt-4 flex-1 space-y-4 text-sm">
+                    <div>
+                      <dt className="font-semibold text-foreground">What it covers</dt>
+                      <dd className="mt-1 leading-relaxed text-muted-foreground">{s.includes}</dd>
+                    </div>
+                    <div>
+                      <dt className="font-semibold text-foreground">Who it helps</dt>
+                      <dd className="mt-1 leading-relaxed text-muted-foreground">{s.audience}</dd>
+                    </div>
+                  </dl>
+                ) : (
+                  <p className="mt-2 flex-1 text-sm text-muted-foreground">{s.desc}</p>
+                )}
                 <Link to="/services" search={{ service: s.title }} hash="request" className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-cta hover:gap-2.5 transition-all">
                   Request This Service <ArrowRight className="h-4 w-4" />
                 </Link>

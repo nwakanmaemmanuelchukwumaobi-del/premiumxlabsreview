@@ -1,4 +1,5 @@
 # Audit form update
+- [ ] Expand and verify all ten services-page explanations without changing homepage summaries.
 - [x] Add shared multi-select goals and ad-platform controls and save answers.
 - [x] Verify tests and real submissions on Home and /audit.
 - [x] Replace the combined links field with platform chips and separate saved links.
