@@ -6,4 +6,4 @@
 - [x] Verify tests and real submissions on Home and /audit.
 - [x] Replace the combined links field with platform chips and separate saved links.
 - [x] Verify online links on both forms and phone-sized layout.
-- [ ] Include answers in owner notification emails (blocked until an owned sending domain is configured).
+- [ ] Email every audit and service submission to premuimxlabs@gmail.com with all answers, screenshot attachment/link, clear subjects, submitter reply-to, and confirmation/error handling; no admin page (blocked until an owned sending domain is configured).
