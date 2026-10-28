@@ -93,7 +93,15 @@ export function inspectHTML(html: string, finalURL: string, submittedURL: string
       } catch { /* Ignore malformed links independently. */ }
     }
   }
-  return { status: "completed", final_url: finalURL, submitted_uses_https: new URL(submittedURL).protocol === "https:",
+  const lower = html.toLowerCase();
+  const ad_trackers: string[] = [];
+  if (/connect\.facebook\.net\/[^"']*fbevents\.js|fbq\(\s*['"]init/.test(lower)) ad_trackers.push("Meta Pixel");
+  if (/googletagmanager\.com|google-analytics\.com|googleadservices\.com|gtag\(\s*['"]config/.test(lower)) ad_trackers.push("Google tag");
+  if (/analytics\.tiktok\.com|ttq\.load\(/.test(lower)) ad_trackers.push("TikTok Pixel");
+  const metaTag = (key: string) => elements.some((e) => e.name === "meta" && [e.attribs['property'], e.attribs['name']].some((v) => v?.toLowerCase() === key) && !!e.attribs['content']?.trim());
+  const sharing_tags = Object.fromEntries(["og:title", "og:description", "og:image", "twitter:card"].map((k) => [k, metaTag(k)]));
+  return { status: "completed", ad_trackers_detected: ad_trackers, ad_tracking_method: "Static HTML only; tags loaded later or via other tools may not be visible.",
+    sharing_tags, sharing_tags_missing: Object.keys(sharing_tags).filter((k) => !sharing_tags[k]), final_url: finalURL, submitted_uses_https: new URL(submittedURL).protocol === "https:",
     uses_https: new URL(finalURL).protocol === "https:", title: title ? clean(textContent(title)) : null,
     meta_description: description?.attribs['content'] ? clean(description.attribs['content']) : null,
     main_headline: headline ? clean(textContent(headline)) : null,
@@ -121,6 +129,21 @@ async function pageChecks(url: URL, request: typeof fetch) {
   throw new Error("Too many redirects");
 }
 
+const SEO_PLAIN: Record<string, string> = {
+  "meta-description": "No page description for search results", "document-title": "No page title for search results",
+  "link-text": "Some links don't say where they go", "is-crawlable": "The page is blocked from search engines",
+  "http-status-code": "The page returned an error to search engines", "image-alt": "Images have no descriptions",
+  "crawlable-anchors": "Some links can't be followed by search engines", "robots-txt": "The search engine rules file has problems",
+  "canonical": "The page's preferred address is set up incorrectly", "hreflang": "Language settings are set up incorrectly",
+  "structured-data": "Business details for search engines have problems",
+};
+export function seoFailures(lighthouse: any): string[] {
+  const refs: { id: string }[] = lighthouse?.categories?.seo?.auditRefs ?? [];
+  return refs.map((r) => ({ id: r.id, a: lighthouse.audits?.[r.id] }))
+    .filter(({ a }) => a && typeof a.score === "number" && a.score < 1 && ["binary", "numeric"].includes(a.scoreDisplayMode))
+    .map(({ id, a }) => SEO_PLAIN[id] ?? String(a.title ?? id).slice(0, 120)).slice(0, 8);
+}
+
 async function speedChecks(url: URL, key: string | undefined, request: typeof fetch): Promise<Record<string, unknown>> {
   if (!key) return { status: "skipped", reason: "PAGESPEED_API_KEY is not configured", strategy: "mobile" };
   const endpoint = new URL("https://www.googleapis.com/pagespeedonline/v5/runPagespeed");
@@ -128,6 +151,7 @@ async function speedChecks(url: URL, key: string | undefined, request: typeof fe
   endpoint.searchParams.set("strategy", "mobile");
   endpoint.searchParams.set("key", key);
   endpoint.searchParams.append("category", "performance");
+  endpoint.searchParams.append("category", "seo");
   const response = await request(endpoint, { signal: AbortSignal.timeout(45000) });
   // Do not log provider errors: they can contain the request URL and secret.
   if (!response.ok) return { status: "skipped", reason: "PageSpeed request failed", http_status: response.status, strategy: "mobile" };
@@ -138,6 +162,7 @@ async function speedChecks(url: URL, key: string | undefined, request: typeof fe
   return { status: "completed", strategy: "mobile", analysis_time: result.analysisUTCTimestamp ?? null,
     final_url: lighthouse.finalUrl ?? null, lighthouse_version: lighthouse.lighthouseVersion ?? null,
     performance_score: lighthouse.categories?.performance?.score ?? null,
+    seo_score: lighthouse.categories?.seo?.score ?? null, seo_failed_checks: seoFailures(lighthouse),
     metrics: Object.fromEntries(metrics.map((id) => [id, lighthouse.audits?.[id] ?? null])),
     loading_experience: result.loadingExperience ?? null, origin_loading_experience: result.originLoadingExperience ?? null };
 }
