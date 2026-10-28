@@ -18,6 +18,7 @@
 - Keep website inspection in server-only helpers, save audit rows before running independent bounded checks, and store results on the same row so external failures cannot lose submissions.
 - Generate instant breakdowns server-side from an allowlisted fact projection; persist before showing, with deterministic missing/unreachable states and failure-safe submission success.
 - Present audit loading and results in a shared accessible report dialog on both forms; derive display-only finding labels without changing saved AI output.
+- Use the shared submission-error boundary and friendly client fallback for all public forms so upstream failures never reveal internal configuration to visitors.
 - Private audit access uses verified owner roles in a separate role table, enforced by RLS and every server handler; profiles never grant permissions.
 - Keep private routes under the authenticated layout and out of sitemap; clear protected query data before signing out.
 - Persist AI access pauses in Cloud storage and never retry terminal gateway denials; SDK Responses calls use request-local run IDs and structured streaming output.

@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { auditSchema } from "@/lib/audit-fields";
+import { withSafeSubmission } from "@/lib/submission-errors";
 
 export { auditSchema } from "@/lib/audit-fields";
 
@@ -9,7 +10,7 @@ const o = (max: number) => s(max).optional().transform((v) => v || null);
 
 export const submitAudit = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => auditSchema.parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data }) => withSafeSubmission(async () => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { runWebsiteChecks, saveThenCheck } = await import("@/lib/website-checks.server");
     let screenshot_path: string | null = null;
@@ -48,7 +49,7 @@ export const submitAudit = createServerFn({ method: "POST" })
       }
     } catch { /* The audit is saved even if generation or storage fails. */ }
     return { ok: true, breakdown };
-  });
+  }));
 
 export const serviceSchema = z.object({
   name: s(100).min(1, "Please enter your name"),
@@ -60,12 +61,12 @@ export const serviceSchema = z.object({
 
 export const submitService = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => serviceSchema.parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data }) => withSafeSubmission(async () => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.from("service_requests").insert(data);
     if (error) throw new Error("Could not save your request. Please try again.");
     return { ok: true };
-  });
+  }));
 
 export const contactSchema = z.object({
   name: s(100).min(1, "Please enter your name"),
@@ -76,9 +77,9 @@ export const contactSchema = z.object({
 
 export const submitContact = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => contactSchema.parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data }) => withSafeSubmission(async () => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.from("contact_messages").insert(data);
     if (error) throw new Error("Could not send your message. Please try again.");
     return { ok: true };
-  });
+  }));
