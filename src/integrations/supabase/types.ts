@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_ai_state: {
+        Row: {
+          id: boolean
+          paused: boolean
+          reason: string | null
+          status_code: number | null
+        }
+        Insert: {
+          id?: boolean
+          paused?: boolean
+          reason?: string | null
+          status_code?: number | null
+        }
+        Update: {
+          id?: boolean
+          paused?: boolean
+          reason?: string | null
+          status_code?: number | null
+        }
+        Relationships: []
+      }
       audit_requests: {
         Row: {
           ad_platform: string | null
@@ -28,6 +49,7 @@ export type Database = {
           goals_other: string | null
           id: string
           industry_location: string
+          instant_breakdown: Json | null
           links: string | null
           name: string
           online_links: Json
@@ -50,6 +72,7 @@ export type Database = {
           goals_other?: string | null
           id?: string
           industry_location: string
+          instant_breakdown?: Json | null
           links?: string | null
           name: string
           online_links?: Json
@@ -72,6 +95,7 @@ export type Database = {
           goals_other?: string | null
           id?: string
           industry_location?: string
+          instant_breakdown?: Json | null
           links?: string | null
           name?: string
           online_links?: Json
@@ -110,6 +134,27 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          display_name: string
+          id: string
+          preferences: Json
+        }
+        Insert: {
+          avatar_url?: string | null
+          display_name?: string
+          id: string
+          preferences?: Json
+        }
+        Update: {
+          avatar_url?: string | null
+          display_name?: string
+          id?: string
+          preferences?: Json
+        }
+        Relationships: []
+      }
       service_requests: {
         Row: {
           business_name: string | null
@@ -140,15 +185,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_audit_owner: { Args: never; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -275,6 +338,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin"],
+    },
   },
 } as const
