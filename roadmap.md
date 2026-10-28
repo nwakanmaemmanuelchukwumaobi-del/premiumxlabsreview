@@ -1,4 +1,5 @@
 # Audit form update
+- [x] Redesign result as a mobile-first navy/amber pop-up with loading, numbered findings and WhatsApp CTA; verify both forms.
 - [x] Add and save friendly instant website breakdown, with failure-safe thank-you and private raw results.
 - [x] Add verified owner-only admin access and stored profile data; verify signed-out protection and authorization tests.
 - [ ] Verify private inbox readback as the owner (waiting for premuimxlabs@gmail.com to sign in; no auth account exists yet).

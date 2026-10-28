@@ -6,6 +6,8 @@ import { WHATSAPP_URL } from "@/lib/site";
 import { AD_OPTIONS, AD_PLATFORMS, AUDIT_GOALS, ONLINE_FIELDS, ONLINE_PLATFORMS, hasAdHistory } from "@/lib/audit-fields";
 import { MultiPicker, OnlinePresencePicker, type OnlineEntry } from "@/components/site/AuditPicker";
 import type { Breakdown } from "@/lib/instant-breakdown";
+import { InstantReport } from "@/components/site/InstantReport";
+import { Button } from "@/components/ui/button";
 
 const CHALLENGES = ["Few customers", "Low sales", "No online presence", "Weak branding", "Other"];
 
@@ -28,6 +30,9 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
   const [error, setError] = useState("");
   const [done, setDone] = useState<{ name: string; biz: string; pref: string } | null>(null);
   const [breakdown, setBreakdown] = useState<Breakdown | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportClient, setReportClient] = useState<{ name: string; biz: string; pref: string } | null>(null);
+  const [reportWebsite, setReportWebsite] = useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -51,6 +56,9 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
     const parsed = auditSchema.safeParse(payload);
     if (!parsed.success) return setError(parsed.error.issues[0]?.message ?? "Please check the form.");
     setBusy(true);
+    setReportClient({ name: parsed.data.name, biz: parsed.data.business_name, pref: parsed.data.report_preference });
+    setReportWebsite(parsed.data.online_links.find(entry => entry.platform === "Website")?.link ?? null);
+    setReportOpen(true);
     try {
       const response = await send({ data: parsed.data });
       setBreakdown(response.breakdown);
@@ -64,6 +72,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
 
   if (done)
     return (
+      <>
       <div className="rounded-3xl border border-border bg-card p-8 text-center shadow-2xl shadow-navy/10">
         <CheckCircle2 className="mx-auto h-14 w-14 text-cta" />
         <h3 className="mt-4 text-2xl font-bold">Thank you, {done.name}.</h3>
@@ -74,22 +83,17 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
         <p className="mt-4 text-sm">
           Questions? <a href={WHATSAPP_URL} target="_blank" rel="noreferrer" className="font-semibold text-cta underline">Message us on WhatsApp.</a>
         </p>
-        {breakdown !== null && (
-          <div className="mt-6 min-w-0 text-left">
-            <h4 className="text-lg font-semibold">Your Instant Website Breakdown</h4>
-            <ul className="mt-4 space-y-4 text-sm leading-relaxed text-foreground">
-              {breakdown.problems.map((problem, i) => <li key={i} className="border-l-2 border-steel pl-4">{problem}</li>)}
-            </ul>
-            <p className="mt-5 text-sm leading-relaxed text-muted-foreground">{breakdown.closing}</p>
-          </div>
-        )}
+        <Button variant="outline" className="mt-6" onClick={() => setReportOpen(true)}>{breakdown ? "View my instant breakdown" : "View confirmation"}</Button>
       </div>
+      <InstantReport open={reportOpen} onOpenChange={setReportOpen} busy={busy} breakdown={breakdown} client={reportClient} website={reportWebsite} error={error} />
+      </>
     );
 
   const hasAds = hasAdHistory(ads);
   const L = "mb-1.5 block text-sm font-medium";
 
   return (
+    <>
     <form onSubmit={onSubmit} className={`relative rounded-3xl border p-6 shadow-2xl sm:p-8 ${glass ? "border-navy-foreground/15 bg-navy-foreground/95 shadow-navy/40 backdrop-blur-xl" : "border-border bg-card shadow-navy/10"}`}>
       <div className="mb-5">
         <span className="inline-block rounded-full bg-accent px-3 py-1 text-xs font-bold uppercase tracking-wider text-steel">100% Free · No login</span>
@@ -141,5 +145,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
       </button>
       <p className="mt-3 text-center text-xs text-muted-foreground">Report delivered within 48 hours.</p>
     </form>
+    <InstantReport open={reportOpen} onOpenChange={setReportOpen} busy={busy} breakdown={breakdown} client={reportClient} website={reportWebsite} error={error} />
+    </>
   );
 }
