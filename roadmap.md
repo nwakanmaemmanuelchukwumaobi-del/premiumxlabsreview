@@ -1,5 +1,5 @@
 # Audit form update
-- [ ] Save audits first, run resilient website/PageSpeed checks, store and show raw results, and verify submission flows.
+- [x] Save audits first, run resilient website/PageSpeed checks, store and show raw results, and verify submission flows.
 - [x] Add and verify router-derived sitemap and robots.txt reference for all public pages.
 - [x] Research, create and verify one supported Abuja-focused service page linked from Services.
 - [x] Expand and verify all ten services-page explanations without changing homepage summaries.

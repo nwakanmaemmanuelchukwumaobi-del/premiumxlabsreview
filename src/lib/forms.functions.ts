@@ -11,6 +11,7 @@ export const submitAudit = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => auditSchema.parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { runWebsiteChecks, saveThenCheck } = await import("@/lib/website-checks.server");
     let screenshot_path: string | null = null;
     if (data.screenshot && data.screenshot.type.startsWith("image/")) {
       const bytes = Uint8Array.from(atob(data.screenshot.base64), (c) => c.charCodeAt(0));
@@ -22,12 +23,20 @@ export const submitAudit = createServerFn({ method: "POST" })
       if (!error) screenshot_path = path;
     }
     const { screenshot: _s, ...row } = data;
-    const { error } = await supabaseAdmin.from("audit_requests").insert({ ...row, screenshot_path });
-    if (error) {
-      console.error(error);
-      throw new Error("Could not save your request. Please try again.");
-    }
-    return { ok: true };
+    const results = await saveThenCheck(
+      async () => {
+        const id = crypto.randomUUID();
+        const { error } = await supabaseAdmin.from("audit_requests").insert({ ...row, screenshot_path, id });
+        if (error) throw new Error("Could not save your request. Please try again.");
+        return id;
+      },
+      () => runWebsiteChecks(data.online_links.find((entry) => entry.platform === "Website")?.link, process.env['PAGESPEED_API_KEY']),
+      async (id, results) => {
+        const { error } = await supabaseAdmin.from("audit_requests").update({ website_checks: JSON.parse(JSON.stringify(results)) }).eq("id", id);
+        if (error) throw new Error("Could not store checks");
+      },
+    );
+    return { ok: true, results_json: JSON.stringify(results) };
   });
 
 export const serviceSchema = z.object({

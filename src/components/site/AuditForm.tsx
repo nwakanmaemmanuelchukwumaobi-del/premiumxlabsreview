@@ -26,6 +26,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState<{ name: string; biz: string; pref: string } | null>(null);
+  const [rawResults, setRawResults] = useState<unknown>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -50,7 +51,8 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
     if (!parsed.success) return setError(parsed.error.issues[0]?.message ?? "Please check the form.");
     setBusy(true);
     try {
-      await send({ data: parsed.data });
+      const response = await send({ data: parsed.data });
+      setRawResults(JSON.parse(response.results_json));
       setDone({ name: parsed.data.name, biz: parsed.data.business_name, pref: parsed.data.report_preference });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -71,6 +73,12 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
         <p className="mt-4 text-sm">
           Questions? <a href={WHATSAPP_URL} target="_blank" rel="noreferrer" className="font-semibold text-cta underline">Message us on WhatsApp.</a>
         </p>
+        {rawResults !== null && (
+          <div className="mt-6 min-w-0 text-left">
+            <h4 className="text-sm font-semibold">Raw website check results</h4>
+            <pre aria-label="Raw website check results" className="mt-2 max-h-96 overflow-auto whitespace-pre-wrap break-all rounded-xl border border-border bg-muted p-4 text-xs text-foreground">{JSON.stringify(rawResults, null, 2)}</pre>
+          </div>
+        )}
       </div>
     );
 
