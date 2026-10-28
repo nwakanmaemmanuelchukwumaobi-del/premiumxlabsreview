@@ -34,6 +34,7 @@ export type Database = {
           report_preference: string
           running_ads: string
           screenshot_path: string | null
+          website_checks: Json | null
           whatsapp: string
         }
         Insert: {
@@ -55,6 +56,7 @@ export type Database = {
           report_preference: string
           running_ads: string
           screenshot_path?: string | null
+          website_checks?: Json | null
           whatsapp: string
         }
         Update: {
@@ -76,6 +78,7 @@ export type Database = {
           report_preference?: string
           running_ads?: string
           screenshot_path?: string | null
+          website_checks?: Json | null
           whatsapp?: string
         }
         Relationships: []

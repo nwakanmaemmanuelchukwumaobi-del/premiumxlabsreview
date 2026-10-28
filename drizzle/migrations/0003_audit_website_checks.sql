@@ -1,0 +1,2 @@
+ALTER TABLE public.audit_requests ADD COLUMN website_checks jsonb;
+COMMENT ON COLUMN public.audit_requests.website_checks IS 'Raw best-effort website and mobile PageSpeed checks performed after saving the submission.';
