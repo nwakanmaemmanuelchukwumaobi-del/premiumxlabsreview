@@ -5,6 +5,7 @@ import { auditSchema, submitAudit } from "@/lib/forms.functions";
 import { WHATSAPP_URL } from "@/lib/site";
 import { AD_OPTIONS, AD_PLATFORMS, AUDIT_GOALS, ONLINE_FIELDS, ONLINE_PLATFORMS, hasAdHistory } from "@/lib/audit-fields";
 import { MultiPicker, OnlinePresencePicker, type OnlineEntry } from "@/components/site/AuditPicker";
+import type { Breakdown } from "@/lib/instant-breakdown";
 
 const CHALLENGES = ["Few customers", "Low sales", "No online presence", "Weak branding", "Other"];
 
@@ -26,7 +27,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState<{ name: string; biz: string; pref: string } | null>(null);
-  const [rawResults, setRawResults] = useState<unknown>(null);
+  const [breakdown, setBreakdown] = useState<Breakdown | null>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -52,7 +53,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
     setBusy(true);
     try {
       const response = await send({ data: parsed.data });
-      setRawResults(JSON.parse(response.results_json));
+      setBreakdown(response.breakdown);
       setDone({ name: parsed.data.name, biz: parsed.data.business_name, pref: parsed.data.report_preference });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -73,10 +74,13 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
         <p className="mt-4 text-sm">
           Questions? <a href={WHATSAPP_URL} target="_blank" rel="noreferrer" className="font-semibold text-cta underline">Message us on WhatsApp.</a>
         </p>
-        {rawResults !== null && (
+        {breakdown !== null && (
           <div className="mt-6 min-w-0 text-left">
-            <h4 className="text-sm font-semibold">Raw website check results</h4>
-            <pre aria-label="Raw website check results" className="mt-2 max-h-96 overflow-auto whitespace-pre-wrap break-all rounded-xl border border-border bg-muted p-4 text-xs text-foreground">{JSON.stringify(rawResults, null, 2)}</pre>
+            <h4 className="text-lg font-semibold">Your Instant Website Breakdown</h4>
+            <ul className="mt-4 space-y-4 text-sm leading-relaxed text-foreground">
+              {breakdown.problems.map((problem, i) => <li key={i} className="border-l-2 border-steel pl-4">{problem}</li>)}
+            </ul>
+            <p className="mt-5 text-sm leading-relaxed text-muted-foreground">{breakdown.closing}</p>
           </div>
         )}
       </div>
