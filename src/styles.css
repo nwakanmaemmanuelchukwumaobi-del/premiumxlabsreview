@@ -40,9 +40,20 @@
   --color-cta: var(--cta);
   --color-cta-foreground: var(--cta-foreground);
   --color-whatsapp: var(--whatsapp);
+  --color-report: var(--report);
+  --color-report-foreground: var(--report-foreground);
+  --color-report-muted: var(--report-muted);
+  --color-report-accent: var(--report-accent);
+  --color-report-accent-foreground: var(--report-accent-foreground);
 }
 
 :root {
+  --report: oklch(0.25 0.065 266);
+  --report-foreground: oklch(1 0 0);
+  --report-muted: oklch(0.81 0.018 266);
+  --report-accent: oklch(0.82 0.15 80);
+  --report-accent-foreground: oklch(0.23 0.055 266);
+  --report-shadow: 0 24px 90px color-mix(in oklab, var(--report) 45%, transparent);
   --radius: 0.875rem;
   --navy: oklch(0.27 0.075 266);
   --navy-foreground: oklch(1 0 0);
@@ -98,6 +109,19 @@
   opacity: 0;
   transform: translateY(28px);
   transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.instant-report {
+  box-shadow: var(--report-shadow);
+  letter-spacing: 0;
+}
+.instant-report h2, .instant-report h3 { letter-spacing: 0; }
+.instant-report > button:last-child {
+  color: var(--report-accent);
+  background: var(--report);
+  border-radius: 50%;
+  padding: 0.5rem;
+  opacity: 1;
 }
 .reveal.is-visible {
   opacity: 1;
