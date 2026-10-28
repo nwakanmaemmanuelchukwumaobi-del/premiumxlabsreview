@@ -14,6 +14,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SiteHeader, SiteFooter, MobileAuditBar, WhatsAppFloat } from "@/components/site/Chrome";
+import { supabase } from "@/integrations/supabase/client";
 
 function NotFoundComponent() {
   return (
@@ -114,17 +115,28 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
+  const privatePage = useRouterState({ select: s => s.location.pathname === "/admin" || s.location.pathname === "/auth" });
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange(event => {
+      if (!["SIGNED_IN", "SIGNED_OUT", "USER_UPDATED"].includes(event)) return;
+      void router.invalidate();
+      if (event !== "SIGNED_OUT") void queryClient.invalidateQueries();
+      if (event === "SIGNED_IN" && router.state.location.pathname === "/auth") void router.navigate({ to: "/admin" });
+    });
+    return () => data.subscription.unsubscribe();
+  }, [router, queryClient]);
   const isAudit = useRouterState({ select: (s) => s.location.pathname.startsWith("/audit") });
 
   return (
     <QueryClientProvider client={queryClient}>
-      {!isAudit && <SiteHeader />}
+      {!isAudit && !privatePage && <SiteHeader />}
       <main>
         <Outlet />
       </main>
-      {!isAudit && <SiteFooter />}
-      {!isAudit && <MobileAuditBar />}
-      <WhatsAppFloat raised={!isAudit} />
+      {!isAudit && !privatePage && <SiteFooter />}
+      {!isAudit && !privatePage && <MobileAuditBar />}
+      {!privatePage && <WhatsAppFloat raised={!isAudit} />}
     </QueryClientProvider>
   );
 }

@@ -1,0 +1,9 @@
+import { describe, expect, it } from "vitest";
+import { firstContentBand,keyWebsiteFacts,normalizeBreakdown,UNREACHABLE,supportedProblems } from "@/lib/instant-breakdown";
+const answers={running_ads:"Yes but not getting results" as const,ad_platforms:["Google Ads" as const],ad_platform_other:null,goals:["Increase sales" as const],goals_other:null};
+describe("Instant breakdown rules",()=>{
+  it("uses the requested Google first content boundaries",()=>{expect(firstContentBand(1.79)).toBe("good");expect(firstContentBand(1.8)).toBe("needs improvement");expect(firstContentBand(3)).toBe("needs improvement");expect(firstContentBand(3.01)).toBe("poor");});
+  it("projects only allowed facts and converts milliseconds to seconds",()=>{const f=keyWebsiteFacts({status:"completed",page:{status:"completed",title:"Shop",uses_https:true,secret:"no"},pagespeed:{status:"completed",performance_score:0.2,metrics:{"first-contentful-paint":{numericValue:3200}}}},answers);expect(f.first_content_seconds_mobile).toBe(3.2);expect(Object.keys(f)).toEqual(["first_content_seconds_mobile","uses_https","page_title","meta_description","main_headline","contact_or_action_found","social_links_found","running_ads","ad_platforms","ad_platform_other","goals","goals_other"]);});
+  it("does not turn unavailable checks into missing findings",()=>{const f=keyWebsiteFacts({status:"skipped",page:{status:"skipped"},pagespeed:{status:"skipped"}},answers);expect(supportedProblems(f,false)).toEqual([]);expect(normalizeBreakdown({problems:[]},[],true)?.problems).toEqual([UNREACHABLE]);});
+  it("rejects invented findings and client scores",()=>{expect(normalizeBreakdown({problems:[{fact:"invented",text:"Bad site"}]},["missing_title"],false)).toBeNull();expect(normalizeBreakdown({problems:[{fact:"missing_title",text:"Score 40 out of 100"}]},["missing_title"],false)).toBeNull();});
+});
