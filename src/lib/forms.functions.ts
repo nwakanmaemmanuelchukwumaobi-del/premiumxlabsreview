@@ -48,6 +48,10 @@ export const submitAudit = createServerFn({ method: "POST" })
         if (!error) breakdown = generated;
       }
     } catch { /* The audit is saved even if generation or storage fails. */ }
+    try {
+      const { sendAuditOwnerEmail } = await import("./owner-email.server");
+      await sendAuditOwnerEmail(data, breakdown, results, savedId);
+    } catch { /* Email failures never block a submission. */ }
     return { ok: true, breakdown };
   }));
 
