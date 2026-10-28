@@ -1,5 +1,5 @@
 # Audit form update
-- [ ] Diagnose published audit failures and broken images; verify Lovable submission and sanitize visitor errors without changing design.
+- [x] Diagnose published audit failures and broken images; verify Lovable submission and sanitize visitor errors without changing design.
 - [ ] Move premiumxlabs.com and www to Lovable hosting (waiting for the domain developer to update DNS).
 - [x] Add and verify branded 1200x630 social previews and mobile loading improvements without changing design or audit behavior.
 - [x] Redesign result as a mobile-first navy/amber pop-up with loading, numbered findings and WhatsApp CTA; verify both forms.
