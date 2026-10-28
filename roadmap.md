@@ -1,4 +1,7 @@
 # Audit form update
+- [x] Add and save friendly instant website breakdown, with failure-safe thank-you and private raw results.
+- [x] Add verified owner-only admin access and stored profile data; verify signed-out protection and authorization tests.
+- [ ] Verify private inbox readback as the owner (waiting for premuimxlabs@gmail.com to sign in; no auth account exists yet).
 - [x] Save audits first, run resilient website/PageSpeed checks, store and show raw results, and verify submission flows.
 - [x] Add and verify router-derived sitemap and robots.txt reference for all public pages.
 - [x] Research, create and verify one supported Abuja-focused service page linked from Services.
@@ -7,4 +10,4 @@
 - [x] Verify tests and real submissions on Home and /audit.
 - [x] Replace the combined links field with platform chips and separate saved links.
 - [x] Verify online links on both forms and phone-sized layout.
-- [ ] Email every audit and service submission to premuimxlabs@gmail.com with all answers, screenshot attachment/link, clear subjects, submitter reply-to, and confirmation/error handling; no admin page (blocked until an owned sending domain is configured).
+- [ ] Email every audit and service submission to premuimxlabs@gmail.com with all answers, screenshot attachment/link, clear subjects, submitter reply-to, and confirmation/error handling (blocked until an owned sending domain is configured).

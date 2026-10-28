@@ -23,11 +23,13 @@ export const submitAudit = createServerFn({ method: "POST" })
       if (!error) screenshot_path = path;
     }
     const { screenshot: _s, ...row } = data;
+    let savedId: string | null = null;
     const results = await saveThenCheck(
       async () => {
         const id = crypto.randomUUID();
         const { error } = await supabaseAdmin.from("audit_requests").insert({ ...row, screenshot_path, id });
         if (error) throw new Error("Could not save your request. Please try again.");
+        savedId = id;
         return id;
       },
       () => runWebsiteChecks(data.online_links.find((entry) => entry.platform === "Website")?.link, process.env['PAGESPEED_API_KEY']),
@@ -36,7 +38,16 @@ export const submitAudit = createServerFn({ method: "POST" })
         if (error) throw new Error("Could not store checks");
       },
     );
-    return { ok: true, results_json: JSON.stringify(results) };
+    let breakdown: import("./instant-breakdown").Breakdown | null = null;
+    try {
+      const { generateInstantBreakdown } = await import("./instant-breakdown.server");
+      const generated = await generateInstantBreakdown(results, data);
+      if (generated && savedId) {
+        const { error } = await supabaseAdmin.from("audit_requests").update({ instant_breakdown: JSON.parse(JSON.stringify(generated)) }).eq("id", savedId);
+        if (!error) breakdown = generated;
+      }
+    } catch { /* The audit is saved even if generation or storage fails. */ }
+    return { ok: true, breakdown };
   });
 
 export const serviceSchema = z.object({
