@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Mail, MessageCircle, MapPin } from "lucide-react";
 import { ContactForm } from "@/components/site/SimpleForms";
 import { CONTACT_EMAIL, LOCATION, WHATSAPP_URL } from "@/lib/site";
+import { sharingMeta } from "@/lib/sharing-meta";
 
 export const Route = createFileRoute("/contact")({
   staticData: { sitemap: true },
@@ -13,6 +14,7 @@ export const Route = createFileRoute("/contact")({
       { name: "description", content: "Contact premiumxlabs by WhatsApp, email or our contact form. Based in Abuja, Nigeria." },
       { property: "og:title", content: "Contact | premiumxlabs" },
       { property: "og:description", content: "Talk to premiumxlabs about growing your business." },
+      ...sharingMeta("/contact", "Contact | premiumxlabs", "Talk to premiumxlabs about growing your business."),
     ],
   }),
   component: Contact,

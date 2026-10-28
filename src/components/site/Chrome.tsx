@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Menu, X, MessageCircle, Mail, MapPin, ArrowRight } from "lucide-react";
-import logo from "@/assets/logo.png.asset.json";
+import logo from "@/assets/logo.webp.asset.json";
 import { WHATSAPP_URL, CONTACT_EMAIL, LOCATION } from "@/lib/site";
 
 export function AuditButton({ className = "", label = "Get My Free Audit" }: { className?: string; label?: string }) {
@@ -22,10 +22,10 @@ const NAV = [
   { to: "/contact", label: "Contact" },
 ] as const;
 
-export function Logo({ light = false }: { light?: boolean }) {
+export function Logo({ light = false, lazy = false }: { light?: boolean; lazy?: boolean }) {
   return (
     <Link to="/" className="flex items-center gap-2">
-      <img src={logo.url} alt="premiumxlabs logo" className="h-9 w-9 rounded-lg" />
+      <img src={logo.url} alt="premiumxlabs logo" width={36} height={36} loading={lazy ? "lazy" : "eager"} decoding="async" className="h-9 w-9 rounded-lg" />
       <span className={`font-display text-lg font-extrabold tracking-tight ${light ? "text-navy-foreground" : "text-navy"}`}>
         premiumxlabs
       </span>
@@ -71,7 +71,7 @@ export function SiteFooter() {
     <footer className="bg-navy pb-24 text-navy-foreground md:pb-0">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 md:grid-cols-3">
         <div>
-          <Logo light />
+          <Logo light lazy />
           <p className="mt-4 max-w-xs text-sm text-navy-foreground/70">
             Marketing and digital solutions for businesses of every size.
           </p>

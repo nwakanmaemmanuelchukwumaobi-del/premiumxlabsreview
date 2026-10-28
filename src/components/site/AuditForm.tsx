@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { auditSchema, submitAudit } from "@/lib/forms.functions";
@@ -6,8 +6,10 @@ import { WHATSAPP_URL } from "@/lib/site";
 import { AD_OPTIONS, AD_PLATFORMS, AUDIT_GOALS, ONLINE_FIELDS, ONLINE_PLATFORMS, hasAdHistory } from "@/lib/audit-fields";
 import { MultiPicker, OnlinePresencePicker, type OnlineEntry } from "@/components/site/AuditPicker";
 import type { Breakdown } from "@/lib/instant-breakdown";
-import { InstantReport } from "@/components/site/InstantReport";
 import { Button } from "@/components/ui/button";
+
+const loadReport = () => import("@/components/site/InstantReport");
+const InstantReport = lazy(() => loadReport().then(module => ({ default: module.InstantReport })));
 
 const CHALLENGES = ["Few customers", "Low sales", "No online presence", "Weak branding", "Other"];
 
@@ -85,7 +87,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
         </p>
         <Button variant="outline" className="mt-6" onClick={() => setReportOpen(true)}>{breakdown ? "View my instant breakdown" : "View confirmation"}</Button>
       </div>
-      <InstantReport open={reportOpen} onOpenChange={setReportOpen} busy={busy} breakdown={breakdown} client={reportClient} website={reportWebsite} error={error} />
+      {reportOpen && <Suspense fallback={null}><InstantReport open={reportOpen} onOpenChange={setReportOpen} busy={busy} breakdown={breakdown} client={reportClient} website={reportWebsite} error={error} /></Suspense>}
       </>
     );
 
@@ -94,7 +96,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
 
   return (
     <>
-    <form onSubmit={onSubmit} className={`relative rounded-3xl border p-6 shadow-2xl sm:p-8 ${glass ? "border-navy-foreground/15 bg-navy-foreground/95 shadow-navy/40 backdrop-blur-xl" : "border-border bg-card shadow-navy/10"}`}>
+    <form onSubmit={onSubmit} onFocus={() => { void loadReport(); }} onPointerEnter={() => { void loadReport(); }} className={`relative rounded-3xl border p-6 shadow-2xl sm:p-8 ${glass ? "border-navy-foreground/15 bg-navy-foreground/95 shadow-navy/40 backdrop-blur-xl" : "border-border bg-card shadow-navy/10"}`}>
       <div className="mb-5">
         <span className="inline-block rounded-full bg-accent px-3 py-1 text-xs font-bold uppercase tracking-wider text-steel">100% Free · No login</span>
         <h3 className="mt-3 text-xl font-bold">Request your free business audit</h3>
@@ -145,7 +147,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
       </button>
       <p className="mt-3 text-center text-xs text-muted-foreground">Report delivered within 48 hours.</p>
     </form>
-    <InstantReport open={reportOpen} onOpenChange={setReportOpen} busy={busy} breakdown={breakdown} client={reportClient} website={reportWebsite} error={error} />
+    {reportOpen && <Suspense fallback={null}><InstantReport open={reportOpen} onOpenChange={setReportOpen} busy={busy} breakdown={breakdown} client={reportClient} website={reportWebsite} error={error} /></Suspense>}
     </>
   );
 }

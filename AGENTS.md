@@ -21,3 +21,5 @@
 - Private audit access uses verified owner roles in a separate role table, enforced by RLS and every server handler; profiles never grant permissions.
 - Keep private routes under the authenticated layout and out of sitemap; clear protected query data before signing out.
 - Persist AI access pauses in Cloud storage and never retry terminal gateway denials; SDK Responses calls use request-local run IDs and structured streaming output.
+- Keep branded share-image metadata in public leaf routes via the shared helper, never the root, so page-specific previews and titles are not overridden.
+- Use same-origin variable font assets with swap and a sized WebP logo; keep hero content server-visible and defer report code until form interaction to protect first-screen loading.

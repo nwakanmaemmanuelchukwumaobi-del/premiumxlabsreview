@@ -1,20 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useRef, type ReactNode } from "react";
 import { Globe, Share2, Search, Palette, BarChart3, ClipboardList, ScanSearch, Send, Lock } from "lucide-react";
 import { AuditForm } from "@/components/site/AuditForm";
 import { AuditButton } from "@/components/site/Chrome";
-import { ServiceGroups } from "@/components/site/ServiceGrid";
+import { sharingMeta } from "@/lib/sharing-meta";
+
+const ServiceGroups = lazy(() => import("@/components/site/ServiceGrid").then(module => ({ default: module.ServiceGroups })));
 
 export const Route = createFileRoute("/")({
   staticData: { sitemap: true },
   head: () => ({
     meta: [
-      { title: "Free Website, Social, Google Presence, Branding & Ads Audit | premiumxlabs" },
+      { title: "Free Business Audit | premiumxlabs" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "description", content: "Get a free business audit of your website, social media, Google presence, branding and ads. Receive a written report within 48 hours. No login required." },
-      { property: "og:title", content: "Free Website, Social, Google Presence, Branding & Ads Audit | premiumxlabs" },
-      { property: "og:description", content: "Get a free business audit of your website, social media, Google presence, branding and ads. Receive a written report within 48 hours. No login required." },
+      { name: "description", content: "Get a free audit of your website, social media, Google presence, branding and ads. Written report within 48 hours. No login required." },
+      { property: "og:title", content: "Free Business Audit | premiumxlabs" },
+      { property: "og:description", content: "Get a free audit of your website, social media, Google presence, branding and ads. Written report within 48 hours. No login required." },
+      ...sharingMeta("/", "Free Business Audit | premiumxlabs", "Get a free audit of your website, social media, Google presence, branding and ads. Written report within 48 hours. No login required."),
     ],
   }),
   component: Home,
@@ -33,11 +36,11 @@ const STEPS = [
   { icon: Send, title: "Get your report in 48 hours", desc: "Delivered by WhatsApp or email, written in plain language." },
 ];
 
-function Reveal({ children, className = "", delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
+function Reveal({ children, className = "", delay = 0, eager = false }: { children: ReactNode; className?: string; delay?: number; eager?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    if (!el || eager) return;
     const io = new IntersectionObserver(
       ([e]) => {
         if (e?.isIntersecting) {
@@ -49,16 +52,16 @@ function Reveal({ children, className = "", delay = 0 }: { children: ReactNode; 
     );
     io.observe(el);
     return () => io.disconnect();
-  }, []);
+  }, [eager]);
   return (
-    <div ref={ref} className={`reveal ${className}`} style={delay ? { transitionDelay: `${delay}ms` } : undefined}>
+    <div ref={ref} className={`reveal ${eager ? "reveal--eager" : ""} ${className}`} style={delay ? { transitionDelay: `${delay}ms` } : undefined}>
       {children}
     </div>
   );
 }
 
 function Section({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <section className={`px-4 py-20 md:py-28 ${className}`}><div className="mx-auto max-w-6xl">{children}</div></section>;
+  return <section className={`deferred-section px-4 py-20 md:py-28 ${className}`}><div className="mx-auto max-w-6xl">{children}</div></section>;
 }
 function Eyebrow({ children, light = false }: { children: ReactNode; light?: boolean }) {
   return <p className={`text-sm font-bold uppercase tracking-widest ${light ? "text-steel-bright" : "text-cta"}`}>{children}</p>;
@@ -74,7 +77,7 @@ function Home() {
           X
         </div>
         <div className="relative mx-auto grid max-w-6xl items-start gap-12 lg:grid-cols-[1.05fr_1fr]">
-          <Reveal className="lg:sticky lg:top-28">
+          <Reveal eager className="lg:sticky lg:top-28">
             <Eyebrow light>Free business audit</Eyebrow>
             <h1 className="mt-4 text-4xl font-extrabold leading-[1.02] tracking-tight text-navy-foreground sm:text-5xl lg:text-7xl">
               Find Out What's <span className="italic text-steel-bright">Holding Your Business Back.</span>
@@ -95,7 +98,7 @@ function Home() {
               ))}
             </div>
           </Reveal>
-          <Reveal delay={120} className="relative">
+          <Reveal eager className="relative">
             <div className="pointer-events-none absolute -inset-8 rounded-[3rem] bg-cta/25 blur-3xl" aria-hidden />
             <AuditForm glass />
           </Reveal>
@@ -109,7 +112,7 @@ function Home() {
           <h2 className="mt-3 text-3xl font-extrabold sm:text-5xl">Everything you need to grow</h2>
         </Reveal>
         <Reveal delay={100}>
-          <ServiceGroups />
+          <Suspense fallback={<div className="min-h-[800px]" />}><ServiceGroups /></Suspense>
         </Reveal>
       </Section>
 

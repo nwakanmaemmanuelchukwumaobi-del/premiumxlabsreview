@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { ServiceGroups } from "@/components/site/ServiceGrid";
 import { ServiceRequestForm } from "@/components/site/SimpleForms";
+import { sharingMeta } from "@/lib/sharing-meta";
 
 export const Route = createFileRoute("/services")({
   staticData: { sitemap: true },
@@ -14,6 +15,7 @@ export const Route = createFileRoute("/services")({
       { name: "description", content: "Explore premiumxlabs services: campaigns, ads, social media, AI video, branding, business launches, websites, software, mobile apps and AI automation." },
       { property: "og:title", content: "Marketing & Digital Services | premiumxlabs" },
       { property: "og:description", content: "Explore premiumxlabs services: campaigns, ads, social media, AI video, branding, business launches, websites, software, mobile apps and AI automation." },
+      ...sharingMeta("/services", "Marketing & Digital Services | premiumxlabs", "Explore premiumxlabs services: campaigns, ads, social media, AI video, branding, business launches, websites, software, mobile apps and AI automation."),
     ],
   }),
   component: Services,

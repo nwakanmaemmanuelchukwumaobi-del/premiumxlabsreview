@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Globe, MessageCircle, MapPin } from "lucide-react";
 import { AuditButton } from "@/components/site/Chrome";
 import { DIGITAL_SERVICES, LOCATION, WHATSAPP_URL } from "@/lib/site";
-import logo from "@/assets/logo.png.asset.json";
+import logo from "@/assets/logo.webp.asset.json";
+import { sharingMeta } from "@/lib/sharing-meta";
 
 export const Route = createFileRoute("/web-design-abuja")({
   staticData: { sitemap: true },
@@ -14,6 +15,7 @@ export const Route = createFileRoute("/web-design-abuja")({
       { property: "og:description", content: "Website design and development from premiumxlabs in Abuja, Nigeria. Present your business online and give visitors a way to enquire. Start with a free audit." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      ...sharingMeta("/web-design-abuja", "Web Design in Abuja | premiumxlabs", "Website design and development from premiumxlabs in Abuja, Nigeria. Present your business online and give visitors a way to enquire. Start with a free audit."),
     ],
   }),
   component: WebDesignAbuja,
@@ -26,7 +28,7 @@ function WebDesignAbuja() {
       <section className="bg-navy px-4 py-16 text-navy-foreground md:py-20">
         <div className="mx-auto max-w-6xl">
           <Link to="/services" className="text-sm text-navy-foreground/70 hover:underline">Services / Websites</Link>
-          <img src={logo.url} alt="premiumxlabs" className="mt-8 h-16 w-16 rounded-lg" />
+          <img src={logo.url} alt="premiumxlabs" width={64} height={64} loading="eager" decoding="async" className="mt-8 h-16 w-16 rounded-lg" />
           <h1 className="mt-5 max-w-3xl text-4xl font-extrabold leading-tight sm:text-5xl">Web design in Abuja</h1>
           <p className="mt-5 max-w-2xl text-lg text-navy-foreground/80">premiumxlabs designs and develops websites that introduce your business and give visitors a way to enquire. Based in Abuja, Nigeria, we bring website work together with marketing and digital solutions.</p>
           <div className="mt-8 flex flex-wrap items-center gap-6">
