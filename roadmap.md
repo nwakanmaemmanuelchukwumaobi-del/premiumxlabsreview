@@ -1,4 +1,5 @@
 # Audit form update
+- [ ] Add and verify branded 1200x630 social previews and mobile loading improvements without changing design or audit behavior.
 - [x] Redesign result as a mobile-first navy/amber pop-up with loading, numbered findings and WhatsApp CTA; verify both forms.
 - [x] Add and save friendly instant website breakdown, with failure-safe thank-you and private raw results.
 - [x] Add verified owner-only admin access and stored profile data; verify signed-out protection and authorization tests.
