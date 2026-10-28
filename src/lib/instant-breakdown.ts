@@ -15,11 +15,16 @@ export function keyWebsiteFacts(checks: Checks, answers: Pick<z.infer<typeof aud
   const fcp = record(record(checks.pagespeed['metrics'])["first-contentful-paint"])['numericValue'];
   const seconds = checks.pagespeed['status'] === "completed" && typeof fcp === "number" && Number.isFinite(fcp) && fcp >= 0 ? fcp / 1000 : null;
   const text = (k: string) => typeof page[k] === "string" ? String(page[k]).slice(0, 2000) : null;
+  const list = (v: unknown) => Array.isArray(v) ? v.filter((x): x is string => typeof x === "string").slice(0, 8) : null;
+  const tags = record(page['sharing_tags']);
   const flag = (k: string) => typeof page[k] === "boolean" ? page[k] as boolean : null;
   return {
     first_content_seconds_mobile: seconds,
     uses_https: flag("uses_https"), page_title: text("title"), meta_description: text("meta_description"), main_headline: text("main_headline"),
     contact_or_action_found: flag("contact_or_action_present"), social_links_found: flag("social_links_present"),
+    ad_trackers_detected: list(page['ad_trackers_detected']),
+    seo_issues: checks.pagespeed['status'] === "completed" ? list(checks.pagespeed['seo_failed_checks']) : null,
+    sharing_preview: page['sharing_tags'] ? { image: tags["og:image"] === true, title: tags["og:title"] === true, description: tags["og:description"] === true, twitter_card: tags["twitter:card"] === true } : null,
     running_ads: answers.running_ads, ad_platforms: answers.ad_platforms, ad_platform_other: answers.ad_platform_other,
     goals: answers.goals, goals_other: answers.goals_other,
   };
@@ -34,6 +39,12 @@ export function supportedProblems(f: ReturnType<typeof keyWebsiteFacts>, pageCom
     if (!f.main_headline) ids.push("missing_headline");
     if (f.contact_or_action_found === false) ids.push("missing_contact");
     if (f.social_links_found === false) ids.push("missing_social_links");
+    if (f.ad_trackers_detected?.length === 0) ids.push("no_ad_tracking_detected");
+    if (f.sharing_preview && !f.sharing_preview.image) ids.push("missing_share_image");
+    else if (f.sharing_preview && (!f.sharing_preview.title || !f.sharing_preview.description)) ids.push("incomplete_share_preview");
+  }
+  if (f.seo_issues?.length) ids.push("search_visibility_issues");
+  if (pageCompleted) {
   }
   return ids;
 }

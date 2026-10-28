@@ -20,6 +20,7 @@ describe("Post-save audit website checks", () => {
     expect(result.contact_or_action_evidence.map((e) => e.type)).toEqual(["phone", "WhatsApp", "contact/action"]);
     expect(result.social_links).toEqual([{ platform: "instagram.com", url: "https://instagram.com/shop" }]);
   });
+  it("detects ad trackers and sharing tags",()=>{const r=inspectHTML('<meta property="og:title" content="T"><meta name="twitter:card" content="summary"><script src="https://www.googletagmanager.com/gtag/js?id=G-1"></script><script>!function(){}("https://connect.facebook.net/en_US/fbevents.js");ttq.load("X")</script>',"https://a.com","https://a.com");expect(r.ad_trackers_detected).toEqual(["Meta Pixel","Google tag","TikTok Pixel"]);expect(r.sharing_tags_missing).toEqual(["og:description","og:image"]);expect(inspectHTML("<p>x</p>","https://a.com","https://a.com").ad_trackers_detected).toEqual([]);});
   it("records missing page signals instead of inventing them", () => {
     const result = inspectHTML("<p>Nothing here</p>", "https://shop.com", "https://shop.com");
     expect(result.title).toBeNull();
