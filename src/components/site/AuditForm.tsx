@@ -7,6 +7,7 @@ import { AD_OPTIONS, AD_PLATFORMS, AUDIT_GOALS, ONLINE_FIELDS, ONLINE_PLATFORMS,
 import { MultiPicker, OnlinePresencePicker, type OnlineEntry } from "@/components/site/AuditPicker";
 import type { Breakdown } from "@/lib/instant-breakdown";
 import { Button } from "@/components/ui/button";
+import { SUBMISSION_ERROR } from "@/lib/submission-errors";
 
 const loadReport = () => import("@/components/site/InstantReport");
 const InstantReport = lazy(() => loadReport().then(module => ({ default: module.InstantReport })));
@@ -53,8 +54,13 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
       running_ads: get("running_ads"), ad_platforms: hasAdHistory(ads) ? platforms : [],
       ad_platform_other: get("ad_platform_other"), ad_spend: get("ad_spend"),
       report_preference: get("report_preference"),
-      screenshot: file && file.size > 0 ? { name: file.name, type: file.type, base64: await toBase64(file) } : undefined,
+      screenshot: undefined as { name: string; type: string; base64: string } | undefined,
     };
+    try {
+      if (file && file.size > 0) payload.screenshot = { name: file.name, type: file.type, base64: await toBase64(file) };
+    } catch {
+      return setError(SUBMISSION_ERROR);
+    }
     const parsed = auditSchema.safeParse(payload);
     if (!parsed.success) return setError(parsed.error.issues[0]?.message ?? "Please check the form.");
     setBusy(true);
@@ -65,8 +71,8 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
       const response = await send({ data: parsed.data });
       setBreakdown(response.breakdown);
       setDone({ name: parsed.data.name, biz: parsed.data.business_name, pref: parsed.data.report_preference });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+    } catch {
+      setError(SUBMISSION_ERROR);
     } finally {
       setBusy(false);
     }

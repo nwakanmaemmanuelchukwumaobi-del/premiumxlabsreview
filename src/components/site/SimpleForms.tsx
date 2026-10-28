@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { serviceSchema, submitService, contactSchema, submitContact } from "@/lib/forms.functions";
 import { ALL_SERVICES } from "@/lib/site";
+import { SUBMISSION_ERROR } from "@/lib/submission-errors";
 
 const L = "mb-1.5 block text-sm font-medium";
 
@@ -20,7 +21,7 @@ function useSubmit<T>(schema: { safeParse: (d: unknown) => any }, fn: (a: { data
     if (!p.success) return setError(p.error.issues[0]?.message ?? "Please check the form.");
     setBusy(true);
     try { await fn({ data: p.data }); setDone(true); }
-    catch (err) { setError(err instanceof Error ? err.message : "Something went wrong."); }
+    catch { setError(SUBMISSION_ERROR); }
     finally { setBusy(false); }
   }
   return { busy, error, done, onSubmit };
