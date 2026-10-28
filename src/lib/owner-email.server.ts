@@ -17,16 +17,18 @@ function summarizeChecks(checks: any): string[] {
   const out: string[] = [];
   const ps = checks.pagespeed ?? {};
   const pg = checks.page ?? {};
-  out.push(`PageSpeed (mobile): ${ps.status ?? "unknown"}${ps.fcpSeconds != null ? ` — first content ${ps.fcpSeconds}s` : ""}`);
+  const fcp = ps.metrics?.["first-contentful-paint"]?.numericValue;
+  out.push(`PageSpeed (mobile): ${ps.status ?? "unknown"}${typeof fcp === "number" ? ` — first content ${(fcp / 1000).toFixed(1)}s` : ""}`);
   out.push(`Page fetch: ${pg.status ?? "unknown"}`);
   if (pg.status === "completed") {
     const yn = (b: unknown) => (b ? "yes" : "no");
-    if ("https" in pg) out.push(`HTTPS: ${yn(pg.https)}`);
-    if ("title" in pg) out.push(`Title: ${pg.title || "none found"}`);
-    if ("metaDescription" in pg) out.push(`Meta description: ${pg.metaDescription || "none found"}`);
-    if ("headline" in pg) out.push(`Main headline: ${pg.headline || "none found"}`);
-    if ("contactOrCta" in pg) out.push(`Contact / call to action found: ${yn(pg.contactOrCta)}`);
-    if ("socialLinks" in pg) out.push(`Social links found: ${Array.isArray(pg.socialLinks) ? pg.socialLinks.length || "none" : yn(pg.socialLinks)}`);
+    out.push(`HTTPS: ${yn(pg.uses_https)}`);
+    out.push(`Title: ${pg.title || "none found"}`);
+    out.push(`Meta description: ${pg.meta_description || "none found"}`);
+    out.push(`Main headline: ${pg.main_headline || "none found"}`);
+    out.push(`Contact / call to action found: ${yn(pg.contact_or_action_present)}`);
+    out.push(`Social links found: ${yn(pg.social_links_present)}`);
+    out.push(`Ad tracking detected: ${Array.isArray(pg.ad_trackers_detected) && pg.ad_trackers_detected.length ? pg.ad_trackers_detected.join(", ") : "none detected"}`);
   }
   return out;
 }
