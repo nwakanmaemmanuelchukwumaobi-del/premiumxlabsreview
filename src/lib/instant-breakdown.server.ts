@@ -8,9 +8,9 @@ import type { auditSchema } from "./audit-fields";
 
 export async function generateInstantBreakdown(checks: WebsiteChecks, answers: z.infer<typeof auditSchema>): Promise<Breakdown | null> {
   if (checks.status === "no website") return { problems: ["Without a website, customers may have a harder time finding your business and feeling confident enough to contact you. We can help you create a clear online home for your business."], closing: BREAKDOWN_END };
-  const unavailable = checks.status === "skipped" || checks.page.status !== "completed" || checks.pagespeed.status !== "completed";
+  const unavailable = checks.status === "skipped" || checks.page['status'] !== "completed" || checks.pagespeed['status'] !== "completed";
   const facts = keyWebsiteFacts(checks, answers);
-  const allowed = supportedProblems(facts, checks.page.status === "completed");
+  const allowed = supportedProblems(facts, checks.page['status'] === "completed");
   if (!allowed.length) return { problems: [unavailable ? UNREACHABLE : "We didn't find a clear problem in the website checks that completed. Your full audit will take a closer look."], closing: BREAKDOWN_END };
   try {
     const { data: state, error } = await supabaseAdmin.from("audit_ai_state").select("paused").eq("id", true).maybeSingle();

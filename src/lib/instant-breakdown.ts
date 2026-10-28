@@ -11,9 +11,9 @@ export function firstContentBand(seconds: number) {
   return seconds < 1.8 ? "good" : seconds <= 3 ? "needs improvement" : "poor";
 }
 export function keyWebsiteFacts(checks: Checks, answers: Pick<z.infer<typeof auditSchema>, "running_ads" | "ad_platforms" | "ad_platform_other" | "goals" | "goals_other">) {
-  const page = checks.page.status === "completed" ? checks.page : {};
-  const fcp = record(record(checks.pagespeed.metrics)["first-contentful-paint"]).numericValue;
-  const seconds = checks.pagespeed.status === "completed" && typeof fcp === "number" && Number.isFinite(fcp) && fcp >= 0 ? fcp / 1000 : null;
+  const page = checks.page['status'] === "completed" ? checks.page : {};
+  const fcp = record(record(checks.pagespeed['metrics'])["first-contentful-paint"])['numericValue'];
+  const seconds = checks.pagespeed['status'] === "completed" && typeof fcp === "number" && Number.isFinite(fcp) && fcp >= 0 ? fcp / 1000 : null;
   const text = (k: string) => typeof page[k] === "string" ? String(page[k]).slice(0, 2000) : null;
   const flag = (k: string) => typeof page[k] === "boolean" ? page[k] as boolean : null;
   return {
