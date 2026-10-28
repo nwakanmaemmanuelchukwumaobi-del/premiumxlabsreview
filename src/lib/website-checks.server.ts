@@ -26,6 +26,7 @@ export function isPublicAddress(address: string): boolean {
   const parts = address.split(".").map(Number);
   if (parts.length !== 4 || parts.some((p) => !Number.isInteger(p) || p < 0 || p > 255)) return false;
   const [a, b] = parts;
+  if (a === undefined || b === undefined) return false;
   return !(a === 0 || a === 10 || a === 127 || a === 169 && b === 254 || a === 172 && b >= 16 && b <= 31 ||
     a === 192 && (b === 168 || b === 0 || b === 2) || a === 100 && b >= 64 && b <= 127 ||
     a === 198 && (b === 18 || b === 19 || b === 51) || a === 203 && b === 0 || a >= 224);
@@ -71,14 +72,14 @@ export function inspectHTML(html: string, finalURL: string, submittedURL: string
   const elements = findAll(() => true, document.children);
   const clean = (value: string) => value.replace(/\s+/g, " ").trim().slice(0, 2000);
   const title = elements.find((e) => e.name === "title");
-  const description = elements.find((e) => e.name === "meta" && e.attribs.name?.toLowerCase() === "description");
+  const description = elements.find((e) => e.name === "meta" && e.attribs['name']?.toLowerCase() === "description");
   const headline = elements.find((e) => e.name === "h1");
   const contact: { type: string; text: string; href: string | null }[] = [];
   const social: { platform: string; url: string }[] = [];
   const networks = ["instagram.com", "facebook.com", "tiktok.com", "twitter.com", "x.com", "youtube.com", "youtu.be", "linkedin.com", "snapchat.com"];
   for (const element of elements) {
     if (element.name !== "a" && element.name !== "button") continue;
-    const href = element.attribs.href ?? "";
+    const href = element.attribs['href'] ?? "";
     const text = clean(textContent(element));
     const label = `${text} ${element.attribs["aria-label"] ?? ""}`;
     if (/^(tel:|mailto:)/i.test(href) || /(?:wa\.me|api\.whatsapp\.com|web\.whatsapp\.com)/i.test(href) || /\b(contact|call|book|enquir|quote|buy|shop|order|get started|sign up)/i.test(label)) {
@@ -94,7 +95,7 @@ export function inspectHTML(html: string, finalURL: string, submittedURL: string
   }
   return { status: "completed", final_url: finalURL, submitted_uses_https: new URL(submittedURL).protocol === "https:",
     uses_https: new URL(finalURL).protocol === "https:", title: title ? clean(textContent(title)) : null,
-    meta_description: description?.attribs.content ? clean(description.attribs.content) : null,
+    meta_description: description?.attribs['content'] ? clean(description.attribs['content']) : null,
     main_headline: headline ? clean(textContent(headline)) : null,
     contact_or_action_present: contact.length > 0, contact_or_action_evidence: contact.slice(0, 25),
     social_links_present: social.length > 0, social_links: social.slice(0, 25),

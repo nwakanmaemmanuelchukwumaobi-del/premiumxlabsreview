@@ -36,7 +36,7 @@ export const submitAudit = createServerFn({ method: "POST" })
         if (error) throw new Error("Could not store checks");
       },
     );
-    return { ok: true, results };
+    return { ok: true, results_json: JSON.stringify(results) };
   });
 
 export const serviceSchema = z.object({

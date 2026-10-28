@@ -46,9 +46,9 @@ describe("Post-save audit website checks", () => {
       throw new Error("Network failure");
     });
     const result = await runWebsiteChecks("shop.com", "test-credential", request);
-    expect(result.page.status).toBe("skipped");
-    expect(result.pagespeed.performance_score).toBe(0.72);
-    expect(result.pagespeed.metrics).toMatchObject({ "largest-contentful-paint": { numericValue: 2800 } });
+    expect(result.page['status']).toBe("skipped");
+    expect(result.pagespeed['performance_score']).toBe(0.72);
+    expect(result.pagespeed['metrics']).toMatchObject({ "largest-contentful-paint": { numericValue: 2800 } });
   });
   it("skips a missing key but still checks page HTML", async () => {
     const request = vi.fn(async (input: RequestInfo | URL) => {
@@ -56,20 +56,20 @@ describe("Post-save audit website checks", () => {
       return new Response("<title>Business</title>", { headers: { "content-type": "text/html" } });
     });
     const result = await runWebsiteChecks("https://shop.com", undefined, request);
-    expect(result.page.title).toBe("Business");
-    expect(result.pagespeed.reason).toBe("PAGESPEED_API_KEY is not configured");
+    expect(result.page['title']).toBe("Business");
+    expect(result.pagespeed['reason']).toBe("PAGESPEED_API_KEY is not configured");
   });
   it("blocks private DNS and unsafe redirect destinations", async () => {
     const privateDNS = vi.fn(async () => Response.json({ Status: 0, Answer: [{ type: 1, data: "10.0.0.1" }] }));
     const privateResult = await runWebsiteChecks("https://shop.com", undefined, privateDNS);
-    expect(privateResult.page.status).toBe("skipped");
+    expect(privateResult.page['status']).toBe("skipped");
     expect(privateDNS).toHaveBeenCalledTimes(2);
     const redirect = vi.fn(async (input: RequestInfo | URL) => {
       if (new URL(String(input)).hostname === "cloudflare-dns.com") return Response.json({ Status: 0, Answer: [{ type: 1, data: "8.8.8.8" }] });
       return new Response(null, { status: 302, headers: { location: "http://127.0.0.1" } });
     });
     const result = await runWebsiteChecks("https://shop.com", undefined, redirect);
-    expect(result.page.status).toBe("skipped");
+    expect(result.page['status']).toBe("skipped");
     expect(redirect).toHaveBeenCalledTimes(3);
   });
   it("saves before checking and preserves success even if checks and result storage fail", async () => {

@@ -52,7 +52,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
     setBusy(true);
     try {
       const response = await send({ data: parsed.data });
-      setRawResults(response.results);
+      setRawResults(JSON.parse(response.results_json));
       setDone({ name: parsed.data.name, biz: parsed.data.business_name, pref: parsed.data.report_preference });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
