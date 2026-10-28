@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Gift, Unlock, Clock } from "lucide-react";
-import logo from "@/assets/logo.png.asset.json";
+import logo from "@/assets/logo.webp.asset.json";
+import { sharingMeta } from "@/lib/sharing-meta";
 import { AuditForm } from "@/components/site/AuditForm";
 
 export const Route = createFileRoute("/audit")({
@@ -13,6 +14,7 @@ export const Route = createFileRoute("/audit")({
       { name: "description", content: "Free, no login, report in 48 hours. Find out what's holding your business back." },
       { property: "og:title", content: "Get Your Free Business Audit | premiumxlabs" },
       { property: "og:description", content: "Free, no login, written report within 48 hours." },
+      ...sharingMeta("/audit", "Get Your Free Business Audit | premiumxlabs", "Free, no login, written report within 48 hours."),
     ],
   }),
   component: AuditPage,
@@ -30,7 +32,7 @@ function AuditPage() {
       <div className="mx-auto grid max-w-6xl items-start gap-10 lg:grid-cols-[1fr_1.1fr]">
         <div className="lg:sticky lg:top-14">
           <div className="flex items-center gap-2">
-            <img src={logo.url} alt="premiumxlabs logo" className="h-9 w-9 rounded-lg" />
+            <img src={logo.url} alt="premiumxlabs logo" width={36} height={36} loading="eager" decoding="async" className="h-9 w-9 rounded-lg" />
             <span className="font-display text-lg font-extrabold text-navy">premiumxlabs</span>
           </div>
           <h1 className="mt-8 text-4xl font-extrabold leading-[1.05] text-navy sm:text-5xl">

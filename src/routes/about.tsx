@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Rocket, Target, Wrench } from "lucide-react";
 import { AuditButton } from "@/components/site/Chrome";
+import { sharingMeta } from "@/lib/sharing-meta";
 
 export const Route = createFileRoute("/about")({
   staticData: { sitemap: true },
@@ -12,6 +13,7 @@ export const Route = createFileRoute("/about")({
       { name: "description", content: "premiumxlabs helps businesses of every size grow with smart marketing and the right digital tools." },
       { property: "og:title", content: "About | premiumxlabs" },
       { property: "og:description", content: "We plan it, build it and deliver it." },
+      ...sharingMeta("/about", "About | premiumxlabs", "We plan it, build it and deliver it."),
     ],
   }),
   component: About,

@@ -12,6 +12,8 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
+import bodyFont from "@/assets/body-latin.woff2.asset.json";
+import headingFont from "@/assets/heading-latin.woff2.asset.json";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SiteHeader, SiteFooter, MobileAuditBar, WhatsAppFloat } from "@/components/site/Chrome";
 import { supabase } from "@/integrations/supabase/client";
@@ -88,9 +90,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     links: [
       { rel: "stylesheet", href: appCss },
       { rel: "icon", type: "image/png", href: "/favicon.png" },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter+Tight:wght@400;500;600&display=swap" },
+      { rel: "preload", as: "font", type: "font/woff2", href: bodyFont.url, crossOrigin: "anonymous" },
+      { rel: "preload", as: "font", type: "font/woff2", href: headingFont.url, crossOrigin: "anonymous" },
     ],
   }),
   shellComponent: RootShell,

@@ -4,6 +4,41 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Two variable families preserve the existing typography without six weight files
+   or a render-blocking third-party stylesheet. Extended glyphs load only as needed. */
+@font-face {
+  font-family: "Inter Tight";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/__l5e/assets-v1/a2f68be1-4960-47f0-99c0-669267533d2f/body-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Inter Tight";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/__l5e/assets-v1/795ad6c9-1f65-4e2d-93bf-f9897c2bd37c/body-extended.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Montserrat";
+  font-style: normal;
+  font-weight: 600 800;
+  font-display: swap;
+  src: url("/__l5e/assets-v1/29bd1f5f-5513-4965-a2cb-118a4d17768c/heading-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Montserrat";
+  font-style: normal;
+  font-weight: 600 800;
+  font-display: swap;
+  src: url("/__l5e/assets-v1/394d1fce-9695-4d38-9d93-4e161c0792ce/heading-extended.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
 @theme inline {
   --font-sans: "Inter Tight", system-ui, sans-serif;
   --font-display: "Montserrat", system-ui, sans-serif;
@@ -127,6 +162,8 @@
   opacity: 1;
   transform: translateY(0);
 }
+.reveal--eager { opacity: 1; transform: none; transition: none; }
+.deferred-section { content-visibility: auto; contain-intrinsic-size: auto 800px; }
 @media (prefers-reduced-motion: reduce) {
   .reveal { opacity: 1; transform: none; transition: none; }
 }
