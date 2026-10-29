@@ -1,11 +1,11 @@
 # Audit form update
 - [x] Diagnose published audit failures and broken images; verify Lovable submission and sanitize visitor errors without changing design.
-- [ ] Move premiumxlabs.com and www to Lovable hosting (waiting for the domain developer to update DNS).
+- [x] Move premiumxlabs.com and www to Lovable hosting; both domains verified connected.
 - [x] Add and verify branded 1200x630 social previews and mobile loading improvements without changing design or audit behavior.
 - [x] Redesign result as a mobile-first navy/amber pop-up with loading, numbered findings and WhatsApp CTA; verify both forms.
 - [x] Add and save friendly instant website breakdown, with failure-safe thank-you and private raw results.
 - [x] Add verified owner-only admin access and stored profile data; verify signed-out protection and authorization tests.
-- [ ] Verify private inbox readback as the owner (waiting for premuimxlabs@gmail.com to sign in; no auth account exists yet).
+- [x] Verify private inbox readback as the owner on the live HTTPS domain: opened all 12 audits, confirmed 12 saved check results and 9 saved breakdowns; 3 have no saved breakdown. Signed-out access redirects to sign-in. Contact details are shown, but direct reply controls are not present.
 - [x] Save audits first, run resilient website/PageSpeed checks, store and show raw results, and verify submission flows.
 - [x] Add and verify router-derived sitemap and robots.txt reference for all public pages.
 - [x] Research, create and verify one supported Abuja-focused service page linked from Services.
