@@ -1,5 +1,5 @@
 # Audit form update
-- [ ] Diagnose Resend failure, correct recipient and verified sender, preserve saved audits while reporting email failure, and send a test email.
+- [x] Correct recipient, confirm current sender and key with accepted Resend tests, preserve saved audits while reporting email failure; verified saved test audit and breakdown.
 - [x] Diagnose published audit failures and broken images; verify Lovable submission and sanitize visitor errors without changing design.
 - [x] Move premiumxlabs.com and www to Lovable hosting; both domains verified connected.
 - [x] Add and verify branded 1200x630 social previews and mobile loading improvements without changing design or audit behavior.
@@ -15,6 +15,7 @@
 - [x] Verify tests and real submissions on Home and /audit.
 - [x] Replace the combined links field with platform chips and separate saved links.
 - [x] Verify online links on both forms and phone-sized layout.
-- [x] Update audit notifications to the confirmed recipient and subject, include every answer and private screenshot links, and retain save-first visitor success on email failure.
-- [ ] Verify audit email delivery and obtain exact Resend SPF/DKIM values (blocked: Resend rejects the unverified sender domain; existing key allows sending only, not domain-record inspection).
-- [ ] Enable previously requested service notification emails (blocked until an owned sending domain is verified).
+- [x] Update audit notifications to hello@premiumxlabs.com and the requested subject, include every answer and private screenshot links; email failure returns a friendly error after saving.
+- [ ] Confirm inbox delivery (blocked: premiumxlabs.com has no public MX records; domain developer must configure the mailbox provider's receiving records).
+- [ ] Obtain exact Resend SPF/DKIM values if needed (blocked: existing key permits sending but not domain inspection; current sender was accepted).
+- [ ] Enable previously requested service notification emails (outside this audit-only request).
