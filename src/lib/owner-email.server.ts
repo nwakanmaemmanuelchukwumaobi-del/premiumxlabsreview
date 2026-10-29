@@ -4,7 +4,7 @@ import type { Breakdown } from "./instant-breakdown";
 
 type Answers = z.infer<typeof auditSchema>;
 
-export const OWNER_EMAIL_TO = "hello@premuimxlabs.com";
+export const OWNER_EMAIL_TO = "hello@premiumxlabs.com";
 export const OWNER_EMAIL_FROM = "premiumxlabs <notifications@premiumxlabs.com>";
 
 const esc = (v: unknown) =>
