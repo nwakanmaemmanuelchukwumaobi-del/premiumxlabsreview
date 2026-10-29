@@ -24,3 +24,4 @@
 - Persist AI access pauses in Cloud storage and never retry terminal gateway denials; SDK Responses calls use request-local run IDs and structured streaming output.
 - Keep branded share-image metadata in public leaf routes via the shared helper, never the root, so page-specific previews and titles are not overridden.
 - Use same-origin variable font assets with swap and a sized WebP logo; keep hero content server-visible and defer report code until form interaction to protect first-screen loading.
+- Send audit notifications through the server-only owner-email helper after persistence and checks, using bounded delivery and private screenshot links; email outages must not change the saved audit or visitor success.

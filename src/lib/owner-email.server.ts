@@ -4,11 +4,11 @@ import type { Breakdown } from "./instant-breakdown";
 
 type Answers = z.infer<typeof auditSchema>;
 
-export const OWNER_EMAIL_TO = "hello@premiumxlabs.com";
+export const OWNER_EMAIL_TO = "hello@premuimxlabs.com";
 export const OWNER_EMAIL_FROM = "premiumxlabs <notifications@premiumxlabs.com>";
 
 const esc = (v: unknown) =>
-  String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+  String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] ?? c);
 
 function summarizeChecks(checks: any): string[] {
   if (!checks || typeof checks !== "object") return ["No website check results saved."];
@@ -33,7 +33,7 @@ function summarizeChecks(checks: any): string[] {
   return out;
 }
 
-export function buildAuditEmail(a: Answers, breakdown: Breakdown | null, checks: unknown, submittedAt: Date) {
+export function buildAuditEmail(a: Answers, breakdown: Breakdown | null, checks: unknown, submittedAt: Date, screenshotUrl: string | null = null) {
   const website = a.online_links.find((l) => l.platform === "Website")?.link ?? "None";
   const socials = a.online_links.filter((l) => l.platform !== "Website")
     .map((l) => `${l.platform === "Other" ? l.other_name || "Other" : l.platform}: ${l.link}`);
@@ -47,31 +47,37 @@ export function buildAuditEmail(a: Answers, breakdown: Breakdown | null, checks:
     ["Social links", socials.join("\n") || "None"], ["Biggest challenge", a.challenge],
     ["Running ads", a.running_ads], ["Ad platforms", platforms.join(", ") || "—"], ["Monthly ad spend", a.ad_spend || "—"],
     ["Goals", goals.join(", ") || "—"], ["Report via", a.report_preference], ["Submitted", time],
+    ["Uploaded screenshot", a.screenshot ? `${a.screenshot.name}\n${screenshotUrl ?? "Open the saved audit in the private inbox to view the screenshot."}${screenshotUrl ? "\nPrivate download link expires in 7 days; the saved screenshot remains in your inbox." : ""}` : "None"],
   ];
   const bd = breakdown ? [...breakdown.problems, breakdown.closing] : ["No instant breakdown was shown (AI step unavailable)."];
   const cs = summarizeChecks(checks);
 
   const html = `<div style="font-family:Arial,sans-serif;color:#14234D;max-width:640px">
-<h2>New audit request: ${esc(a.business_name)}</h2>
+<h2>New Audit Request: ${esc(a.business_name)}</h2>
 <table style="border-collapse:collapse;width:100%">${rows.map(([k, v]) => `<tr><td style="padding:6px;border-bottom:1px solid #eee;font-weight:bold;vertical-align:top;width:170px">${esc(k)}</td><td style="padding:6px;border-bottom:1px solid #eee;white-space:pre-line">${esc(v)}</td></tr>`).join("")}</table>
 <h3>Instant breakdown shown</h3><ol>${bd.map((p) => `<li>${esc(p)}</li>`).join("")}</ol>
 <h3>Website check summary</h3><ul>${cs.map((c) => `<li>${esc(c)}</li>`).join("")}</ul></div>`;
   const text = [...rows.map(([k, v]) => `${k}: ${v}`), "", "Instant breakdown:", ...bd.map((p) => `- ${p}`), "", "Website checks:", ...cs.map((c) => `- ${c}`)].join("\n");
-  return { subject: `New audit request: ${a.business_name}`, html, text };
+  return { subject: `New Audit Request: ${a.business_name}`, html, text };
 }
 
 /** Never throws; email failures must not affect the submission. */
-export async function sendAuditOwnerEmail(a: Answers, breakdown: Breakdown | null, checks: unknown, id: string | null) {
+export async function sendAuditOwnerEmail(a: Answers, breakdown: Breakdown | null, checks: unknown, id: string | null, submittedAt = new Date(), screenshotUrl: string | null = null) {
   try {
     const key = process.env["RESEND_API_KEY"];
-    if (!key) return false;
-    const { subject, html, text } = buildAuditEmail(a, breakdown, checks, new Date());
+    if (!key) {
+      console.error("Owner email not sent: RESEND_API_KEY is not configured.");
+      return false;
+    }
+    const { subject, html, text } = buildAuditEmail(a, breakdown, checks, submittedAt, screenshotUrl);
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
+      signal: AbortSignal.timeout(15_000),
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json", ...(id ? { "Idempotency-Key": `audit-${id}` } : {}) },
       body: JSON.stringify({ from: OWNER_EMAIL_FROM, to: [OWNER_EMAIL_TO], reply_to: a.email, subject, html, text }),
     });
     if (!res.ok) console.error(`Owner email failed [${res.status}]: ${(await res.text()).slice(0, 300)}`);
+    else console.info("Owner audit notification accepted by Resend.");
     return res.ok;
   } catch {
     console.error("Owner email failed to send.");

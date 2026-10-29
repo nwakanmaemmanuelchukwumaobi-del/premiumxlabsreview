@@ -24,11 +24,12 @@ export const submitAudit = createServerFn({ method: "POST" })
       if (!error) screenshot_path = path;
     }
     const { screenshot: _s, ...row } = data;
+    const submittedAt = new Date();
     let savedId: string | null = null;
     const results = await saveThenCheck(
       async () => {
         const id = crypto.randomUUID();
-        const { error } = await supabaseAdmin.from("audit_requests").insert({ ...row, screenshot_path, id });
+        const { error } = await supabaseAdmin.from("audit_requests").insert({ ...row, screenshot_path, id, created_at: submittedAt.toISOString() });
         if (error) throw new Error("Could not save your request. Please try again.");
         savedId = id;
         return id;
@@ -50,8 +51,15 @@ export const submitAudit = createServerFn({ method: "POST" })
     } catch { /* The audit is saved even if generation or storage fails. */ }
     try {
       const { sendAuditOwnerEmail } = await import("./owner-email.server");
-      await sendAuditOwnerEmail(data, breakdown, results, savedId);
-    } catch { /* Email failures never block a submission. */ }
+      let screenshotUrl: string | null = null;
+      if (screenshot_path) {
+        try {
+          const { data: signed } = await supabaseAdmin.storage.from("audit-screenshots").createSignedUrl(screenshot_path, 7 * 24 * 60 * 60);
+          screenshotUrl = signed?.signedUrl ?? null;
+        } catch { console.error("Owner email screenshot link unavailable; saved audit remains in inbox."); }
+      }
+      await sendAuditOwnerEmail(data, breakdown, results, savedId, submittedAt, screenshotUrl);
+    } catch { console.error("Owner email notification failed; audit submission remains saved."); }
     return { ok: true, breakdown };
   }));
 
