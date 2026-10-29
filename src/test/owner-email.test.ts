@@ -21,7 +21,9 @@ describe("Audit owner notifications", () => {
     vi.spyOn(console, "info").mockImplementation(() => {});
     expect(OWNER_EMAIL_TO).toBe("hello@premuimxlabs.com");
     expect(await sendAuditOwnerEmail(answers, breakdown, {}, "audit-id", date)).toBe(true);
-    const sent = JSON.parse(fetcher.mock.calls[0][1].body);
+    const request = fetcher.mock.calls[0]?.[1];
+    if (!request) throw new Error("Expected an email request");
+    const sent = JSON.parse(request.body);
     expect(sent.to).toEqual(["hello@premuimxlabs.com"]);
   });
   it("uses the exact requested subject", () => {
@@ -37,7 +39,9 @@ describe("Audit owner notifications", () => {
     vi.stubGlobal("fetch", fetcher);
     vi.spyOn(console, "info").mockImplementation(() => {});
     await sendAuditOwnerEmail(answers, null, {}, "audit-id", date);
-    expect(JSON.parse(fetcher.mock.calls[0][1].body).reply_to).toBe("visitor@example.com");
+    const request = fetcher.mock.calls[0]?.[1];
+    if (!request) throw new Error("Expected an email request");
+    expect(JSON.parse(request.body).reply_to).toBe("visitor@example.com");
   });
   it("never throws when Resend rejects a notification", async () => {
     vi.stubEnv("RESEND_API_KEY", "test-only-not-a-credential");
