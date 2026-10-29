@@ -49,6 +49,7 @@ export const submitAudit = createServerFn({ method: "POST" })
         if (!error) breakdown = generated;
       }
     } catch { /* The audit is saved even if generation or storage fails. */ }
+    let emailSent = false;
     try {
       const { sendAuditOwnerEmail } = await import("./owner-email.server");
       let screenshotUrl: string | null = null;
@@ -58,8 +59,9 @@ export const submitAudit = createServerFn({ method: "POST" })
           screenshotUrl = signed?.signedUrl ?? null;
         } catch { console.error("Owner email screenshot link unavailable; saved audit remains in inbox."); }
       }
-      await sendAuditOwnerEmail(data, breakdown, results, savedId, submittedAt, screenshotUrl);
+      emailSent = await sendAuditOwnerEmail(data, breakdown, results, savedId, submittedAt, screenshotUrl);
     } catch { console.error("Owner email notification failed; audit submission remains saved."); }
+    if (!emailSent) throw new Error("Audit saved but owner notification failed.");
     return { ok: true, breakdown };
   }));
 

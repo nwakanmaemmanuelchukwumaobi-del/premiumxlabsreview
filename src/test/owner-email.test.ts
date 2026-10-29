@@ -19,12 +19,13 @@ describe("Audit owner notifications", () => {
     const fetcher = vi.fn().mockResolvedValue(new Response("{}", { status: 200 }));
     vi.stubGlobal("fetch", fetcher);
     vi.spyOn(console, "info").mockImplementation(() => {});
-    expect(OWNER_EMAIL_TO).toBe("hello@premuimxlabs.com");
+    expect(OWNER_EMAIL_TO).toBe("hello@premiumxlabs.com");
     expect(await sendAuditOwnerEmail(answers, breakdown, {}, "audit-id", date)).toBe(true);
     const request = fetcher.mock.calls[0]?.[1];
     if (!request) throw new Error("Expected an email request");
     const sent = JSON.parse(request.body);
-    expect(sent.to).toEqual(["hello@premuimxlabs.com"]);
+    expect(sent.to).toEqual(["hello@premiumxlabs.com"]);
+    expect(sent.from).toBe("premiumxlabs <notifications@premiumxlabs.com>");
   });
   it("uses the exact requested subject", () => {
     expect(buildAuditEmail(answers, null, {}, date).subject).toBe("New Audit Request: Example Studio");
