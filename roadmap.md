@@ -1,4 +1,5 @@
 # Audit form update
+- [ ] Diagnose Resend failure, correct recipient and verified sender, preserve saved audits while reporting email failure, and send a test email.
 - [x] Diagnose published audit failures and broken images; verify Lovable submission and sanitize visitor errors without changing design.
 - [x] Move premiumxlabs.com and www to Lovable hosting; both domains verified connected.
 - [x] Add and verify branded 1200x630 social previews and mobile loading improvements without changing design or audit behavior.
