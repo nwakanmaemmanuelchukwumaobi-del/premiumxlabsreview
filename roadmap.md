@@ -14,4 +14,6 @@
 - [x] Verify tests and real submissions on Home and /audit.
 - [x] Replace the combined links field with platform chips and separate saved links.
 - [x] Verify online links on both forms and phone-sized layout.
-- [ ] Email every audit and service submission to premuimxlabs@gmail.com with all answers, screenshot attachment/link, clear subjects, submitter reply-to, and confirmation/error handling (blocked until an owned sending domain is configured).
+- [x] Update audit notifications to the confirmed recipient and subject, include every answer and private screenshot links, and retain save-first visitor success on email failure.
+- [ ] Verify audit email delivery and obtain exact Resend SPF/DKIM values (blocked: Resend rejects the unverified sender domain; existing key allows sending only, not domain-record inspection).
+- [ ] Enable previously requested service notification emails (blocked until an owned sending domain is verified).
