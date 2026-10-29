@@ -15,7 +15,7 @@
 - [x] Verify tests and real submissions on Home and /audit.
 - [x] Replace the combined links field with platform chips and separate saved links.
 - [x] Verify online links on both forms and phone-sized layout.
-- [x] Update audit notifications to hello@premiumxlabs.com and the requested subject, include every answer and private screenshot links; email failure returns a friendly error after saving.
-- [ ] Confirm inbox delivery (blocked: premiumxlabs.com has no public MX records; domain developer must configure the mailbox provider's receiving records).
+- [x] Update audit notifications to the corrected premuimxlabs@gmail.com recipient and the requested subject, include every answer and private screenshot links; email failure returns a friendly error after saving.
+- [ ] Confirm inbox delivery to the corrected Gmail recipient (provider acceptance does not establish inbox delivery).
 - [ ] Obtain exact Resend SPF/DKIM values if needed (blocked: existing key permits sending but not domain inspection; current sender was accepted).
 - [ ] Enable previously requested service notification emails (outside this audit-only request).
