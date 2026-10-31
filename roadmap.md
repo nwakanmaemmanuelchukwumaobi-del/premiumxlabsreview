@@ -1,9 +1,10 @@
 # Audit form update
-- [ ] Fix mobile header at 360/390/430px and retain desktop labels.
-- [ ] Replace all turnaround promises with 24 hours.
-- [ ] Add international phone selection and validation.
-- [ ] Add optional private social screenshots and owner admin/email signed previews.
-- [ ] Verify mobile submissions with/without images and private owner links; identify existing WhatsApp alert support.
+- [x] Fix mobile header at 360/390/430px and retain desktop labels; visually checked all requested widths and 768/1280px.
+- [x] Replace all turnaround promises with 24 hours; searched source, public content and README.
+- [x] Add international phone selection and validation; verified country search, leading-zero normalization and empty-number error.
+- [x] Add optional private social screenshots and owner admin/email signed previews; verify three-image/5MB/type rules and seven-day signing.
+- [x] Verify mobile submissions with/without images, Resend acceptance, owner inbox images and private links opening; public image access denied. No existing automatic WhatsApp alert is present; visitor WhatsApp links unchanged.
+- [ ] Confirm screenshot links from the delivered email itself (blocked: no access to recipient mailbox; private signed links and email generation verified).
 - [x] Correct recipient, confirm current sender and key with accepted Resend tests, preserve saved audits while reporting email failure; verified saved test audit and breakdown.
 - [x] Diagnose published audit failures and broken images; verify Lovable submission and sanitize visitor errors without changing design.
 - [x] Move premiumxlabs.com and www to Lovable hosting; both domains verified connected.
