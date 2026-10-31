@@ -1,4 +1,5 @@
 # Audit form update
+- [ ] Verify compact /audit first screen, direct visits/refresh, page title and static sharing tags; keep homepage unchanged.
 - [x] Fix mobile header at 360/390/430px and retain desktop labels; visually checked all requested widths and 768/1280px.
 - [x] Replace all turnaround promises with 24 hours; searched source, public content and README.
 - [x] Add international phone selection and validation; verified country search, leading-zero normalization and empty-number error.
