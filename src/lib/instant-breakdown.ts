@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { auditSchema } from "./audit-fields";
 
-export const BREAKDOWN_END = "This is a quick look at your website only. Your full audit covering Google, social media, branding and ads is being prepared and will be sent on WhatsApp within 48 hours.";
+export const BREAKDOWN_END = "This is a quick look at your website only. Your full audit covering Google, social media, branding and ads is being prepared and will be sent on WhatsApp within 24 hours.";
 export const UNREACHABLE = "We couldn't reach this website. Please double-check the address, or it may be temporarily unavailable.";
 export const breakdownSchema = z.object({ problems: z.array(z.object({ fact: z.string(), text: z.string() }).strict()) }).strict();
 export type Breakdown = { problems: string[]; closing: string };

@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { auditSchema } from "@/lib/audit-fields";
 import { withSafeSubmission } from "@/lib/submission-errors";
+import { matchesImageType, type SignedProfileImage, type StoredProfileImage } from "./profile-screenshots";
 
 export { auditSchema } from "@/lib/audit-fields";
 
@@ -24,14 +25,34 @@ export const submitAudit = createServerFn({ method: "POST" })
       if (!error) screenshot_path = path;
     }
     const { screenshot: _s, ...row } = data;
+    const onlineLinks = data.online_links.map(({ screenshots: _images, ...entry }) => ({ ...entry, screenshots: [] as StoredProfileImage[] }));
+    const signedProfileImages: SignedProfileImage[] = [];
     const submittedAt = new Date();
     let savedId: string | null = null;
     const results = await saveThenCheck(
       async () => {
         const id = crypto.randomUUID();
-        const { error } = await supabaseAdmin.from("audit_requests").insert({ ...row, screenshot_path, id, created_at: submittedAt.toISOString() });
+        const { error } = await supabaseAdmin.from("audit_requests").insert({ ...row, online_links: onlineLinks, screenshot_path, id, created_at: submittedAt.toISOString() });
         if (error) throw new Error("Could not save your request. Please try again.");
         savedId = id;
+        for (const [index, entry] of data.online_links.entries()) {
+          const stored = onlineLinks[index];
+          if (!stored) continue;
+          for (const image of entry.screenshots) {
+            const bytes = Uint8Array.from(atob(image.base64), c => c.charCodeAt(0));
+            if (!matchesImageType(bytes, image.type)) throw new Error("Invalid screenshot content");
+            const extension = image.type === "image/jpeg" ? "jpg" : image.type === "image/webp" ? "webp" : "png";
+            const path = `${id}/${crypto.randomUUID()}.${extension}`;
+            const { error: uploadError } = await supabaseAdmin.storage.from("audit-screenshots").upload(path, bytes, { contentType: image.type });
+            if (uploadError) throw new Error("Could not save screenshot");
+            stored.screenshots.push({ name: image.name, path });
+            const { error: storeError } = await supabaseAdmin.from("audit_requests").update({ online_links: onlineLinks }).eq("id", id);
+            if (storeError) throw new Error("Could not record screenshot");
+            const { data: signed, error: signError } = await supabaseAdmin.storage.from("audit-screenshots").createSignedUrl(path, 7 * 24 * 60 * 60);
+            if (signError || !signed?.signedUrl) throw new Error("Could not prepare private screenshot link");
+            signedProfileImages.push({ platform: entry.platform === "Other" ? entry.other_name ?? "Other" : entry.platform, name: image.name, url: signed.signedUrl });
+          }
+        }
         return id;
       },
       () => runWebsiteChecks(data.online_links.find((entry) => entry.platform === "Website")?.link, process.env['PAGESPEED_API_KEY']),
@@ -59,7 +80,7 @@ export const submitAudit = createServerFn({ method: "POST" })
           screenshotUrl = signed?.signedUrl ?? null;
         } catch { console.error("Owner email screenshot link unavailable; saved audit remains in inbox."); }
       }
-      emailSent = await sendAuditOwnerEmail(data, breakdown, results, savedId, submittedAt, screenshotUrl);
+      emailSent = await sendAuditOwnerEmail(data, breakdown, results, savedId, submittedAt, screenshotUrl, signedProfileImages);
     } catch { console.error("Owner email notification failed; audit submission remains saved."); }
     if (!emailSent) throw new Error("Audit saved but owner notification failed.");
     return { ok: true, breakdown };

@@ -1,6 +1,7 @@
 import type { z } from "zod";
 import type { auditSchema } from "./audit-fields";
 import type { Breakdown } from "./instant-breakdown";
+import type { SignedProfileImage } from "./profile-screenshots";
 
 type Answers = z.infer<typeof auditSchema>;
 
@@ -33,7 +34,7 @@ function summarizeChecks(checks: any): string[] {
   return out;
 }
 
-export function buildAuditEmail(a: Answers, breakdown: Breakdown | null, checks: unknown, submittedAt: Date, screenshotUrl: string | null = null) {
+export function buildAuditEmail(a: Answers, breakdown: Breakdown | null, checks: unknown, submittedAt: Date, screenshotUrl: string | null = null, profileImages: SignedProfileImage[] = []) {
   const website = a.online_links.find((l) => l.platform === "Website")?.link ?? "None";
   const socials = a.online_links.filter((l) => l.platform !== "Website")
     .map((l) => `${l.platform === "Other" ? l.other_name || "Other" : l.platform}: ${l.link}`);
@@ -51,25 +52,26 @@ export function buildAuditEmail(a: Answers, breakdown: Breakdown | null, checks:
   ];
   const bd = breakdown ? [...breakdown.problems, breakdown.closing] : ["No instant breakdown was shown (AI step unavailable)."];
   const cs = summarizeChecks(checks);
+  const imageHtml = profileImages.length ? `<h3>Screenshots</h3><p>Private links expire after 7 days.</p>${profileImages.map(image => `<p><strong>${esc(image.platform)}</strong><br><a href="${esc(image.url)}">${esc(image.name)}<br><img src="${esc(image.url)}" alt="${esc(image.platform)} profile screenshot" width="160" style="max-width:160px;height:auto;margin-top:8px"></a></p>`).join("")}` : "";
 
   const html = `<div style="font-family:Arial,sans-serif;color:#14234D;max-width:640px">
 <h2>New Audit Request: ${esc(a.business_name)}</h2>
 <table style="border-collapse:collapse;width:100%">${rows.map(([k, v]) => `<tr><td style="padding:6px;border-bottom:1px solid #eee;font-weight:bold;vertical-align:top;width:170px">${esc(k)}</td><td style="padding:6px;border-bottom:1px solid #eee;white-space:pre-line">${esc(v)}</td></tr>`).join("")}</table>
 <h3>Instant breakdown shown</h3><ol>${bd.map((p) => `<li>${esc(p)}</li>`).join("")}</ol>
-<h3>Website check summary</h3><ul>${cs.map((c) => `<li>${esc(c)}</li>`).join("")}</ul></div>`;
-  const text = [...rows.map(([k, v]) => `${k}: ${v}`), "", "Instant breakdown:", ...bd.map((p) => `- ${p}`), "", "Website checks:", ...cs.map((c) => `- ${c}`)].join("\n");
+<h3>Website check summary</h3><ul>${cs.map((c) => `<li>${esc(c)}</li>`).join("")}</ul>${imageHtml}</div>`;
+  const text = [...rows.map(([k, v]) => `${k}: ${v}`), "", "Instant breakdown:", ...bd.map((p) => `- ${p}`), "", "Website checks:", ...cs.map((c) => `- ${c}`), ...(profileImages.length ? ["", "Screenshots (private links expire after 7 days):", ...profileImages.map(image => `${image.platform} — ${image.name}: ${image.url}`)] : [])].join("\n");
   return { subject: `New Audit Request: ${a.business_name}`, html, text };
 }
 
 /** Never throws; email failures must not affect the submission. */
-export async function sendAuditOwnerEmail(a: Answers, breakdown: Breakdown | null, checks: unknown, id: string | null, submittedAt = new Date(), screenshotUrl: string | null = null) {
+export async function sendAuditOwnerEmail(a: Answers, breakdown: Breakdown | null, checks: unknown, id: string | null, submittedAt = new Date(), screenshotUrl: string | null = null, profileImages: SignedProfileImage[] = []) {
   try {
     const key = process.env["RESEND_API_KEY"];
     if (!key) {
       console.error("Owner email not sent: RESEND_API_KEY is not configured.");
       return false;
     }
-    const { subject, html, text } = buildAuditEmail(a, breakdown, checks, submittedAt, screenshotUrl);
+    const { subject, html, text } = buildAuditEmail(a, breakdown, checks, submittedAt, screenshotUrl, profileImages);
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       signal: AbortSignal.timeout(15_000),

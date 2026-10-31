@@ -11,10 +11,10 @@ export const Route = createFileRoute("/audit")({
       { title: "Get Your Free Business Audit | premiumxlabs" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "description", content: "Free, no login, report in 48 hours. Find out what's holding your business back." },
+      { name: "description", content: "Free, no login, report in 24 hours. Find out what's holding your business back." },
       { property: "og:title", content: "Get Your Free Business Audit | premiumxlabs" },
-      { property: "og:description", content: "Free, no login, written report within 48 hours." },
-      ...sharingMeta("/audit", "Get Your Free Business Audit | premiumxlabs", "Free, no login, written report within 48 hours."),
+      { property: "og:description", content: "Free, no login, written report within 24 hours." },
+      ...sharingMeta("/audit", "Get Your Free Business Audit | premiumxlabs", "Free, no login, written report within 24 hours."),
     ],
   }),
   component: AuditPage,
@@ -23,7 +23,7 @@ export const Route = createFileRoute("/audit")({
 const BENEFITS = [
   { icon: Gift, text: "100% free" },
   { icon: Unlock, text: "No login needed" },
-  { icon: Clock, text: "Report in 48 hours" },
+  { icon: Clock, text: "Report in 24 hours" },
 ];
 
 function AuditPage() {
@@ -39,7 +39,7 @@ function AuditPage() {
             Find Out What's Holding Your Business Back.
           </h1>
           <p className="mt-4 text-lg text-muted-foreground">
-            Tell us about your business and get a clear, written audit report within 48 hours.
+            Tell us about your business and get a clear, written audit report within 24 hours.
           </p>
           <ul className="mt-6 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
             {BENEFITS.map((b) => (

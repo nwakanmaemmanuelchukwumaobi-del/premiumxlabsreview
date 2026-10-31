@@ -44,6 +44,21 @@ describe("Audit owner notifications", () => {
     if (!request) throw new Error("Expected an email request");
     expect(JSON.parse(request.body).reply_to).toBe("visitor@example.com");
   });
+  it("includes private platform image previews and links, without attachments", async () => {
+    const images = [{ platform: "Instagram", name: "profile.png", url: "https://example.com/signed-profile" }];
+    const email = buildAuditEmail(answers, null, {}, date, null, images);
+    expect(email.html).toContain('<a href="https://example.com/signed-profile">');
+    expect(email.html).toContain('<img src="https://example.com/signed-profile"');
+    expect(email.text).toContain("Instagram — profile.png: https://example.com/signed-profile");
+    expect(email.text).toContain("expire after 7 days");
+    vi.stubEnv("RESEND_API_KEY", "test-only");
+    const fetcher = vi.fn().mockResolvedValue(new Response("{}", { status: 200 })); vi.stubGlobal("fetch", fetcher);
+    await sendAuditOwnerEmail(answers, null, {}, "test", date, null, images);
+    expect(JSON.parse(fetcher.mock.calls[0]?.[1]?.body)).not.toHaveProperty("attachments");
+  });
+  it("omits profile screenshot section when none were added", () => {
+    expect(buildAuditEmail(answers, null, {}, date).html).not.toContain("<h3>Screenshots</h3>");
+  });
   it("never throws when Resend rejects a notification", async () => {
     vi.stubEnv("RESEND_API_KEY", "test-only-not-a-credential");
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response('{"message":"domain not verified"}', { status: 403 })));

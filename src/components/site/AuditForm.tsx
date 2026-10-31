@@ -8,6 +8,8 @@ import { MultiPicker, OnlinePresencePicker, type OnlineEntry } from "@/component
 import type { Breakdown } from "@/lib/instant-breakdown";
 import { Button } from "@/components/ui/button";
 import { SUBMISSION_ERROR } from "@/lib/submission-errors";
+import { AuditPhone } from "./AuditPhone";
+import { internationalPhone, type CountryCode } from "@/lib/audit-phone";
 
 const loadReport = () => import("@/components/site/InstantReport");
 const InstantReport = lazy(() => loadReport().then(module => ({ default: module.InstantReport })));
@@ -44,11 +46,15 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
     const get = (k: string) => (fd.get(k) as string | null)?.trim() || undefined;
     const file = fd.get("screenshot") as File | null;
     if (file && file.size > 5 * 1024 * 1024) return setError("Screenshot must be under 5MB.");
+    let phone: string;
+    try { phone = internationalPhone(get("whatsapp") ?? "", (get("phone_country") ?? "NG") as CountryCode); }
+    catch { return setError("Enter a valid WhatsApp number; it is empty or too short."); }
     const payload = {
-      name: get("name"), business_name: get("business_name"), email: get("email"), whatsapp: get("whatsapp"),
+      name: get("name"), business_name: get("business_name"), email: get("email"), whatsapp: phone,
       industry_location: get("industry_location"), challenge: get("challenge"),
       online_links: onlineEntries.map(({ platform }) => ({
         platform, link: get(`online_link_${platform}`), other_name: platform === "Other" ? get("online_other_name") : null,
+        screenshots: [] as { name: string; type: "image/png" | "image/jpeg" | "image/webp"; base64: string }[],
       })),
       goals, goals_other: get("goals_other"),
       running_ads: get("running_ads"), ad_platforms: hasAdHistory(ads) ? platforms : [],
@@ -57,6 +63,11 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
       screenshot: undefined as { name: string; type: string; base64: string } | undefined,
     };
     try {
+      for (const [index, entry] of onlineEntries.entries()) {
+        const target = payload.online_links[index];
+        if (!target) continue;
+        for (const image of entry.screenshots ?? []) target.screenshots.push({ name: image.name, type: image.type as "image/png" | "image/jpeg" | "image/webp", base64: await toBase64(image) });
+      }
       if (file && file.size > 0) payload.screenshot = { name: file.name, type: file.type, base64: await toBase64(file) };
     } catch {
       return setError(SUBMISSION_ERROR);
@@ -86,7 +97,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
         <h3 className="mt-4 text-2xl font-bold">Thank you, {done.name}.</h3>
         <p className="mt-3 text-muted-foreground">
           Your audit request has been received. Our team will review <strong className="text-navy">{done.biz}</strong> and
-          send your full report via <strong className="text-navy">{done.pref}</strong> within 48 hours.
+          send your full report via <strong className="text-navy">{done.pref}</strong> within 24 hours.
         </p>
         <p className="mt-4 text-sm">
           Questions? <a href={WHATSAPP_URL} target="_blank" rel="noreferrer" className="font-semibold text-cta underline">Message us on WhatsApp.</a>
@@ -111,7 +122,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
         <div><label className={L}>Your name</label><input name="name" className="field" required /></div>
         <div><label className={L}>Business name</label><input name="business_name" className="field" required /></div>
         <div><label className={L}>Email</label><input name="email" type="email" className="field" required /></div>
-        <div><label className={L}>WhatsApp number</label><input name="whatsapp" type="tel" className="field" placeholder="+234…" required /></div>
+        <AuditPhone />
         <div className="sm:col-span-2"><label className={L}>Industry & location</label><input name="industry_location" className="field" placeholder="e.g. Restaurant, Abuja" required /></div>
         <OnlinePresencePicker entries={onlineEntries} onChange={setOnlineEntries} fields={ONLINE_FIELDS} platforms={ONLINE_PLATFORMS} />
         <div className="sm:col-span-2">
@@ -148,10 +159,10 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
         </div>
       </div>
       {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
-      <button disabled={busy} className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-cta px-6 py-4 font-semibold text-cta-foreground shadow-lg shadow-cta/25 transition hover:brightness-110 disabled:opacity-60">
+      <Button type="submit" disabled={busy} className="mt-6 inline-flex h-auto w-full items-center justify-center gap-2 rounded-full bg-cta px-6 py-4 font-semibold text-cta-foreground shadow-lg shadow-cta/25 transition hover:brightness-110 disabled:opacity-60">
         {busy && <Loader2 className="h-4 w-4 animate-spin" />} Get My Free Audit
-      </button>
-      <p className="mt-3 text-center text-xs text-muted-foreground">Report delivered within 48 hours.</p>
+      </Button>
+      <p className="mt-3 text-center text-xs text-muted-foreground">Report delivered within 24 hours.</p>
     </form>
     {reportOpen && <Suspense fallback={null}><InstantReport open={reportOpen} onOpenChange={setReportOpen} busy={busy} breakdown={breakdown} client={reportClient} website={reportWebsite} error={error} /></Suspense>}
     </>

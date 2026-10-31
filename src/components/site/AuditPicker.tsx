@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Check, ChevronDown, Plus, X } from "lucide-react";
+import { ProfileScreenshots } from "./ProfileScreenshots";
 
 /**
  * Shared collapsed "box" for the audit form: a rounded box with a chevron
@@ -177,7 +178,7 @@ export function MultiPicker({
   );
 }
 
-export type OnlineEntry = { platform: string; key: number };
+export type OnlineEntry = { platform: string; key: number; screenshots?: File[] };
 
 /** Online presence: box opens a list of platforms; each pick adds a labeled input with a remove button. */
 export function OnlinePresencePicker({
@@ -265,6 +266,7 @@ export function OnlinePresencePicker({
                     <X aria-hidden="true" className="h-4 w-4" />
                   </button>
                 </div>
+                {platform !== "Website" && <ProfileScreenshots platform={platform} files={entries.find(e => e.key === key)?.screenshots ?? []} onChange={screenshots => onChange(entries.map(e => e.key === key ? { ...e, screenshots } : e))} />}
               </div>
             );
           })}
