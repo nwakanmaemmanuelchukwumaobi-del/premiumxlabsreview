@@ -1,4 +1,9 @@
 # Audit form update
+- [ ] Fix mobile header at 360/390/430px and retain desktop labels.
+- [ ] Replace all turnaround promises with 24 hours.
+- [ ] Add international phone selection and validation.
+- [ ] Add optional private social screenshots and owner admin/email signed previews.
+- [ ] Verify mobile submissions with/without images and private owner links; identify existing WhatsApp alert support.
 - [x] Correct recipient, confirm current sender and key with accepted Resend tests, preserve saved audits while reporting email failure; verified saved test audit and breakdown.
 - [x] Diagnose published audit failures and broken images; verify Lovable submission and sanitize visitor errors without changing design.
 - [x] Move premiumxlabs.com and www to Lovable hosting; both domains verified connected.
