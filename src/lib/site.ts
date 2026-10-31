@@ -1,7 +1,7 @@
 export const WHATSAPP_URL =
   "https://wa.me/2349034340796?text=" +
   encodeURIComponent("Hi premiumxlabs, I'd like to know more about your services.");
-export const CONTACT_EMAIL = "hello@premuimxlabs.com";
+export const CONTACT_EMAIL = "premuimxlabs@gmail.com";
 export const LOCATION = "Abuja, Nigeria";
 
 export const MARKETING_SERVICES = [
