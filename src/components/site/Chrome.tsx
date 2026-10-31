@@ -4,12 +4,13 @@ import { Menu, X, MessageCircle, Mail, MapPin, ArrowRight } from "lucide-react";
 import logo from "@/assets/logo.webp.asset.json";
 import { WHATSAPP_URL, CONTACT_EMAIL, LOCATION } from "@/lib/site";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export function AuditButton({ className = "", label = "Get My Free Audit" }: { className?: string; label?: string }) {
   return (
     <Link
       to="/audit"
-      className={`inline-flex items-center justify-center gap-2 rounded-full bg-cta px-5 py-3 text-sm font-semibold text-cta-foreground shadow-lg shadow-cta/25 transition hover:brightness-110 ${className}`}
+      className={cn("inline-flex items-center justify-center gap-2 rounded-full bg-cta px-5 py-3 text-sm font-semibold text-cta-foreground shadow-lg shadow-cta/25 transition hover:brightness-110", className)}
     >
       {label} <ArrowRight className="h-4 w-4" />
     </Link>
@@ -26,7 +27,7 @@ const NAV = [
 export function Logo({ light = false, lazy = false }: { light?: boolean; lazy?: boolean }) {
   return (
     <Link to="/" className="flex shrink-0 items-center gap-2 whitespace-nowrap">
-      <img src={logo.url} alt="premiumxlabs logo" width={36} height={36} loading={lazy ? "lazy" : "eager"} decoding="async" className="h-9 w-9 rounded-lg" />
+      <img src={logo.url} alt="premiumxlabs logo" width={36} height={36} loading={lazy ? "lazy" : "eager"} decoding="async" className="h-9 w-9 shrink-0 rounded-lg" />
       <span className={`font-display text-lg font-extrabold tracking-tight ${light ? "text-navy-foreground" : "text-navy"}`}>
         premiumxlabs
       </span>
