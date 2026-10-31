@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { requireOwnerAccess } from "./admin-access";
+import { storedProfileImages } from "./profile-screenshots";
 export const getAuditSubmissions = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth])
   .inputValidator((value: unknown) => z.object({ offset: z.number().int().min(0) }).parse(value))
   .handler(async ({ context, data }) => {
@@ -12,7 +13,15 @@ export const getAuditSubmissions = createServerFn({ method: "POST" }).middleware
     const { data: profile } = await context.supabase.from("profiles").select("display_name").eq("id",context.userId).maybeSingle();
     return { rows: await Promise.all((rows ?? []).map(async row => {
       const { data: screenshot } = row.screenshot_path ? await context.supabase.storage.from("audit-screenshots").createSignedUrl(row.screenshot_path, 3600) : { data: null };
-      return { ...row, screenshot_url: screenshot?.signedUrl ?? null };
+      const profile_images = await Promise.all((Array.isArray(row.online_links) ? row.online_links : []).flatMap(entry => {
+        if (!entry || typeof entry !== "object" || Array.isArray(entry)) return [];
+        const platform = String(entry['platform'] === "Other" ? entry['other_name'] ?? "Other" : entry['platform']);
+        return storedProfileImages(entry['screenshots']).map(async image => {
+          const { data: signed } = await context.supabase.storage.from("audit-screenshots").createSignedUrl(image.path, 3600);
+          return { platform, name: image.name, url: signed?.signedUrl ?? null };
+        });
+      }));
+      return { ...row, screenshot_url: screenshot?.signedUrl ?? null, profile_images };
     })), displayName: profile?.display_name ?? "" };
   });
 export const saveOwnerProfile = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth])
