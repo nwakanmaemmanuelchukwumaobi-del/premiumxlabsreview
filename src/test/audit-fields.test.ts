@@ -57,9 +57,9 @@ describe("Audit answers", () => {
       { platform: "Other", link: "https://pinterest.com/testbusiness", other_name: " Pinterest " },
     ] });
     expect(result.online_links).toEqual([
-      { platform: "Website", link: "https://example.com", other_name: null },
-      { platform: "Instagram", link: "@testbusiness", other_name: null },
-      { platform: "Other", link: "https://pinterest.com/testbusiness", other_name: "Pinterest" },
+      { platform: "Website", link: "https://example.com", other_name: null, screenshots: [] },
+      { platform: "Instagram", link: "@testbusiness", other_name: null, screenshots: [] },
+      { platform: "Other", link: "https://pinterest.com/testbusiness", other_name: "Pinterest", screenshots: [] },
     ]);
     expect(auditSchema.parse(result).online_links).toEqual(result.online_links);
   });

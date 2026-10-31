@@ -15,9 +15,9 @@ Navbar with a "Get My Free Audit" button always visible. On mobile, a sticky bot
 WhatsApp number: 2349034340796. All WhatsApp links open https://wa.me/2349034340796 with the pre-filled message "Hi premiumxlabs, I'd like to know more about your services."
 
 HOMEPAGE (in order)
-1. Hero. Headline: "Find Out What's Holding Your Business Back." Subheadline: "Whether you're just starting or already spending on ads, we'll show you what's not working. Tell us about your business and get a clear report within 48 hours." Place the audit form directly in the hero beside the headline.
+1. Hero. Headline: "Find Out What's Holding Your Business Back." Subheadline: "Whether you're just starting or already spending on ads, we'll show you what's not working. Tell us about your business and get a clear report within 24 hours." Place the audit form directly in the hero beside the headline.
 2. What we audit (5 icons): Website, Social Media, Google Presence, Branding, Ads & Marketing Activity.
-3. How it works (3 steps): Tell us about your business → We audit it → Get your report in 48 hours by WhatsApp or email.
+3. How it works (3 steps): Tell us about your business → We audit it → Get your report in 24 hours by WhatsApp or email.
 4. Sample audit preview. Label it "Sample audit, example only". Show one fictional business with one fully visible section (Google Presence) in this format: What we found / Why it matters / Recommendation. Show the other sections as titles only, blurred. Do NOT use scores or ratings. Reports explain problems and recommendations in writing.
 5. Services in two groups. Marketing: campaign planning and launches, ads, social media management, AI video content, branding, new business launch support. Digital solutions: websites, software, mobile apps, AI automation. Each card button says "Request This Service" and goes to the request form on the Services page.
 6. About: "We're a marketing and digital solutions company. We help businesses of every size, from startups to established companies, grow with smart marketing and the right digital tools. From launching a new business to running a full marketing campaign, we plan it, build it and deliver it."
@@ -25,13 +25,13 @@ HOMEPAGE (in order)
 8. Footer in deep navy with page links and contact details.
 
 AUDIT LANDING PAGE (/audit)
-For ad traffic. No navigation menu. Show the headline, three short benefits (free, no login, report in 48 hours) and the audit form immediately. Keep the floating WhatsApp button.
+For ad traffic. No navigation menu. Show the headline, three short benefits (free, no login, report in 24 hours) and the audit form immediately. Keep the floating WhatsApp button.
 
 AUDIT FORM (same on homepage hero and /audit, no login)
 Fields: name, business name, email, WhatsApp number, industry and location, website and social media links, biggest challenge (dropdown: few customers, low sales, no online presence, weak branding, other), "Are you running ads now?" (Yes and getting results / Yes but not getting results / No, never / Used to; if yes, ask platform and rough monthly spend, with optional screenshot upload), and report preference (WhatsApp or email).
 Do NOT ask what services they need. The audit is only a lead magnet.
 Save all submissions to a database and send a notification to premuimxlabs@gmail.com.
-After submit: "Thank you, [Name]. Your audit request has been received. Our team will review [Business Name] and send your full report via [WhatsApp/Email] within 48 hours. Questions? Message us on WhatsApp."
+After submit: "Thank you, [Name]. Your audit request has been received. Our team will review [Business Name] and send your full report via [WhatsApp/Email] within 24 hours. Questions? Message us on WhatsApp."
 
 SERVICES PAGE
 Expands the two service groups. Includes a short "Request a Service" form for people who came for a service, not the audit: name, business name, WhatsApp or email, which service (dropdown), and a short description of what they need. Save submissions and notify premuimxlabs@gmail.com. Add a note: "Not sure where to start? Get a free audit."
