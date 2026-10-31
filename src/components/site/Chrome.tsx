@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Menu, X, MessageCircle, Mail, MapPin, ArrowRight } from "lucide-react";
 import logo from "@/assets/logo.webp.asset.json";
 import { WHATSAPP_URL, CONTACT_EMAIL, LOCATION } from "@/lib/site";
+import { Button } from "@/components/ui/button";
 
 export function AuditButton({ className = "", label = "Get My Free Audit" }: { className?: string; label?: string }) {
   return (
@@ -24,7 +25,7 @@ const NAV = [
 
 export function Logo({ light = false, lazy = false }: { light?: boolean; lazy?: boolean }) {
   return (
-    <Link to="/" className="flex items-center gap-2">
+    <Link to="/" className="flex shrink-0 items-center gap-2 whitespace-nowrap">
       <img src={logo.url} alt="premiumxlabs logo" width={36} height={36} loading={lazy ? "lazy" : "eager"} decoding="async" className="h-9 w-9 rounded-lg" />
       <span className={`font-display text-lg font-extrabold tracking-tight ${light ? "text-navy-foreground" : "text-navy"}`}>
         premiumxlabs
@@ -37,7 +38,7 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+      <div className="mx-auto grid h-16 max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-1 px-3 sm:flex sm:justify-between sm:px-4">
         <Logo />
         <nav className="hidden items-center gap-8 md:flex">
           {NAV.map((n) => (
@@ -46,11 +47,12 @@ export function SiteHeader() {
             </Link>
           ))}
         </nav>
-        <div className="flex items-center gap-2">
-          <AuditButton className="hidden px-4 py-2 sm:inline-flex" />
-          <button className="rounded-lg p-2 md:hidden" onClick={() => setOpen(!open)} aria-label="Menu">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          <AuditButton className="whitespace-nowrap px-2.5 py-2 text-xs sm:hidden" label="Free Audit" />
+          <AuditButton className="hidden whitespace-nowrap px-4 py-2 sm:inline-flex" />
+          <Button type="button" variant="ghost" size="icon" className="h-8 w-8 rounded-lg md:hidden" onClick={() => setOpen(!open)} aria-label="Menu">
             {open ? <X /> : <Menu />}
-          </button>
+          </Button>
         </div>
       </div>
       {open && (

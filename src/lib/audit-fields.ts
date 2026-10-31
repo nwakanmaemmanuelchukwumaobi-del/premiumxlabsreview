@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { internationalPhoneSchema } from "./audit-phone";
+import { profileScreenshotSchema } from "./profile-screenshots";
 
 export const AD_OPTIONS = ["Yes and getting results", "Yes but not getting results", "No, never", "Used to"] as const;
 export const AD_PLATFORMS = ["Facebook / Instagram (Meta)", "Google Ads", "TikTok", "YouTube", "Snapchat", "X (Twitter)", "LinkedIn", "Influencer or promoted posts", "Other"] as const;
@@ -20,9 +22,12 @@ export const onlineLinksSchema = z.array(z.object({
   platform: z.enum(ONLINE_PLATFORMS),
   link: z.string().trim().min(1, "Please enter your selected platform’s handle or link").max(1000),
   other_name: z.string().trim().max(150).nullish(),
+  screenshots: z.array(profileScreenshotSchema).max(3, "Add up to 3 screenshots per platform.").default([]),
 }).superRefine((entry, ctx) => {
   if (entry.platform === "Other" && !entry.other_name)
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["other_name"], message: "Please enter the other platform’s name" });
+  if (entry.platform === "Website" && entry.screenshots.length)
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["screenshots"], message: "Profile screenshots belong to social platforms." });
 }).transform((entry) => ({ ...entry, other_name: entry.platform === "Other" ? entry.other_name ?? null : null })))
   .max(ONLINE_PLATFORMS.length)
   .refine((entries) => new Set(entries.map((entry) => entry.platform)).size === entries.length, "Each platform can only be selected once")
@@ -39,7 +44,7 @@ export const auditSchema = z.object({
   name: s(100).min(1, "Please enter your name"),
   business_name: s(150).min(1, "Please enter your business name"),
   email: s(255).email("Enter a valid email"),
-  whatsapp: s(30).min(7, "Enter a valid WhatsApp number"),
+  whatsapp: internationalPhoneSchema,
   industry_location: s(200).min(1, "Tell us your industry and location"),
   online_links: onlineLinksSchema,
   challenge: z.enum(["Few customers", "Low sales", "No online presence", "Weak branding", "Other"]),
