@@ -8,6 +8,7 @@ declare module "@tanstack/react-router" {
 }
 
 export const sitemapRouteInventoryVersion = 1;
+export const sitemapPublicOrigin = "https://premiumxlabs.com";
 
 type RouteMatch =
   | { routeParams: Record<string, unknown>; foundRoute?: AnyRoute; parseError?: unknown }

@@ -1,8 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getRouterInstance } from "@tanstack/react-start";
-import { sitemapStaticPaths, sitemapXML } from "@/lib/sitemap";
-
-const BASE_URL = "https://premiumxlabsreview.lovable.app";
+import { sitemapPublicOrigin, sitemapStaticPaths, sitemapXML } from "@/lib/sitemap";
 
 export const Route = createFileRoute("/sitemap.xml")({
   staticData: { sitemap: false },
@@ -17,7 +15,7 @@ export const Route = createFileRoute("/sitemap.xml")({
             headers: { "Cache-Control": "no-store" },
           });
         }
-        return new Response(sitemapXML(BASE_URL, entries), {
+        return new Response(sitemapXML(sitemapPublicOrigin, entries), {
           headers: { "Content-Type": "application/xml", "Cache-Control": "public, max-age=3600" },
         });
       },
