@@ -14,10 +14,10 @@ export const Route = createFileRoute("/")({
       { title: "Free Business Audit | premiumxlabs" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "description", content: "Get a free audit of your website, social media, Google presence, branding and ads. Written report within 48 hours. No login required." },
+      { name: "description", content: "Get a free audit of your website, social media, Google presence, branding and ads. Written report within 24 hours. No login required." },
       { property: "og:title", content: "Free Business Audit | premiumxlabs" },
-      { property: "og:description", content: "Get a free audit of your website, social media, Google presence, branding and ads. Written report within 48 hours. No login required." },
-      ...sharingMeta("/", "Free Business Audit | premiumxlabs", "Get a free audit of your website, social media, Google presence, branding and ads. Written report within 48 hours. No login required."),
+      { property: "og:description", content: "Get a free audit of your website, social media, Google presence, branding and ads. Written report within 24 hours. No login required." },
+      ...sharingMeta("/", "Free Business Audit | premiumxlabs", "Get a free audit of your website, social media, Google presence, branding and ads. Written report within 24 hours. No login required."),
     ],
   }),
   component: Home,
@@ -33,7 +33,7 @@ const AUDITS = [
 const STEPS = [
   { icon: ClipboardList, title: "Tell us about your business", desc: "Fill the short form. No login, no payment." },
   { icon: ScanSearch, title: "We audit it", desc: "Our team reviews your online presence and marketing." },
-  { icon: Send, title: "Get your report in 48 hours", desc: "Delivered by WhatsApp or email, written in plain language." },
+  { icon: Send, title: "Get your report in 24 hours", desc: "Delivered by WhatsApp or email, written in plain language." },
 ];
 
 function Reveal({ children, className = "", delay = 0, eager = false }: { children: ReactNode; className?: string; delay?: number; eager?: boolean }) {
@@ -84,10 +84,10 @@ function Home() {
             </h1>
             <p className="mt-6 max-w-xl text-lg text-navy-foreground/70">
               Whether you're just starting or already spending on ads, we'll show you what's not working. Tell us about
-              your business and get a clear report within 48 hours.
+              your business and get a clear report within 24 hours.
             </p>
             <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium text-navy-foreground/80">
-              <li>✓ 100% free</li><li>✓ No login required</li><li>✓ Report in 48 hours</li>
+              <li>✓ 100% free</li><li>✓ No login required</li><li>✓ Report in 24 hours</li>
             </ul>
             <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
               {AUDITS.map((a) => (
@@ -203,7 +203,7 @@ function Home() {
         <div className="pointer-events-none absolute -left-16 bottom-0 select-none font-display text-[18rem] font-extrabold italic leading-none text-navy-foreground/[0.05]" aria-hidden>X</div>
         <Reveal className="relative mx-auto max-w-3xl">
           <h2 className="text-3xl font-extrabold sm:text-5xl">Ready to see what's holding you back?</h2>
-          <p className="mx-auto mt-4 max-w-xl text-navy-foreground/70">Get a free, written audit of your business in 48 hours. No login. No obligation.</p>
+          <p className="mx-auto mt-4 max-w-xl text-navy-foreground/70">Get a free, written audit of your business in 24 hours. No login. No obligation.</p>
           <AuditButton className="mt-8 px-8 py-4 text-base" />
         </Reveal>
       </section>

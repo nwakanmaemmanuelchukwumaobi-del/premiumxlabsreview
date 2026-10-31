@@ -55,7 +55,7 @@ function WebDesignAbuja() {
         <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-2">
           <div>
             <h2 className="text-3xl font-extrabold">Not sure where to start?</h2>
-            <p className="mt-4 leading-relaxed text-muted-foreground">Our free business audit reviews your website, social media, Google presence, branding and ads. Get written findings and recommendations within 48 hours, by WhatsApp or email. No login or payment required.</p>
+            <p className="mt-4 leading-relaxed text-muted-foreground">Our free business audit reviews your website, social media, Google presence, branding and ads. Get written findings and recommendations within 24 hours, by WhatsApp or email. No login or payment required.</p>
             <AuditButton className="mt-6" />
           </div>
           <div>
