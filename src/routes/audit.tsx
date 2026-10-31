@@ -8,7 +8,7 @@ export const Route = createFileRoute("/audit")({
   staticData: { sitemap: true },
   head: () => ({
     meta: [
-      { title: "Free Business Audit | premiumxlabs" },
+      { title: "Get a Free Business Audit | premiumxlabs" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "description", content: "Free, no login, report in 24 hours. Find out what's holding your business back." },
