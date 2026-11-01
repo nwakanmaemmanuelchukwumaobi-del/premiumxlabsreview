@@ -55,6 +55,7 @@ export const auditSchema = z.object({
   ad_platform_other: o(500),
   ad_spend: o(100),
   report_preference: z.enum(["WhatsApp", "Email"]),
+  whatsapp_consent: z.boolean().default(false),
   screenshot: z.object({ name: s(200), type: s(100), base64: z.string().max(7_000_000) }).optional(),
 }).superRefine((data, ctx) => {
   if (data.goals.includes("Other") && !data.goals_other)

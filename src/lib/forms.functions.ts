@@ -82,6 +82,12 @@ export const submitAudit = createServerFn({ method: "POST" })
       }
       emailSent = await sendAuditOwnerEmail(data, breakdown, results, savedId, submittedAt, screenshotUrl, signedProfileImages);
     } catch { console.error("Owner email notification failed; audit submission remains saved."); }
+    if (data.whatsapp_consent) {
+      try {
+        const { sendAuditWhatsApp } = await import("./whatsapp-notify.server");
+        await sendAuditWhatsApp(data.name, data.whatsapp);
+      } catch { console.error("WhatsApp notification failed; audit submission remains saved."); }
+    }
     if (!emailSent) throw new Error("Audit saved but owner notification failed.");
     return { ok: true, breakdown };
   }));
