@@ -1,7 +1,7 @@
 # Audit form update
-- [ ] Correct YCloud template to audit_received/en, normalize recipient digits, bound failed sends, and verify audit results survive WhatsApp failure without real messages.
+- [x] Correct YCloud template to audit_received/en, normalize recipient digits, bound sends to eight seconds, and verify failure-safe audit submission with mocked services; 35 targeted tests passed and build OK. No real messages sent.
 - [x] Verify WhatsApp security, consent/failure behavior, and safe YCloud connectivity without real sends or deployment; all 84 tests passed, browser checks passed, key authenticated with HTTP 200 and sender is CONNECTED. Integration uses the app server function, not a separate Edge Function.
-- [ ] Make WhatsApp ready to publish (blocked: YCloud template list accessible to the saved key is empty; audit_recieved/en is unavailable. Sender codeVerificationStatus is NOT_VERIFIED; no real delivery test authorized. Sender fetch also has no explicit timeout).
+- [ ] Confirm live WhatsApp delivery readiness (blocked: approved audit_received/en availability and sender verification have not been confirmed; no real delivery test authorized). Sender requests now have an eight-second timeout.
 - [x] Verify compact /audit first screen at 360/390/430px, direct visits/refresh, page title and static sharing tags; homepage unchanged. Live custom domain already returns 200; updated layout/title await publish.
 - [x] Fix mobile header at 360/390/430px and retain desktop labels; visually checked all requested widths and 768/1280px.
 - [x] Replace all turnaround promises with 24 hours; searched source, public content and README.
