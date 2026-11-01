@@ -75,4 +75,11 @@ describe("Audit answers", () => {
     expect(auditSchema.safeParse({ ...base, online_links: [{ platform: "Unknown", link: "@test" }] }).success).toBe(false);
     expect(auditSchema.safeParse({ ...base, online_links: [{ platform: "Website", link: "https://example.com" }, { platform: "Website", link: "https://example.org" }] }).success).toBe(false);
   });
+  it("defaults WhatsApp consent to false when the checkbox is untouched", () => {
+    expect(auditSchema.parse(base).whatsapp_consent).toBe(false);
+  });
+  it("keeps WhatsApp consent only when explicitly checked", () => {
+    expect(auditSchema.parse({ ...base, whatsapp_consent: true }).whatsapp_consent).toBe(true);
+    expect(auditSchema.safeParse({ ...base, whatsapp_consent: "yes" }).success).toBe(false);
+  });
 });
