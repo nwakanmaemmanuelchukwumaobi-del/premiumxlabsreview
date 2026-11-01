@@ -1,0 +1,1 @@
+ALTER TABLE public.audit_requests ADD COLUMN whatsapp_consent boolean NOT NULL DEFAULT false;

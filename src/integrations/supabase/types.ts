@@ -58,6 +58,7 @@ export type Database = {
           screenshot_path: string | null
           website_checks: Json | null
           whatsapp: string
+          whatsapp_consent: boolean
         }
         Insert: {
           ad_platform?: string | null
@@ -81,6 +82,7 @@ export type Database = {
           screenshot_path?: string | null
           website_checks?: Json | null
           whatsapp: string
+          whatsapp_consent?: boolean
         }
         Update: {
           ad_platform?: string | null
@@ -104,6 +106,7 @@ export type Database = {
           screenshot_path?: string | null
           website_checks?: Json | null
           whatsapp?: string
+          whatsapp_consent?: boolean
         }
         Relationships: []
       }
