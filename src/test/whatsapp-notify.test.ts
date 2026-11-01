@@ -15,7 +15,9 @@ describe("YCloud template request (no real network)", () => {
     request.mockResolvedValue({ ok: true });
     await sendAuditWhatsApp("Ada Okafor", "+2348031234567");
     expect(request).toHaveBeenCalledOnce();
-    const [url, options] = request.mock.calls[0];
+    const call = request.mock.calls[0];
+    if (!call) throw new Error("Expected a mocked YCloud request");
+    const [url, options] = call;
     expect(url).toBe("https://api.ycloud.com/v2/whatsapp/messages");
     expect(options.method).toBe("POST");
     expect(JSON.parse(options.body)).toEqual({
