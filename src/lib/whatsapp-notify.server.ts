@@ -2,25 +2,28 @@
  * Server-only YCloud WhatsApp Business API sender.
  * Never import this file from client code; the API key must stay on the server.
  */
+import { internationalPhone } from "./audit-phone";
 
 const YCLOUD_MESSAGES_URL = "https://api.ycloud.com/v2/whatsapp/messages";
 const SENDER = "+2349034340796";
-const TEMPLATE_NAME = "audit_recieved";
+const TEMPLATE_NAME = "audit_received";
 
 /** Send the audit-received template message. Throws on failure; callers must catch. */
 export async function sendAuditWhatsApp(customerName: string, customerPhone: string): Promise<void> {
   const apiKey = process.env["YCLOUD_API_KEY"];
   if (!apiKey) throw new Error("YCLOUD_API_KEY is not configured");
+  const recipientDigits = internationalPhone(customerPhone).replace(/^\+/, "");
 
   const response = await fetch(YCLOUD_MESSAGES_URL, {
     method: "POST",
+    signal: AbortSignal.timeout(8000),
     headers: {
       "X-API-Key": apiKey,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
       from: SENDER,
-      to: customerPhone,
+      to: recipientDigits,
       type: "template",
       template: {
         name: TEMPLATE_NAME,
