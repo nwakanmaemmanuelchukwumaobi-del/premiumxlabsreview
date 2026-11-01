@@ -35,6 +35,7 @@ describe("Audit WhatsApp integration (all external services mocked)", () => {
     await expect(submitAudit({ data: auditSchema.parse({ ...base, whatsapp_consent: true }) })).resolves.toEqual({ ok: true, breakdown: null });
     expect(state.insert).toHaveBeenCalledOnce();
     expect(state.email).toHaveBeenCalledOnce();
+    expect(console.error).toHaveBeenCalledWith("WhatsApp notification failed; audit submission remains saved.");
   });
   it("does not send when saving the audit fails", async () => {
     state.insert.mockResolvedValue({ error: { message: "Save failed" } });

@@ -21,10 +21,31 @@ describe("YCloud template request (no real network)", () => {
     expect(url).toBe("https://api.ycloud.com/v2/whatsapp/messages");
     expect(options.method).toBe("POST");
     expect(JSON.parse(options.body)).toEqual({
-      from: "+2349034340796", to: "+2348031234567", type: "template",
-      template: { name: "audit_recieved", language: { code: "en" },
+      from: "+2349034340796", to: "2348031234567", type: "template",
+      template: { name: "audit_received", language: { code: "en" },
         components: [{ type: "body", parameters: [{ type: "text", text: "Ada Okafor" }] }] },
     });
+  });
+  it.each(["09012345678", "+234 901 234 5678", "2349012345678"])("sends digits-only international recipients for %s", async phone => {
+    request.mockResolvedValue({ ok: true });
+    await sendAuditWhatsApp("Ada", phone);
+    expect(JSON.parse(request.mock.calls[0]?.[1].body).to).toBe("2349012345678");
+  });
+  it("preserves non-Nigerian international numbers", async () => {
+    request.mockResolvedValue({ ok: true });
+    await sendAuditWhatsApp("Ada", "+44 7911 123456");
+    expect(JSON.parse(request.mock.calls[0]?.[1].body).to).toBe("447911123456");
+  });
+  it("bounds the request with an eight-second timeout", async () => {
+    const timeout = vi.spyOn(AbortSignal, "timeout");
+    request.mockResolvedValue({ ok: true });
+    await sendAuditWhatsApp("Ada", "09012345678");
+    expect(timeout).toHaveBeenCalledWith(8000);
+    expect(request.mock.calls[0]?.[1].signal).toBeInstanceOf(AbortSignal);
+  });
+  it("propagates network failures to the audit handler's safe catch", async () => {
+    request.mockRejectedValue(new Error("Network unavailable"));
+    await expect(sendAuditWhatsApp("Ada", "09012345678")).rejects.toThrow("Network unavailable");
   });
   it("does not make a request when the key is absent", async () => {
     vi.stubEnv("YCLOUD_API_KEY", "");
