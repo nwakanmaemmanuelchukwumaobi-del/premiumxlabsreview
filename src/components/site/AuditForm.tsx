@@ -60,7 +60,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
       running_ads: get("running_ads"), ad_platforms: hasAdHistory(ads) ? platforms : [],
       ad_platform_other: get("ad_platform_other"), ad_spend: get("ad_spend"),
       report_preference: get("report_preference"),
-      whatsapp_consent: fd.get("whatsapp_consent") === "on",
+      whatsapp_consent: true,
       screenshot: undefined as { name: string; type: string; base64: string } | undefined,
     };
     try {
@@ -149,10 +149,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
           </>
         )}
         <div className="sm:col-span-2">
-          <label className="flex cursor-pointer items-start gap-2 rounded-xl border border-input px-4 py-3 text-sm">
-            <input type="checkbox" name="whatsapp_consent" className="mt-0.5 accent-cta" />
-            I agree to receive WhatsApp updates about my audit request.
-          </label>
+          <p className="text-xs text-muted-foreground">You'll get your audit response on WhatsApp after submitting.</p>
         </div>
         <div className="sm:col-span-2">
           <label className={L}>Send my report via</label>
