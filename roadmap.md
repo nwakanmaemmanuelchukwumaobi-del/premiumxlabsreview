@@ -1,4 +1,5 @@
 # Audit form update
+- [ ] Replace Social media text input with optional multi-platform dropdown; save and pass Instagram/Facebook/TikTok separately, preserve website/screenshots and verify empty/populated flows.
 - [x] Separate optional website/social media inputs and private screenshots across saving, notifications and report handling; verified empty/populated mocked submissions, applied schema readback, both mobile forms and upload/remove controls. No real WhatsApp sends; live delivery remains unverified.
 - [x] Correct YCloud template to audit_received/en, normalize recipient digits, bound sends to eight seconds, and verify failure-safe audit submission with mocked services; 35 targeted tests passed and build OK. No real messages sent.
 - [x] Verify WhatsApp security, consent/failure behavior, and safe YCloud connectivity without real sends or deployment; all 84 tests passed, browser checks passed, key authenticated with HTTP 200 and sender is CONNECTED. Integration uses the app server function, not a separate Edge Function.
