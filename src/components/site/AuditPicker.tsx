@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Check, ChevronDown, Plus, X } from "lucide-react";
 import { ProfileScreenshots } from "./ProfileScreenshots";
+import { SOCIAL_FIELD_NAMES } from "@/lib/audit-fields";
 import { Button } from "@/components/ui/button";
 
 /**
@@ -251,7 +252,7 @@ export function OnlinePresencePicker({
                 <div className="flex items-start gap-2">
                   <input
                     id={`online-link-${key}`}
-                    name={socialOnly ? platform.toLowerCase() : `online_link_${platform}`}
+                    name={socialOnly ? SOCIAL_FIELD_NAMES[platform as keyof typeof SOCIAL_FIELD_NAMES] : `online_link_${platform}`}
                     className="field min-w-0 flex-1"
                     placeholder={field.placeholder}
                     maxLength={1000}

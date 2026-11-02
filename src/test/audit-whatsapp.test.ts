@@ -27,7 +27,7 @@ describe("Audit WhatsApp integration (all external services mocked)", () => {
   it("saves consent and the full international number before sending once", async () => {
     state.send.mockImplementation(async () => { expect(state.insert).toHaveBeenCalledOnce(); });
     await submitAudit({ data: auditSchema.parse({ ...base, whatsapp_consent: true }) });
-    expect(state.send).toHaveBeenCalledExactlyOnceWith("Ada Okafor", "+2348031234567", { website: null, social_media: null, instagram: null, facebook: null, tiktok: null, profile_screenshots: [], screenshot_path: null });
+    expect(state.send).toHaveBeenCalledExactlyOnceWith("Ada Okafor", "+2348031234567", { website: null, social_media: null, instagram: null, facebook: null, tiktok: null, x: null, linkedin: null, profile_screenshots: [], screenshot_path: null });
     expect(state.insert.mock.calls[0]?.[0]).toMatchObject({ whatsapp_consent: true, whatsapp: "+2348031234567" });
   });
   it("still succeeds with a saved audit when WhatsApp rejects the request", async () => {

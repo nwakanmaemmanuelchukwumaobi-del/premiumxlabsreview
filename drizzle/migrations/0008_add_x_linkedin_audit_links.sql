@@ -1,0 +1,2 @@
+ALTER TABLE public.audit_requests ADD COLUMN x text, ADD COLUMN linkedin text;
+UPDATE public.audit_requests SET x = (SELECT entry->>'link' FROM jsonb_array_elements(COALESCE(online_links, '[]'::jsonb)) entry WHERE entry->>'platform' = 'X (Twitter)' LIMIT 1), linkedin = (SELECT entry->>'link' FROM jsonb_array_elements(COALESCE(online_links, '[]'::jsonb)) entry WHERE entry->>'platform' = 'LinkedIn' LIMIT 1);

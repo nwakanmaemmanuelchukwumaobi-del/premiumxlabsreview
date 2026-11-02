@@ -52,6 +52,7 @@ export type Database = {
           industry_location: string
           instagram: string | null
           instant_breakdown: Json | null
+          linkedin: string | null
           links: string | null
           name: string
           online_links: Json
@@ -65,6 +66,7 @@ export type Database = {
           website_checks: Json | null
           whatsapp: string
           whatsapp_consent: boolean
+          x: string | null
         }
         Insert: {
           ad_platform?: string | null
@@ -82,6 +84,7 @@ export type Database = {
           industry_location: string
           instagram?: string | null
           instant_breakdown?: Json | null
+          linkedin?: string | null
           links?: string | null
           name: string
           online_links?: Json
@@ -95,6 +98,7 @@ export type Database = {
           website_checks?: Json | null
           whatsapp: string
           whatsapp_consent?: boolean
+          x?: string | null
         }
         Update: {
           ad_platform?: string | null
@@ -112,6 +116,7 @@ export type Database = {
           industry_location?: string
           instagram?: string | null
           instant_breakdown?: Json | null
+          linkedin?: string | null
           links?: string | null
           name?: string
           online_links?: Json
@@ -125,6 +130,7 @@ export type Database = {
           website_checks?: Json | null
           whatsapp?: string
           whatsapp_consent?: boolean
+          x?: string | null
         }
         Relationships: []
       }

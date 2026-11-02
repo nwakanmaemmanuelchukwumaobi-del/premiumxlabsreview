@@ -57,6 +57,13 @@
       "when": 1793647958746,
       "tag": "0007_separate_social_platform_links",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793648649279,
+      "tag": "0008_add_x_linkedin_audit_links",
+      "breakpoints": true
     }
   ]
 }

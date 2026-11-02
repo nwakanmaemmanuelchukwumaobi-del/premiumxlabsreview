@@ -6,7 +6,8 @@ export const AD_OPTIONS = ["Yes and getting results", "Yes but not getting resul
 export const AD_PLATFORMS = ["Facebook / Instagram (Meta)", "Google Ads", "TikTok", "YouTube", "Snapchat", "X (Twitter)", "LinkedIn", "Influencer or promoted posts", "Other"] as const;
 export const AUDIT_GOALS = ["Generate more leads", "Increase sales", "Get more website visitors", "Build brand awareness", "Get more followers and engagement", "Get more calls or WhatsApp enquiries", "Get more foot traffic to my location", "Launch a new product or business", "Improve my online reputation", "Make my ads perform better", "Other"] as const;
 export const ONLINE_PLATFORMS = ["Website", "Instagram", "Facebook", "TikTok", "X (Twitter)", "YouTube", "LinkedIn", "Snapchat", "Google Business Profile", "Other"] as const;
-export const SOCIAL_PLATFORMS = ["Instagram", "Facebook", "TikTok"] as const;
+export const SOCIAL_PLATFORMS = ["Instagram", "Facebook", "TikTok", "X (Twitter)", "LinkedIn"] as const;
+export const SOCIAL_FIELD_NAMES: Record<(typeof SOCIAL_PLATFORMS)[number], "instagram" | "facebook" | "tiktok" | "x" | "linkedin"> = { Instagram: "instagram", Facebook: "facebook", TikTok: "tiktok", "X (Twitter)": "x", LinkedIn: "linkedin" };
 export const SOCIAL_FIELDS = Object.fromEntries(SOCIAL_PLATFORMS.map(platform => [platform, { label: platform, placeholder: "Link or @handle" }]));
 export const ONLINE_FIELDS: Record<(typeof ONLINE_PLATFORMS)[number], { label: string; placeholder: string }> = {
   Website: { label: "Website URL", placeholder: "https://yourbusiness.com" },
@@ -54,6 +55,8 @@ export const auditSchema = z.object({
   instagram: o(1000),
   facebook: o(1000),
   tiktok: o(1000),
+  x: o(1000),
+  linkedin: o(1000),
   profile_screenshots: z.array(profileScreenshotSchema).max(3, "Add up to 3 screenshots per platform.").default([]),
   challenge: z.enum(["Few customers", "Low sales", "No online presence", "Weak branding", "Other"]),
   goals: z.array(z.enum(AUDIT_GOALS)).max(AUDIT_GOALS.length).default([]),
@@ -76,6 +79,8 @@ export const auditSchema = z.object({
   instagram: data.instagram ?? data.online_links.find(entry => entry.platform === "Instagram")?.link ?? null,
   facebook: data.facebook ?? data.online_links.find(entry => entry.platform === "Facebook")?.link ?? null,
   tiktok: data.tiktok ?? data.online_links.find(entry => entry.platform === "TikTok")?.link ?? null,
+  x: data.x ?? data.online_links.find(entry => entry.platform === "X (Twitter)")?.link ?? null,
+  linkedin: data.linkedin ?? data.online_links.find(entry => entry.platform === "LinkedIn")?.link ?? null,
   social_media: data.social_media ?? (data.online_links.filter(entry => entry.platform !== "Website").map(entry => `${entry.platform === "Other" ? entry.other_name ?? "Other" : entry.platform}: ${entry.link}`).join("\n") || null),
   goals: [...new Set(data.goals)],
   goals_other: data.goals.includes("Other") ? data.goals_other : null,

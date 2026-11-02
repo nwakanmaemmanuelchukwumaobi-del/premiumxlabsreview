@@ -8,7 +8,7 @@ export const getAuditSubmissions = createServerFn({ method: "POST" }).middleware
   .handler(async ({ context, data }) => {
     const { data: owner, error: roleError } = await context.supabase.rpc("is_audit_owner");
     requireOwnerAccess(owner, !!roleError);
-    const { data: rows, error } = await context.supabase.from("audit_requests").select("id,created_at,name,business_name,email,whatsapp,industry_location,website,social_media,instagram,facebook,tiktok,profile_screenshots,online_links,challenge,running_ads,ad_platforms,ad_platform_other,ad_spend,goals,goals_other,report_preference,screenshot_path,website_checks,instant_breakdown").order("created_at", { ascending: false }).range(data.offset, data.offset + 24);
+    const { data: rows, error } = await context.supabase.from("audit_requests").select("id,created_at,name,business_name,email,whatsapp,industry_location,website,social_media,instagram,facebook,tiktok,x,linkedin,profile_screenshots,online_links,challenge,running_ads,ad_platforms,ad_platform_other,ad_spend,goals,goals_other,report_preference,screenshot_path,website_checks,instant_breakdown").order("created_at", { ascending: false }).range(data.offset, data.offset + 24);
     if (error) throw new Error("Could not load audit submissions.");
     const { data: profile } = await context.supabase.from("profiles").select("display_name").eq("id",context.userId).maybeSingle();
     return { rows: await Promise.all((rows ?? []).map(async row => {
