@@ -19,7 +19,7 @@ describe("Audit owner notifications", () => {
     const email = buildAuditEmail(populated, null, {}, date);
     expect(email.text).toContain("Website: www.yourbusiness.com");
     expect(email.text).toContain("Social media: @yourbusiness");
-    const empty = buildAuditEmail(auditSchema.parse({ ...populated, website: "", social_media: "" }), null, {}, date);
+    const empty = buildAuditEmail(auditSchema.parse({ ...populated, website: "", social_media: "", instagram: "", facebook: "", tiktok: "" }), null, {}, date);
     expect(empty.text).toContain("Website: None");
     expect(empty.text).toContain("Instagram: None");
     expect(empty.text).toContain("Facebook: None");
