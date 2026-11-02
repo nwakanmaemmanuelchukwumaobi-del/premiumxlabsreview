@@ -13,11 +13,14 @@ afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.restoreAllMocks(
 describe("YCloud template request (no real network)", () => {
   it("accepts separate online details without changing the template or exposing private paths", async () => {
     request.mockResolvedValue({ ok: true });
-    await sendAuditWhatsApp("Ada", "+2348031234567", { website: "www.yourbusiness.com", social_media: "@yourbusiness", profile_screenshots: [{ name: "profile.png", path: "private/profile.png" }], screenshot_path: null });
+    await sendAuditWhatsApp("Ada", "+2348031234567", { website: "www.yourbusiness.com", social_media: null, instagram: "@shop", facebook: "facebook.com/shop", tiktok: "@videos", profile_screenshots: [{ name: "profile.png", path: "private/profile.png" }], screenshot_path: null });
     const body = JSON.parse(request.mock.calls[0]?.[1].body);
     expect(body.template.components).toEqual([{ type: "body", parameters: [{ type: "text", text: "Ada" }] }]);
     expect(JSON.stringify(body)).not.toContain("private/profile.png");
     expect(JSON.stringify(body)).not.toContain("www.yourbusiness.com");
+    expect(JSON.stringify(body)).not.toContain("@shop");
+    expect(JSON.stringify(body)).not.toContain("facebook.com/shop");
+    expect(JSON.stringify(body)).not.toContain("@videos");
   });
   it("uses the exact sender, template, English language and first name parameter", async () => {
     request.mockResolvedValue({ ok: true });

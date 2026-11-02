@@ -45,10 +45,12 @@ export type Database = {
           challenge: string
           created_at: string
           email: string
+          facebook: string | null
           goals: string[]
           goals_other: string | null
           id: string
           industry_location: string
+          instagram: string | null
           instant_breakdown: Json | null
           links: string | null
           name: string
@@ -58,6 +60,7 @@ export type Database = {
           running_ads: string
           screenshot_path: string | null
           social_media: string | null
+          tiktok: string | null
           website: string | null
           website_checks: Json | null
           whatsapp: string
@@ -72,10 +75,12 @@ export type Database = {
           challenge: string
           created_at?: string
           email: string
+          facebook?: string | null
           goals?: string[]
           goals_other?: string | null
           id?: string
           industry_location: string
+          instagram?: string | null
           instant_breakdown?: Json | null
           links?: string | null
           name: string
@@ -85,6 +90,7 @@ export type Database = {
           running_ads: string
           screenshot_path?: string | null
           social_media?: string | null
+          tiktok?: string | null
           website?: string | null
           website_checks?: Json | null
           whatsapp: string
@@ -99,10 +105,12 @@ export type Database = {
           challenge?: string
           created_at?: string
           email?: string
+          facebook?: string | null
           goals?: string[]
           goals_other?: string | null
           id?: string
           industry_location?: string
+          instagram?: string | null
           instant_breakdown?: Json | null
           links?: string | null
           name?: string
@@ -112,6 +120,7 @@ export type Database = {
           running_ads?: string
           screenshot_path?: string | null
           social_media?: string | null
+          tiktok?: string | null
           website?: string | null
           website_checks?: Json | null
           whatsapp?: string

@@ -10,7 +10,7 @@ const record = (v: unknown): Record<string, unknown> => typeof v === "object" &&
 export function firstContentBand(seconds: number) {
   return seconds < 1.8 ? "good" : seconds <= 3 ? "needs improvement" : "poor";
 }
-export function keyWebsiteFacts(checks: Checks, answers: Pick<z.infer<typeof auditSchema>, "running_ads" | "ad_platforms" | "ad_platform_other" | "goals" | "goals_other"> & Partial<Pick<z.infer<typeof auditSchema>, "website" | "social_media" | "profile_screenshots">>) {
+export function keyWebsiteFacts(checks: Checks, answers: Pick<z.infer<typeof auditSchema>, "running_ads" | "ad_platforms" | "ad_platform_other" | "goals" | "goals_other"> & Partial<Pick<z.infer<typeof auditSchema>, "website" | "social_media" | "instagram" | "facebook" | "tiktok" | "profile_screenshots">>) {
   const page = checks.page['status'] === "completed" ? checks.page : {};
   const fcp = record(record(checks.pagespeed['metrics'])["first-contentful-paint"])['numericValue'];
   const seconds = checks.pagespeed['status'] === "completed" && typeof fcp === "number" && Number.isFinite(fcp) && fcp >= 0 ? fcp / 1000 : null;
@@ -28,6 +28,7 @@ export function keyWebsiteFacts(checks: Checks, answers: Pick<z.infer<typeof aud
     running_ads: answers.running_ads, ad_platforms: answers.ad_platforms, ad_platform_other: answers.ad_platform_other,
     goals: answers.goals, goals_other: answers.goals_other,
     website: answers.website ?? null, social_media: answers.social_media ?? null,
+    instagram: answers.instagram ?? null, facebook: answers.facebook ?? null, tiktok: answers.tiktok ?? null,
     profile_screenshot_count: answers.profile_screenshots?.length ?? 0,
   };
 }

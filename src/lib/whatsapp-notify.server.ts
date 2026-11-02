@@ -5,7 +5,7 @@
 import { internationalPhone } from "./audit-phone";
 import type { StoredProfileImage } from "./profile-screenshots";
 
-export type AuditWhatsAppDetails = { website: string | null; social_media: string | null; profile_screenshots: StoredProfileImage[]; screenshot_path: string | null };
+export type AuditWhatsAppDetails = { website: string | null; social_media: string | null; instagram?: string | null; facebook?: string | null; tiktok?: string | null; profile_screenshots: StoredProfileImage[]; screenshot_path: string | null };
 
 const YCLOUD_MESSAGES_URL = "https://api.ycloud.com/v2/whatsapp/messages";
 const SENDER = "+2349034340796";

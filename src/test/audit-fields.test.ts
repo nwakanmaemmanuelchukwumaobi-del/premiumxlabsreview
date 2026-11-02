@@ -4,6 +4,15 @@ import { AD_PLATFORMS, AUDIT_GOALS, ONLINE_PLATFORMS, auditSchema, hasAdHistory 
 const base = { name: "Test", business_name: "Test business", email: "test@example.com", whatsapp: "+2349034340796", industry_location: "Retail, Abuja", challenge: "Low sales", running_ads: "Used to", report_preference: "Email" };
 
 describe("Audit answers", () => {
+  it.each([{}, { instagram: "", facebook: " ", tiktok: "" }])("allows unselected or blank social platforms: %j", fields => {
+    const parsed = auditSchema.parse({ ...base, ...fields });
+    expect([parsed.instagram, parsed.facebook, parsed.tiktok]).toEqual([null, null, null]);
+  });
+  it("keeps each platform's link separate and accepts handles", () => {
+    const parsed = auditSchema.parse({ ...base, instagram: " @shop ", facebook: " facebook.com/shop ", tiktok: " @shopvideos " });
+    expect(parsed).toMatchObject({ instagram: "@shop", facebook: "facebook.com/shop", tiktok: "@shopvideos", website: null, social_media: null });
+    expect(auditSchema.parse(parsed)).toEqual(parsed);
+  });
   it.each([{}, { website: "", social_media: "", profile_screenshots: [] }])("allows all three online fields to be empty: %j", fields => {
     const parsed = auditSchema.parse({ ...base, ...fields });
     expect(parsed.website).toBeNull();

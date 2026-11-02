@@ -3,8 +3,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { auditSchema, submitAudit } from "@/lib/forms.functions";
 import { WHATSAPP_URL } from "@/lib/site";
-import { AD_OPTIONS, AD_PLATFORMS, AUDIT_GOALS, hasAdHistory } from "@/lib/audit-fields";
-import { MultiPicker } from "@/components/site/AuditPicker";
+import { AD_OPTIONS, AD_PLATFORMS, AUDIT_GOALS, SOCIAL_PLATFORMS, SOCIAL_FIELDS, hasAdHistory } from "@/lib/audit-fields";
+import { MultiPicker, OnlinePresencePicker, type OnlineEntry } from "@/components/site/AuditPicker";
 import { ProfileScreenshots } from "./ProfileScreenshots";
 import type { Breakdown } from "@/lib/instant-breakdown";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
   const [ads, setAds] = useState("");
   const [goals, setGoals] = useState<string[]>([]);
   const [platforms, setPlatforms] = useState<string[]>([]);
+  const [socialEntries, setSocialEntries] = useState<OnlineEntry[]>([]);
   const [profileScreenshots, setProfileScreenshots] = useState<File[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -53,7 +54,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
     const payload = {
       name: get("name"), business_name: get("business_name"), email: get("email"), whatsapp: phone,
       industry_location: get("industry_location"), challenge: get("challenge"),
-      website: get("website"), social_media: get("social_media"),
+      website: get("website"), instagram: get("instagram"), facebook: get("facebook"), tiktok: get("tiktok"),
       profile_screenshots: [] as { name: string; type: "image/png" | "image/jpeg" | "image/webp"; base64: string }[],
       goals, goals_other: get("goals_other"),
       running_ads: get("running_ads"), ad_platforms: hasAdHistory(ads) ? platforms : [],
@@ -121,7 +122,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
         <AuditPhone />
         <div className="sm:col-span-2"><label className={L}>Industry & location</label><input name="industry_location" className="field" placeholder="e.g. Restaurant, Abuja" required /></div>
         <div className="sm:col-span-2"><label htmlFor="audit-website" className={L}>Website</label><input id="audit-website" name="website" className="field" placeholder="e.g. www.yourbusiness.com" /></div>
-        <div className="sm:col-span-2"><label htmlFor="audit-social-media" className={L}>Social media</label><input id="audit-social-media" name="social_media" className="field" placeholder="Instagram, Facebook or TikTok link or @handle" /></div>
+        <OnlinePresencePicker socialOnly entries={socialEntries} onChange={setSocialEntries} fields={SOCIAL_FIELDS} platforms={SOCIAL_PLATFORMS} />
         <div className="sm:col-span-2"><ProfileScreenshots platform="Social media" files={profileScreenshots} onChange={setProfileScreenshots} /></div>
         <div className="sm:col-span-2">
           <label className={L}>Biggest challenge</label>
