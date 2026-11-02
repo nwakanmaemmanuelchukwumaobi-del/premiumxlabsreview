@@ -60,7 +60,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
       running_ads: get("running_ads"), ad_platforms: hasAdHistory(ads) ? platforms : [],
       ad_platform_other: get("ad_platform_other"), ad_spend: get("ad_spend"),
       report_preference: get("report_preference"),
-      whatsapp_consent: fd.get("whatsapp_consent") === "on",
+      whatsapp_consent: true,
       screenshot: undefined as { name: string; type: string; base64: string } | undefined,
     };
     try {
@@ -149,12 +149,6 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
           </>
         )}
         <div className="sm:col-span-2">
-          <label className="flex cursor-pointer items-start gap-2 rounded-xl border border-input px-4 py-3 text-sm">
-            <input type="checkbox" name="whatsapp_consent" className="mt-0.5 accent-cta" />
-            I agree to receive WhatsApp updates about my audit request.
-          </label>
-        </div>
-        <div className="sm:col-span-2">
           <label className={L}>Send my report via</label>
           <div className="grid grid-cols-2 gap-3">
             {["WhatsApp", "Email"].map((p, i) => (
@@ -166,6 +160,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
         </div>
       </div>
       {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
+      <p className="mt-4 text-center text-xs text-muted-foreground">You'll get your audit response on WhatsApp after submitting.</p>
       <Button type="submit" disabled={busy} className="mt-6 inline-flex h-auto w-full items-center justify-center gap-2 rounded-full bg-cta px-6 py-4 font-semibold text-cta-foreground shadow-lg shadow-cta/25 transition hover:brightness-110 disabled:opacity-60">
         {busy && <Loader2 className="h-4 w-4 animate-spin" />} Get My Free Audit
       </Button>
