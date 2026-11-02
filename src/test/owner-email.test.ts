@@ -19,17 +19,21 @@ describe("Audit owner notifications", () => {
     const email = buildAuditEmail(populated, null, {}, date);
     expect(email.text).toContain("Website: www.yourbusiness.com");
     expect(email.text).toContain("Social media: @yourbusiness");
-    const empty = buildAuditEmail(auditSchema.parse({ ...populated, website: "", social_media: "", instagram: "", facebook: "", tiktok: "" }), null, {}, date);
+    const empty = buildAuditEmail(auditSchema.parse({ ...populated, website: "", social_media: "", instagram: "", facebook: "", tiktok: "", x: "", linkedin: "" }), null, {}, date);
     expect(empty.text).toContain("Website: None");
     expect(empty.text).toContain("Instagram: None");
     expect(empty.text).toContain("Facebook: None");
     expect(empty.text).toContain("TikTok: None");
+    expect(empty.text).toContain("X (Twitter): None");
+    expect(empty.text).toContain("LinkedIn: None");
   });
   it("includes each selected social platform separately", () => {
-    const email = buildAuditEmail(auditSchema.parse({ ...answers, online_links: [], instagram: "@shop", facebook: "facebook.com/shop", tiktok: "@shopvideos" }), null, {}, date);
+    const email = buildAuditEmail(auditSchema.parse({ ...answers, online_links: [], instagram: "@shop", facebook: "facebook.com/shop", tiktok: "@shopvideos", x: "@updates", linkedin: "linkedin.com/company/shop" }), null, {}, date);
     expect(email.text).toContain("Instagram: @shop");
     expect(email.text).toContain("Facebook: facebook.com/shop");
     expect(email.text).toContain("TikTok: @shopvideos");
+    expect(email.text).toContain("X (Twitter): @updates");
+    expect(email.text).toContain("LinkedIn: linkedin.com/company/shop");
   });
   it("sends to the explicitly confirmed address", async () => {
     vi.stubEnv("RESEND_API_KEY", "test-only-not-a-credential");
