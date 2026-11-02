@@ -149,7 +149,6 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
           </>
         )}
         <div className="sm:col-span-2">
-        <div className="sm:col-span-2">
           <label className={L}>Send my report via</label>
           <div className="grid grid-cols-2 gap-3">
             {["WhatsApp", "Email"].map((p, i) => (
