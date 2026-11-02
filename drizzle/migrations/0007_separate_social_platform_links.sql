@@ -1,0 +1,3 @@
+ALTER TABLE public.audit_requests ADD COLUMN instagram text, ADD COLUMN facebook text, ADD COLUMN tiktok text;
+UPDATE public.audit_requests SET instagram = (SELECT entry->>'link' FROM jsonb_array_elements(COALESCE(online_links, '[]'::jsonb)) entry WHERE entry->>'platform' = 'Instagram' LIMIT 1), facebook = (SELECT entry->>'link' FROM jsonb_array_elements(COALESCE(online_links, '[]'::jsonb)) entry WHERE entry->>'platform' = 'Facebook' LIMIT 1), tiktok = (SELECT entry->>'link' FROM jsonb_array_elements(COALESCE(online_links, '[]'::jsonb)) entry WHERE entry->>'platform' = 'TikTok' LIMIT 1);
+COMMENT ON COLUMN public.audit_requests.social_media IS 'DEPRECATED: new submissions use separate instagram, facebook and tiktok fields; retained for historical readback.';
