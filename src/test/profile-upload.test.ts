@@ -26,7 +26,7 @@ describe("Private profile upload flow", () => {
     expect(state.insert.mock.calls[0]?.[0]).toMatchObject({ website: "www.yourbusiness.com", social_media: "@yourbusiness" });
     expect(state.insert.mock.calls[0]?.[0]).not.toHaveProperty("online_links");
     expect(state.update.mock.calls[0]?.[0].profile_screenshots).toEqual([{ name: "profile.png", path: expect.stringMatching(/\.png$/) }]);
-    expect(state.check).toHaveBeenCalledWith("www.yourbusiness.com", expect.anything());
+    expect(state.check.mock.calls[0]?.[0]).toBe("www.yourbusiness.com");
     expect(state.generate.mock.calls[0]?.[1]).toMatchObject({ website: "www.yourbusiness.com", social_media: "@yourbusiness", profile_screenshots: data.profile_screenshots });
     expect(state.send.mock.calls[0]?.[0]).toMatchObject({ website: "www.yourbusiness.com", social_media: "@yourbusiness" });
     expect(state.send.mock.calls[0]?.[6]).toEqual([{ platform: "Social media", name: "profile.png", url: "https://example.com/private-signed-image" }]);
