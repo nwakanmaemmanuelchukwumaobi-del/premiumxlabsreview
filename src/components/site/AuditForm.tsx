@@ -3,8 +3,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { auditSchema, submitAudit } from "@/lib/forms.functions";
 import { WHATSAPP_URL } from "@/lib/site";
-import { AD_OPTIONS, AD_PLATFORMS, AUDIT_GOALS, ONLINE_FIELDS, ONLINE_PLATFORMS, hasAdHistory } from "@/lib/audit-fields";
-import { MultiPicker, OnlinePresencePicker, type OnlineEntry } from "@/components/site/AuditPicker";
+import { AD_OPTIONS, AD_PLATFORMS, AUDIT_GOALS, hasAdHistory } from "@/lib/audit-fields";
+import { MultiPicker } from "@/components/site/AuditPicker";
+import { ProfileScreenshots } from "./ProfileScreenshots";
 import type { Breakdown } from "@/lib/instant-breakdown";
 import { Button } from "@/components/ui/button";
 import { SUBMISSION_ERROR } from "@/lib/submission-errors";
@@ -30,7 +31,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
   const [ads, setAds] = useState("");
   const [goals, setGoals] = useState<string[]>([]);
   const [platforms, setPlatforms] = useState<string[]>([]);
-  const [onlineEntries, setOnlineEntries] = useState<OnlineEntry[]>([]);
+  const [profileScreenshots, setProfileScreenshots] = useState<File[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState<{ name: string; biz: string; pref: string } | null>(null);
@@ -52,10 +53,8 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
     const payload = {
       name: get("name"), business_name: get("business_name"), email: get("email"), whatsapp: phone,
       industry_location: get("industry_location"), challenge: get("challenge"),
-      online_links: onlineEntries.map(({ platform }) => ({
-        platform, link: get(`online_link_${platform}`), other_name: platform === "Other" ? get("online_other_name") : null,
-        screenshots: [] as { name: string; type: "image/png" | "image/jpeg" | "image/webp"; base64: string }[],
-      })),
+      website: get("website"), social_media: get("social_media"),
+      profile_screenshots: [] as { name: string; type: "image/png" | "image/jpeg" | "image/webp"; base64: string }[],
       goals, goals_other: get("goals_other"),
       running_ads: get("running_ads"), ad_platforms: hasAdHistory(ads) ? platforms : [],
       ad_platform_other: get("ad_platform_other"), ad_spend: get("ad_spend"),
@@ -64,11 +63,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
       screenshot: undefined as { name: string; type: string; base64: string } | undefined,
     };
     try {
-      for (const [index, entry] of onlineEntries.entries()) {
-        const target = payload.online_links[index];
-        if (!target) continue;
-        for (const image of entry.screenshots ?? []) target.screenshots.push({ name: image.name, type: image.type as "image/png" | "image/jpeg" | "image/webp", base64: await toBase64(image) });
-      }
+      for (const image of profileScreenshots) payload.profile_screenshots.push({ name: image.name, type: image.type as "image/png" | "image/jpeg" | "image/webp", base64: await toBase64(image) });
       if (file && file.size > 0) payload.screenshot = { name: file.name, type: file.type, base64: await toBase64(file) };
     } catch {
       return setError(SUBMISSION_ERROR);
@@ -77,7 +72,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
     if (!parsed.success) return setError(parsed.error.issues[0]?.message ?? "Please check the form.");
     setBusy(true);
     setReportClient({ name: parsed.data.name, biz: parsed.data.business_name, pref: parsed.data.report_preference });
-    setReportWebsite(parsed.data.online_links.find(entry => entry.platform === "Website")?.link ?? null);
+    setReportWebsite(parsed.data.website);
     setReportOpen(true);
     try {
       const response = await send({ data: parsed.data });
@@ -125,7 +120,9 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
         <div><label className={L}>Email</label><input name="email" type="email" className="field" required /></div>
         <AuditPhone />
         <div className="sm:col-span-2"><label className={L}>Industry & location</label><input name="industry_location" className="field" placeholder="e.g. Restaurant, Abuja" required /></div>
-        <OnlinePresencePicker entries={onlineEntries} onChange={setOnlineEntries} fields={ONLINE_FIELDS} platforms={ONLINE_PLATFORMS} />
+        <div className="sm:col-span-2"><label htmlFor="audit-website" className={L}>Website</label><input id="audit-website" name="website" className="field" placeholder="e.g. www.yourbusiness.com" /></div>
+        <div className="sm:col-span-2"><label htmlFor="audit-social-media" className={L}>Social media</label><input id="audit-social-media" name="social_media" className="field" placeholder="Instagram, Facebook or TikTok link or @handle" /></div>
+        <div className="sm:col-span-2"><ProfileScreenshots platform="Social media" files={profileScreenshots} onChange={setProfileScreenshots} /></div>
         <div className="sm:col-span-2">
           <label className={L}>Biggest challenge</label>
           <select name="challenge" className="field" required defaultValue="">
