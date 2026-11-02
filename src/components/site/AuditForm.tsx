@@ -149,8 +149,6 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
           </>
         )}
         <div className="sm:col-span-2">
-          <p className="text-xs text-muted-foreground">You'll get your audit response on WhatsApp after submitting.</p>
-        </div>
         <div className="sm:col-span-2">
           <label className={L}>Send my report via</label>
           <div className="grid grid-cols-2 gap-3">
@@ -163,6 +161,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
         </div>
       </div>
       {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
+      <p className="mt-4 text-center text-xs text-muted-foreground">You'll get your audit response on WhatsApp after submitting.</p>
       <Button type="submit" disabled={busy} className="mt-6 inline-flex h-auto w-full items-center justify-center gap-2 rounded-full bg-cta px-6 py-4 font-semibold text-cta-foreground shadow-lg shadow-cta/25 transition hover:brightness-110 disabled:opacity-60">
         {busy && <Loader2 className="h-4 w-4 animate-spin" />} Get My Free Audit
       </Button>
