@@ -14,6 +14,15 @@ const date = new Date("2026-10-29T04:56:00Z");
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.restoreAllMocks(); });
 
 describe("Audit owner notifications", () => {
+  it("includes the new website and social media independently and handles absent values", () => {
+    const populated = auditSchema.parse({ ...answers, online_links: [], website: "www.yourbusiness.com", social_media: "@yourbusiness" });
+    const email = buildAuditEmail(populated, null, {}, date);
+    expect(email.text).toContain("Website: www.yourbusiness.com");
+    expect(email.text).toContain("Social media: @yourbusiness");
+    const empty = buildAuditEmail(auditSchema.parse({ ...populated, website: "", social_media: "" }), null, {}, date);
+    expect(empty.text).toContain("Website: None");
+    expect(empty.text).toContain("Social media: None");
+  });
   it("sends to the explicitly confirmed address", async () => {
     vi.stubEnv("RESEND_API_KEY", "test-only-not-a-credential");
     const fetcher = vi.fn().mockResolvedValue(new Response("{}", { status: 200 }));
