@@ -18,7 +18,17 @@ describe("Private profile upload flow", () => {
     await expect(submitAudit({ data })).resolves.toEqual({ ok: true, breakdown: null });
     expect(state.insert.mock.calls[0]?.[0]).toMatchObject({ website: null, social_media: null, profile_screenshots: [] });
     expect(state.upload).not.toHaveBeenCalled();
-    expect(state.whatsapp).toHaveBeenCalledWith("Test", "+2349034340796", { website: null, social_media: null, profile_screenshots: [], screenshot_path: null });
+    expect(state.whatsapp).toHaveBeenCalledWith("Test", "+2349034340796", { website: null, social_media: null, instagram: null, facebook: null, tiktok: null, profile_screenshots: [], screenshot_path: null });
+  });
+  it.each([{}, { instagram: "@shop", facebook: "facebook.com/shop", tiktok: "@videos" }])("routes optional social links separately to every destination: %j", async socials => {
+    const data = auditSchema.parse({ name: "Test", business_name: "Test", email: "test@example.com", whatsapp: "+2349034340796", industry_location: "Retail", challenge: "Low sales", running_ads: "No, never", report_preference: "Email", whatsapp_consent: true, ...socials });
+    const links = { instagram: data.instagram, facebook: data.facebook, tiktok: data.tiktok };
+    await expect(submitAudit({ data })).resolves.toEqual({ ok: true, breakdown: null });
+    expect(state.insert.mock.calls[0]?.[0]).toMatchObject(links);
+    expect(state.generate.mock.calls[0]?.[1]).toMatchObject(links);
+    expect(state.send.mock.calls[0]?.[0]).toMatchObject(links);
+    expect(state.whatsapp.mock.calls[0]?.[2]).toMatchObject(links);
+    expect(state.upload).not.toHaveBeenCalled();
   });
   it("routes separate online answers and private screenshot paths to each destination", async () => {
     const data = auditSchema.parse({ name: "Test", business_name: "Test", email: "test@example.com", whatsapp: "+2349034340796", industry_location: "Retail", challenge: "Low sales", running_ads: "No, never", report_preference: "Email", whatsapp_consent: true, website: "www.yourbusiness.com", social_media: "@yourbusiness", profile_screenshots: [{ name: "profile.png", type: "image/png", base64: "iVBORw0KGgo=" }] });
