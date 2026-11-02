@@ -11,7 +11,7 @@
 
 - Keep audit choices and conditional validation in the browser-safe audit-fields module, shared by both forms and the server, so saved answers match the available choices.
 - Store multi-select audit answers as arrays with separate Other text fields; normalize hidden ad answers before saving to avoid stale submissions.
-- Store new online presence in separate website and social_media fields with independent profile_screenshots paths; normalize legacy online_links only for compatibility so old submissions remain readable.
+- Store new online presence in separate website and platform-specific social fields with independent profile_screenshots paths; retain legacy social_media and normalize online_links only for compatibility so old submissions remain readable.
 - Validate profile screenshot signatures and keep uploads private; sign owner email links for seven days and inbox links only after owner authorization, never return image paths or signed links from public submission handlers.
 - Pass separate audit details internally to the WhatsApp sender without adding template parameters, preserving the approved name-only message and preventing private screenshot paths from being sent to prospects.
 - Normalize audit phones through the shared browser-safe international phone validator so forms, saved records and notifications use the same full number.

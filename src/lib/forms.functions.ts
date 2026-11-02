@@ -100,7 +100,7 @@ export const submitAudit = createServerFn({ method: "POST" })
     if (data.whatsapp_consent) {
       try {
         const { sendAuditWhatsApp } = await import("./whatsapp-notify.server");
-        await sendAuditWhatsApp(data.name, data.whatsapp, { website: data.website, social_media: data.social_media, profile_screenshots: profileScreenshots, screenshot_path });
+        await sendAuditWhatsApp(data.name, data.whatsapp, { website: data.website, social_media: data.social_media, instagram: data.instagram, facebook: data.facebook, tiktok: data.tiktok, profile_screenshots: profileScreenshots, screenshot_path });
       } catch { console.error("WhatsApp notification failed; audit submission remains saved."); }
     }
     if (!emailSent) throw new Error("Audit saved but owner notification failed.");

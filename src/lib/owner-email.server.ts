@@ -44,7 +44,8 @@ export function buildAuditEmail(a: Answers, breakdown: Breakdown | null, checks:
   const rows: [string, string][] = [
     ["Name", a.name], ["Business", a.business_name], ["WhatsApp", a.whatsapp], ["Email", a.email],
     ["Industry & location", a.industry_location], ["Website", website],
-    ["Social media", socials], ["Biggest challenge", a.challenge],
+    ["Instagram", a.instagram ?? "None"], ["Facebook", a.facebook ?? "None"], ["TikTok", a.tiktok ?? "None"],
+    ...(a.social_media ? [["Social media", socials] as [string, string]] : []), ["Biggest challenge", a.challenge],
     ["Running ads", a.running_ads], ["Ad platforms", platforms.join(", ") || "—"], ["Monthly ad spend", a.ad_spend || "—"],
     ["Goals", goals.join(", ") || "—"], ["Report via", a.report_preference], ["Submitted", time],
     ["Uploaded screenshot", a.screenshot ? `${a.screenshot.name}\n${screenshotUrl ?? "Open the saved audit in the private inbox to view the screenshot."}${screenshotUrl ? "\nPrivate download link expires in 7 days; the saved screenshot remains in your inbox." : ""}` : "None"],

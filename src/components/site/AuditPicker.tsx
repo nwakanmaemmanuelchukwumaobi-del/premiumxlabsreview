@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Check, ChevronDown, Plus, X } from "lucide-react";
 import { ProfileScreenshots } from "./ProfileScreenshots";
+import { Button } from "@/components/ui/button";
 
 /**
  * Shared collapsed "box" for the audit form: a rounded box with a chevron
@@ -186,11 +187,13 @@ export function OnlinePresencePicker({
   onChange,
   fields,
   platforms,
+  socialOnly = false,
 }: {
   entries: OnlineEntry[];
   onChange: (entries: OnlineEntry[]) => void;
   fields: Record<string, { label: string; placeholder: string }>;
   platforms: readonly string[];
+  socialOnly?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const nextKey = useRef(1);
@@ -204,7 +207,7 @@ export function OnlinePresencePicker({
 
   return (
     <PickerBox
-      label={entries.length > 0 ? "Add your website or social media" : "Add your website or social media"}
+      label={socialOnly ? "Add your social media" : "Add your website or social media"}
       open={open}
       onToggle={() => remaining.length > 0 && setOpen((o) => !o)}
       onClose={() => setOpen(false)}
@@ -248,36 +251,39 @@ export function OnlinePresencePicker({
                 <div className="flex items-start gap-2">
                   <input
                     id={`online-link-${key}`}
-                    name={`online_link_${platform}`}
+                    name={socialOnly ? platform.toLowerCase() : `online_link_${platform}`}
                     className="field min-w-0 flex-1"
                     placeholder={field.placeholder}
                     maxLength={1000}
-                    required
+                    required={!socialOnly}
                     autoCapitalize="none"
                     autoCorrect="off"
                     spellCheck={false}
                   />
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="icon"
                     aria-label={`Remove ${platform}`}
                     onClick={() => onChange(entries.filter((e) => e.key !== key))}
                     className="mt-1 rounded-full border border-steel/25 p-2 text-steel transition hover:border-destructive hover:text-destructive"
                   >
                     <X aria-hidden="true" className="h-4 w-4" />
-                  </button>
+                  </Button>
                 </div>
-                {platform !== "Website" && <ProfileScreenshots platform={platform} files={entries.find(e => e.key === key)?.screenshots ?? []} onChange={screenshots => onChange(entries.map(e => e.key === key ? { ...e, screenshots } : e))} />}
+                {!socialOnly && platform !== "Website" && <ProfileScreenshots platform={platform} files={entries.find(e => e.key === key)?.screenshots ?? []} onChange={screenshots => onChange(entries.map(e => e.key === key ? { ...e, screenshots } : e))} />}
               </div>
             );
           })}
           {remaining.length > 0 && (
-            <button
+            <Button
               type="button"
+              variant="ghost"
               onClick={() => setOpen(true)}
               className="inline-flex items-center gap-1.5 self-start rounded-full border border-steel/25 px-3.5 py-2 text-sm font-semibold text-steel transition hover:border-cta hover:text-cta"
             >
               <Plus aria-hidden="true" className="h-4 w-4" /> Add another
-            </button>
+            </Button>
           )}
         </div>
       )}
