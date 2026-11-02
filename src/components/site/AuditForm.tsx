@@ -54,7 +54,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
     const payload = {
       name: get("name"), business_name: get("business_name"), email: get("email"), whatsapp: phone,
       industry_location: get("industry_location"), challenge: get("challenge"),
-      website: get("website"), instagram: get("instagram"), facebook: get("facebook"), tiktok: get("tiktok"),
+      website: get("website"), instagram: get("instagram"), facebook: get("facebook"), tiktok: get("tiktok"), x: get("x"), linkedin: get("linkedin"),
       profile_screenshots: [] as { name: string; type: "image/png" | "image/jpeg" | "image/webp"; base64: string }[],
       goals, goals_other: get("goals_other"),
       running_ads: get("running_ads"), ad_platforms: hasAdHistory(ads) ? platforms : [],

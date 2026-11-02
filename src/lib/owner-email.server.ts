@@ -45,6 +45,7 @@ export function buildAuditEmail(a: Answers, breakdown: Breakdown | null, checks:
     ["Name", a.name], ["Business", a.business_name], ["WhatsApp", a.whatsapp], ["Email", a.email],
     ["Industry & location", a.industry_location], ["Website", website],
     ["Instagram", a.instagram ?? "None"], ["Facebook", a.facebook ?? "None"], ["TikTok", a.tiktok ?? "None"],
+    ["X (Twitter)", a.x ?? "None"], ["LinkedIn", a.linkedin ?? "None"],
     ...(a.social_media ? [["Social media", socials] as [string, string]] : []), ["Biggest challenge", a.challenge],
     ["Running ads", a.running_ads], ["Ad platforms", platforms.join(", ") || "—"], ["Monthly ad spend", a.ad_spend || "—"],
     ["Goals", goals.join(", ") || "—"], ["Report via", a.report_preference], ["Submitted", time],

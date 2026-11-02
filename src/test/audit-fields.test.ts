@@ -1,17 +1,27 @@
 import { describe, expect, it } from "vitest";
-import { AD_PLATFORMS, AUDIT_GOALS, ONLINE_PLATFORMS, auditSchema, hasAdHistory } from "@/lib/audit-fields";
+import { AD_PLATFORMS, AUDIT_GOALS, ONLINE_PLATFORMS, SOCIAL_PLATFORMS, SOCIAL_FIELD_NAMES, auditSchema, hasAdHistory } from "@/lib/audit-fields";
 
 const base = { name: "Test", business_name: "Test business", email: "test@example.com", whatsapp: "+2349034340796", industry_location: "Retail, Abuja", challenge: "Low sales", running_ads: "Used to", report_preference: "Email" };
 
 describe("Audit answers", () => {
-  it.each([{}, { instagram: "", facebook: " ", tiktok: "" }])("allows unselected or blank social platforms: %j", fields => {
+  it.each([{}, { instagram: "", facebook: " ", tiktok: "", x: "", linkedin: " " }])("allows unselected or blank social platforms: %j", fields => {
     const parsed = auditSchema.parse({ ...base, ...fields });
-    expect([parsed.instagram, parsed.facebook, parsed.tiktok]).toEqual([null, null, null]);
+    expect([parsed.instagram, parsed.facebook, parsed.tiktok, parsed.x, parsed.linkedin]).toEqual([null, null, null, null, null]);
   });
   it("keeps each platform's link separate and accepts handles", () => {
-    const parsed = auditSchema.parse({ ...base, instagram: " @shop ", facebook: " facebook.com/shop ", tiktok: " @shopvideos " });
-    expect(parsed).toMatchObject({ instagram: "@shop", facebook: "facebook.com/shop", tiktok: "@shopvideos", website: null, social_media: null });
+    const parsed = auditSchema.parse({ ...base, instagram: " @shop ", facebook: " facebook.com/shop ", tiktok: " @shopvideos ", x: " @shopupdates ", linkedin: " linkedin.com/company/shop " });
+    expect(parsed).toMatchObject({ instagram: "@shop", facebook: "facebook.com/shop", tiktok: "@shopvideos", x: "@shopupdates", linkedin: "linkedin.com/company/shop", website: null, social_media: null });
     expect(auditSchema.parse(parsed)).toEqual(parsed);
+  });
+  it("offers exactly five platforms and maps X to its separate x field", () => {
+    expect(SOCIAL_PLATFORMS).toEqual(["Instagram", "Facebook", "TikTok", "X (Twitter)", "LinkedIn"]);
+    expect(SOCIAL_FIELD_NAMES["X (Twitter)"]).toBe("x");
+    expect(SOCIAL_FIELD_NAMES.LinkedIn).toBe("linkedin");
+  });
+  it("normalizes legacy X and LinkedIn links without losing them", () => {
+    const parsed = auditSchema.parse({ ...base, online_links: [{ platform: "X (Twitter)", link: "@oldshop" }, { platform: "LinkedIn", link: "linkedin.com/company/oldshop" }] });
+    expect(parsed.x).toBe("@oldshop");
+    expect(parsed.linkedin).toBe("linkedin.com/company/oldshop");
   });
   it.each([{}, { website: "", social_media: "", profile_screenshots: [] }])("allows all three online fields to be empty: %j", fields => {
     const parsed = auditSchema.parse({ ...base, ...fields });
