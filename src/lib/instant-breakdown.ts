@@ -10,7 +10,7 @@ const record = (v: unknown): Record<string, unknown> => typeof v === "object" &&
 export function firstContentBand(seconds: number) {
   return seconds < 1.8 ? "good" : seconds <= 3 ? "needs improvement" : "poor";
 }
-export function keyWebsiteFacts(checks: Checks, answers: Pick<z.infer<typeof auditSchema>, "running_ads" | "ad_platforms" | "ad_platform_other" | "goals" | "goals_other">) {
+export function keyWebsiteFacts(checks: Checks, answers: Pick<z.infer<typeof auditSchema>, "running_ads" | "ad_platforms" | "ad_platform_other" | "goals" | "goals_other"> & Partial<Pick<z.infer<typeof auditSchema>, "website" | "social_media" | "profile_screenshots">>) {
   const page = checks.page['status'] === "completed" ? checks.page : {};
   const fcp = record(record(checks.pagespeed['metrics'])["first-contentful-paint"])['numericValue'];
   const seconds = checks.pagespeed['status'] === "completed" && typeof fcp === "number" && Number.isFinite(fcp) && fcp >= 0 ? fcp / 1000 : null;
@@ -27,6 +27,8 @@ export function keyWebsiteFacts(checks: Checks, answers: Pick<z.infer<typeof aud
     sharing_preview: page['sharing_tags'] ? { image: tags["og:image"] === true, title: tags["og:title"] === true, description: tags["og:description"] === true, twitter_card: tags["twitter:card"] === true } : null,
     running_ads: answers.running_ads, ad_platforms: answers.ad_platforms, ad_platform_other: answers.ad_platform_other,
     goals: answers.goals, goals_other: answers.goals_other,
+    website: answers.website ?? null, social_media: answers.social_media ?? null,
+    profile_screenshot_count: answers.profile_screenshots?.length ?? 0,
   };
 }
 export function supportedProblems(f: ReturnType<typeof keyWebsiteFacts>, pageCompleted: boolean) {

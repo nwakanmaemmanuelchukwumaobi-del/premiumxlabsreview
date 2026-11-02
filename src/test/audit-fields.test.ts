@@ -4,6 +4,19 @@ import { AD_PLATFORMS, AUDIT_GOALS, ONLINE_PLATFORMS, auditSchema, hasAdHistory 
 const base = { name: "Test", business_name: "Test business", email: "test@example.com", whatsapp: "+2349034340796", industry_location: "Retail, Abuja", challenge: "Low sales", running_ads: "Used to", report_preference: "Email" };
 
 describe("Audit answers", () => {
+  it.each([{}, { website: "", social_media: "", profile_screenshots: [] }])("allows all three online fields to be empty: %j", fields => {
+    const parsed = auditSchema.parse({ ...base, ...fields });
+    expect(parsed.website).toBeNull();
+    expect(parsed.social_media).toBeNull();
+    expect(parsed.profile_screenshots).toEqual([]);
+    expect(auditSchema.parse(parsed)).toEqual(parsed);
+  });
+  it("keeps optional website and social media separate without requiring a URL", () => {
+    const parsed = auditSchema.parse({ ...base, website: " www.yourbusiness.com ", social_media: " @yourbusiness " });
+    expect(parsed.website).toBe("www.yourbusiness.com");
+    expect(parsed.social_media).toBe("@yourbusiness");
+    expect(parsed.online_links).toEqual([]);
+  });
   it("can validate client-normalized optional answers again on the server", () => {
     const client = auditSchema.parse({ ...base, goals: ["Increase sales"], ad_platforms: ["Google Ads"] });
     expect(auditSchema.parse(client)).toEqual(client);

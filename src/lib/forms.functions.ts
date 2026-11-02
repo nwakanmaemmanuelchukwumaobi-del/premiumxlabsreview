@@ -24,7 +24,8 @@ export const submitAudit = createServerFn({ method: "POST" })
         .upload(path, bytes, { contentType: data.screenshot.type });
       if (!error) screenshot_path = path;
     }
-    const { screenshot: _s, ...row } = data;
+    const { screenshot: _s, profile_screenshots: _profile, online_links: _legacyLinks, ...row } = data;
+    const profileScreenshots: StoredProfileImage[] = [];
     const onlineLinks = data.online_links.map(({ screenshots: _images, ...entry }) => ({ ...entry, screenshots: [] as StoredProfileImage[] }));
     const signedProfileImages: SignedProfileImage[] = [];
     const submittedAt = new Date();
@@ -32,9 +33,23 @@ export const submitAudit = createServerFn({ method: "POST" })
     const results = await saveThenCheck(
       async () => {
         const id = crypto.randomUUID();
-        const { error } = await supabaseAdmin.from("audit_requests").insert({ ...row, online_links: onlineLinks, screenshot_path, id, created_at: submittedAt.toISOString() });
+        const { error } = await supabaseAdmin.from("audit_requests").insert({ ...row, profile_screenshots: profileScreenshots, screenshot_path, id, created_at: submittedAt.toISOString() });
         if (error) throw new Error("Could not save your request. Please try again.");
         savedId = id;
+        for (const image of data.profile_screenshots) {
+          const bytes = Uint8Array.from(atob(image.base64), c => c.charCodeAt(0));
+          if (!matchesImageType(bytes, image.type)) throw new Error("Invalid screenshot content");
+          const extension = image.type === "image/jpeg" ? "jpg" : image.type === "image/webp" ? "webp" : "png";
+          const path = `${id}/${crypto.randomUUID()}.${extension}`;
+          const { error: uploadError } = await supabaseAdmin.storage.from("audit-screenshots").upload(path, bytes, { contentType: image.type });
+          if (uploadError) throw new Error("Could not save screenshot");
+          profileScreenshots.push({ name: image.name, path });
+          const { error: storeError } = await supabaseAdmin.from("audit_requests").update({ profile_screenshots: profileScreenshots }).eq("id", id);
+          if (storeError) throw new Error("Could not record screenshot");
+          const { data: signed, error: signError } = await supabaseAdmin.storage.from("audit-screenshots").createSignedUrl(path, 7 * 24 * 60 * 60);
+          if (signError || !signed?.signedUrl) throw new Error("Could not prepare private screenshot link");
+          signedProfileImages.push({ platform: "Social media", name: image.name, url: signed.signedUrl });
+        }
         for (const [index, entry] of data.online_links.entries()) {
           const stored = onlineLinks[index];
           if (!stored) continue;
@@ -55,7 +70,7 @@ export const submitAudit = createServerFn({ method: "POST" })
         }
         return id;
       },
-      () => runWebsiteChecks(data.online_links.find((entry) => entry.platform === "Website")?.link, process.env['PAGESPEED_API_KEY']),
+      () => runWebsiteChecks(data.website ?? undefined, process.env['PAGESPEED_API_KEY']),
       async (id, results) => {
         const { error } = await supabaseAdmin.from("audit_requests").update({ website_checks: JSON.parse(JSON.stringify(results)) }).eq("id", id);
         if (error) throw new Error("Could not store checks");
@@ -85,7 +100,7 @@ export const submitAudit = createServerFn({ method: "POST" })
     if (data.whatsapp_consent) {
       try {
         const { sendAuditWhatsApp } = await import("./whatsapp-notify.server");
-        await sendAuditWhatsApp(data.name, data.whatsapp);
+        await sendAuditWhatsApp(data.name, data.whatsapp, { website: data.website, social_media: data.social_media, profile_screenshots: profileScreenshots, screenshot_path });
       } catch { console.error("WhatsApp notification failed; audit submission remains saved."); }
     }
     if (!emailSent) throw new Error("Audit saved but owner notification failed.");

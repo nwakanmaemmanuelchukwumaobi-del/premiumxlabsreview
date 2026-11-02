@@ -47,6 +47,9 @@ export const auditSchema = z.object({
   whatsapp: internationalPhoneSchema,
   industry_location: s(200).min(1, "Tell us your industry and location"),
   online_links: onlineLinksSchema,
+  website: o(1000),
+  social_media: o(1000),
+  profile_screenshots: z.array(profileScreenshotSchema).max(3, "Add up to 3 screenshots per platform.").default([]),
   challenge: z.enum(["Few customers", "Low sales", "No online presence", "Weak branding", "Other"]),
   goals: z.array(z.enum(AUDIT_GOALS)).max(AUDIT_GOALS.length).default([]),
   goals_other: o(500),
@@ -64,6 +67,8 @@ export const auditSchema = z.object({
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["ad_platform_other"], message: "Please enter your other ad platform" });
 }).transform((data) => ({
   ...data,
+  website: data.website ?? data.online_links.find(entry => entry.platform === "Website")?.link ?? null,
+  social_media: data.social_media ?? (data.online_links.filter(entry => entry.platform !== "Website").map(entry => `${entry.platform === "Other" ? entry.other_name ?? "Other" : entry.platform}: ${entry.link}`).join("\n") || null),
   goals: [...new Set(data.goals)],
   goals_other: data.goals.includes("Other") ? data.goals_other : null,
   ad_platforms: hasAdHistory(data.running_ads) ? [...new Set(data.ad_platforms)] : [],

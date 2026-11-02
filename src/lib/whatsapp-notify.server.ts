@@ -3,13 +3,17 @@
  * Never import this file from client code; the API key must stay on the server.
  */
 import { internationalPhone } from "./audit-phone";
+import type { StoredProfileImage } from "./profile-screenshots";
+
+export type AuditWhatsAppDetails = { website: string | null; social_media: string | null; profile_screenshots: StoredProfileImage[]; screenshot_path: string | null };
 
 const YCLOUD_MESSAGES_URL = "https://api.ycloud.com/v2/whatsapp/messages";
 const SENDER = "+2349034340796";
 const TEMPLATE_NAME = "audit_received";
 
 /** Send the audit-received template message. Throws on failure; callers must catch. */
-export async function sendAuditWhatsApp(customerName: string, customerPhone: string): Promise<void> {
+export async function sendAuditWhatsApp(customerName: string, customerPhone: string, _details?: AuditWhatsAppDetails): Promise<void> {
+  // Separate audit details are accepted internally; the approved name-only template remains unchanged.
   const apiKey = process.env["YCLOUD_API_KEY"];
   if (!apiKey) throw new Error("YCLOUD_API_KEY is not configured");
   const recipientDigits = internationalPhone(customerPhone).replace(/^\+/, "");

@@ -53,9 +53,12 @@ export type Database = {
           links: string | null
           name: string
           online_links: Json
+          profile_screenshots: Json
           report_preference: string
           running_ads: string
           screenshot_path: string | null
+          social_media: string | null
+          website: string | null
           website_checks: Json | null
           whatsapp: string
           whatsapp_consent: boolean
@@ -77,9 +80,12 @@ export type Database = {
           links?: string | null
           name: string
           online_links?: Json
+          profile_screenshots?: Json
           report_preference: string
           running_ads: string
           screenshot_path?: string | null
+          social_media?: string | null
+          website?: string | null
           website_checks?: Json | null
           whatsapp: string
           whatsapp_consent?: boolean
@@ -101,9 +107,12 @@ export type Database = {
           links?: string | null
           name?: string
           online_links?: Json
+          profile_screenshots?: Json
           report_preference?: string
           running_ads?: string
           screenshot_path?: string | null
+          social_media?: string | null
+          website?: string | null
           website_checks?: Json | null
           whatsapp?: string
           whatsapp_consent?: boolean
