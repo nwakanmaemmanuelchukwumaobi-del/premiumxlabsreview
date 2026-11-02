@@ -35,9 +35,8 @@ function summarizeChecks(checks: any): string[] {
 }
 
 export function buildAuditEmail(a: Answers, breakdown: Breakdown | null, checks: unknown, submittedAt: Date, screenshotUrl: string | null = null, profileImages: SignedProfileImage[] = []) {
-  const website = a.online_links.find((l) => l.platform === "Website")?.link ?? "None";
-  const socials = a.online_links.filter((l) => l.platform !== "Website")
-    .map((l) => `${l.platform === "Other" ? l.other_name || "Other" : l.platform}: ${l.link}`);
+  const website = a.website ?? "None";
+  const socials = a.social_media ?? "None";
   const goals = a.goals.map((g) => (g === "Other" && a.goals_other ? `Other: ${a.goals_other}` : g));
   const platforms = a.ad_platforms.map((p) => (p === "Other" && a.ad_platform_other ? `Other: ${a.ad_platform_other}` : p));
   const time = submittedAt.toLocaleString("en-GB", { timeZone: "Africa/Lagos", dateStyle: "medium", timeStyle: "short" }) + " (Lagos)";
@@ -45,7 +44,7 @@ export function buildAuditEmail(a: Answers, breakdown: Breakdown | null, checks:
   const rows: [string, string][] = [
     ["Name", a.name], ["Business", a.business_name], ["WhatsApp", a.whatsapp], ["Email", a.email],
     ["Industry & location", a.industry_location], ["Website", website],
-    ["Social links", socials.join("\n") || "None"], ["Biggest challenge", a.challenge],
+    ["Social media", socials], ["Biggest challenge", a.challenge],
     ["Running ads", a.running_ads], ["Ad platforms", platforms.join(", ") || "—"], ["Monthly ad spend", a.ad_spend || "—"],
     ["Goals", goals.join(", ") || "—"], ["Report via", a.report_preference], ["Submitted", time],
     ["Uploaded screenshot", a.screenshot ? `${a.screenshot.name}\n${screenshotUrl ?? "Open the saved audit in the private inbox to view the screenshot."}${screenshotUrl ? "\nPrivate download link expires in 7 days; the saved screenshot remains in your inbox." : ""}` : "None"],

@@ -67,6 +67,8 @@ export const auditSchema = z.object({
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["ad_platform_other"], message: "Please enter your other ad platform" });
 }).transform((data) => ({
   ...data,
+  website: data.website ?? data.online_links.find(entry => entry.platform === "Website")?.link ?? null,
+  social_media: data.social_media ?? (data.online_links.filter(entry => entry.platform !== "Website").map(entry => `${entry.platform === "Other" ? entry.other_name ?? "Other" : entry.platform}: ${entry.link}`).join("\n") || null),
   goals: [...new Set(data.goals)],
   goals_other: data.goals.includes("Other") ? data.goals_other : null,
   ad_platforms: hasAdHistory(data.running_ads) ? [...new Set(data.ad_platforms)] : [],
