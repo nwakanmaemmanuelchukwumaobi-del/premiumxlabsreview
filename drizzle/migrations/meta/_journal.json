@@ -71,6 +71,20 @@
       "when": 1793788488641,
       "tag": "0009_google_audit_reports",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793789214012,
+      "tag": "0010_restrict_audit_cache_access",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1793789293006,
+      "tag": "0011_expire_audit_report_links",
+      "breakpoints": true
     }
   ]
 }

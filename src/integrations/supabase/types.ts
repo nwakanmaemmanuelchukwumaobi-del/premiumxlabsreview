@@ -63,6 +63,7 @@ export type Database = {
         Row: {
           audit_id: string
           created_at: string
+          expires_at: string
           report: Json
           revoked: boolean
           token_hash: string
@@ -70,6 +71,7 @@ export type Database = {
         Insert: {
           audit_id: string
           created_at?: string
+          expires_at?: string
           report: Json
           revoked?: boolean
           token_hash: string
@@ -77,6 +79,7 @@ export type Database = {
         Update: {
           audit_id?: string
           created_at?: string
+          expires_at?: string
           report?: Json
           revoked?: boolean
           token_hash?: string

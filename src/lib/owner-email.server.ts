@@ -60,7 +60,7 @@ export function buildAuditEmail(a: Answers, breakdown: Breakdown | null, checks:
 
   const html = `<div style="font-family:Arial,sans-serif;color:#14234D;max-width:640px">
 <h2>New Audit Request: ${esc(a.business_name)}</h2>
-<table style="border-collapse:collapse;width:100%">${rows.map(([k, v]) => `<tr><td style="padding:6px;border-bottom:1px solid #eee;font-weight:bold;vertical-align:top;width:170px">${esc(k)}</td><td style="padding:6px;border-bottom:1px solid #eee;white-space:pre-line">${esc(v)}</td></tr>`).join("")}</table>
+<table style="border-collapse:collapse;width:100%">${rows.map(([k, v]) => `<tr><td style="padding:6px;border-bottom:1px solid #eee;font-weight:bold;vertical-align:top;width:170px">${esc(k)}</td><td style="padding:6px;border-bottom:1px solid #eee;white-space:pre-line">${k === "Audit report" && reportDetails?.url ? `<a href="${esc(reportDetails.url)}">Open audit report</a>` : esc(v)}</td></tr>`).join("")}</table>
 <h3>Instant breakdown shown</h3><ol>${bd.map((p) => `<li>${esc(p)}</li>`).join("")}</ol>
 <h3>Website check summary</h3><ul>${cs.map((c) => `<li>${esc(c)}</li>`).join("")}</ul>${imageHtml}</div>`;
   const text = [...rows.map(([k, v]) => `${k}: ${v}`), "", "Instant breakdown:", ...bd.map((p) => `- ${p}`), "", "Website checks:", ...cs.map((c) => `- ${c}`), ...(profileImages.length ? ["", "Screenshots (private links expire after 7 days):", ...profileImages.map(image => `${image.platform} — ${image.name}: ${image.url}`)] : [])].join("\n");

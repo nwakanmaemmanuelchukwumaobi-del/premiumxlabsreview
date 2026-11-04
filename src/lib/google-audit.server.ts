@@ -13,7 +13,7 @@ export async function cachedWebsiteChecks(website: string | undefined, key: stri
   let url: URL;
   try { url = publicWebsiteURL(website); } catch { return unavailableChecks(website); }
   const home = `${url.origin}/`;
-  return cachedAuditCheck(`website:v2:${home}`, checksSchema, () => runWebsiteChecks(home, key), () => unavailableChecks(home));
+  return cachedAuditCheck(`website:v3:${home}`, checksSchema, () => runWebsiteChecks(home, key), () => unavailableChecks(home), value => value.page['status'] === "completed" && value.pagespeed['status'] === "completed");
 }
 export async function serperRequest(endpoint: "search" | "maps", query: string, request: typeof fetch = fetch): Promise<unknown> {
   const key = process.env["SERPER_API_KEY"];
@@ -31,7 +31,7 @@ export function matchedMaps(raw: unknown, context: SearchContext, domain: string
   if (!data.success) return { status: "unavailable", rating: null, reviews: null };
   const normalize = (s: string) => s.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
   const match = data.data.places.find(p => normalize(p.title) === normalize(context.business_name) && !!p.address && [context.city, context.state].some(l => p.address?.toLowerCase().includes(l.toLowerCase())) && !!domain && !!p.website && sameDomain(p.website, domain));
-  return match ? { status: "matched", rating: match.rating ?? null, reviews: match.ratingCount ?? null } : { status: data.data.places.length ? "unconfirmed" : "not found", rating: null, reviews: null };
+  return match ? { status: "matched", rating: match.rating ?? null, reviews: match.ratingCount ?? null } : { status: "unconfirmed", rating: null, reviews: null };
 }
 const speed = (checks: WebsiteChecks): GoogleReport["speed"] => {
   const ps = checks.pagespeed;
@@ -45,7 +45,7 @@ export function partialReport(context: SearchContext, website: string | null, ch
 }
 export async function generateGoogleReport(context: SearchContext, website: string | null, checks: WebsiteChecks): Promise<GoogleReport> {
   const domain = websiteDomain(checks.website ?? website);
-  return cachedAuditCheck(`google:v1:${domain ?? "no-website"}:${JSON.stringify(context)}`, reportSchema, async () => {
+  return cachedAuditCheck(`google:v2:${domain ?? "no-website"}:${JSON.stringify(context)}`, reportSchema, async () => {
     const clientEvidence = pageEvidence(checks.page);
     const secondary = await analyzePages(context.main_offering, clientEvidence);
     const queries = auditQueries(context, secondary.secondary);
@@ -71,7 +71,7 @@ export async function generateGoogleReport(context: SearchContext, website: stri
     }));
     const clientSpeed = speed(checks);
     return { version: 1, business: context.business_name, website: checks.website ?? website, location: `${context.city}, ${context.state}`, checked_at: new Date().toISOString(), searches, speed: clientSpeed, maps, score: calculateScore(searches, clientSpeed.performance, maps.rating), fixes: reportFixes(searches, clientSpeed, checks.page) };
-  }, () => partialReport(context, website, checks));
+  }, () => partialReport(context, website, checks), value => value.searches.every(s => s.status === "completed") && value.maps.status !== "unavailable");
 }
 export async function createSavedGoogleReport(id: string, answers: z.infer<typeof auditSchema>, checks: WebsiteChecks) {
   if (!answers.offering_type || !answers.main_offering || !answers.city || !answers.state) return null;

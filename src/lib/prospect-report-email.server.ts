@@ -12,6 +12,7 @@ export async function sendProspectReportEmail(email: string, business: string, i
     const content = buildProspectReportEmail(business, url, report);
     const response = await fetch("https://api.resend.com/emails", { method: "POST", signal: AbortSignal.timeout(15000), headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json", "Idempotency-Key": `audit-report-${id}` }, body: JSON.stringify({ from: OWNER_EMAIL_FROM, to: [email], ...content }) });
     if (!response.ok) console.error(`Prospect report email failed [${response.status}].`);
+    else console.info("Prospect audit report email accepted by Resend.");
     return response.ok;
   } catch { console.error("Prospect report email failed; saved report remains available."); return false; }
 }

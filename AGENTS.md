@@ -29,3 +29,4 @@
 - Use same-origin variable font assets with swap and a sized WebP logo; keep hero content server-visible and defer report code until form interaction to protect first-screen loading.
 - Send audit notifications through the server-only owner-email helper after persistence and checks, using bounded delivery and private screenshot links; upgraded audits retain their visible report on notification failure, while legacy submissions retain friendly email-failure handling.
 - Keep Google report queries/scoring in browser-safe helpers and provider/AI work server-only; durable context-keyed cache leases avoid duplicate paid calls, and public token routes project only validated report data, never submissions or screenshot paths.
+- Cache only successful provider checks for the full TTL and release failed leases; report links are hashed, revocable, time-limited capabilities so partial failures recover and shared access expires.
