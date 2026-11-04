@@ -186,7 +186,7 @@ export async function runWebsiteChecks(website: string | undefined, key: string 
     return { ...base, status: "skipped", page: { status: "skipped", reason: "Invalid or non-public website URL" }, pagespeed: { status: "skipped", reason: "Invalid or non-public website URL" } };
   }
   const [page, pagespeed] = await Promise.all([
-    pageChecks(url, request, limits.page).catch(() => pageChecks(url, request, limits.page)).catch(() => ({ status: "skipped", reason: "Website fetch, DNS safety check, or parsing failed" })),
+    pageChecks(url, request, limits.page).catch((e: unknown) => { if (e instanceof Error && /Non-public|blocked/i.test(e.message)) throw e; return pageChecks(url, request, limits.page); }).catch(() => ({ status: "skipped", reason: "Website fetch, DNS safety check, or parsing failed" })),
     speedChecks(url, key, request, limits.speed).catch(() => ({ status: "skipped", reason: "PageSpeed unavailable or timed out", strategy: "mobile" })),
   ]);
   return { ...base, website: url.href, status: "completed", page, pagespeed };
