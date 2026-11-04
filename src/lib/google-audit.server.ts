@@ -43,7 +43,7 @@ export function partialReport(context: SearchContext, website: string | null, ch
   const clientSpeed = speed(checks);
   return { version: 1, business: context.business_name, website, location: `${context.city}, ${context.state}`, checked_at: new Date().toISOString(), searches, speed: clientSpeed, maps: { status: "unavailable", rating: null, reviews: null }, score: calculateScore(searches, clientSpeed.performance, null), fixes: reportFixes(searches, clientSpeed, checks.page) };
 }
-export async function generateGoogleReport(context: SearchContext, website: string | null, initial: WebsiteChecks, progress?: (report: GoogleReport, steps: number[]) => Promise<void>, clientPromise?: Promise<WebsiteChecks>): Promise<GoogleReport> {
+export async function generateGoogleReport(context: SearchContext, website: string | null, initial: WebsiteChecks, progress?: (report: GoogleReport, steps: number[]) => Promise<void>, clientWork?: () => Promise<WebsiteChecks>): Promise<GoogleReport> {
   const domain = websiteDomain(website);
   let checks = initial;
   const report = partialReport(context, website, checks);
@@ -67,7 +67,7 @@ export async function generateGoogleReport(context: SearchContext, website: stri
   }));
   report.searches = searches; await publish(0);
   const first = searches[0]?.competitors.slice(0,2) ?? [];
-  const [client, ...competitors] = await Promise.all([clientPromise ?? Promise.resolve(checks), ...first.map(c => cachedWebsiteChecks(c.link, process.env['PAGESPEED_API_KEY']))]);
+  const [client, ...competitors] = await Promise.all([clientWork ? clientWork() : Promise.resolve(checks), ...first.map(c => cachedWebsiteChecks(c.link, process.env['PAGESPEED_API_KEY']))]);
   checks = client ?? checks;
   first.forEach((c,i) => {
     const checked = competitors[i]; if (!checked) return;
