@@ -35,6 +35,62 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_check_cache: {
+        Row: {
+          expires_at: string | null
+          key: string
+          lease_id: string | null
+          lease_until: string | null
+          payload: Json | null
+        }
+        Insert: {
+          expires_at?: string | null
+          key: string
+          lease_id?: string | null
+          lease_until?: string | null
+          payload?: Json | null
+        }
+        Update: {
+          expires_at?: string | null
+          key?: string
+          lease_id?: string | null
+          lease_until?: string | null
+          payload?: Json | null
+        }
+        Relationships: []
+      }
+      audit_report_links: {
+        Row: {
+          audit_id: string
+          created_at: string
+          report: Json
+          revoked: boolean
+          token_hash: string
+        }
+        Insert: {
+          audit_id: string
+          created_at?: string
+          report: Json
+          revoked?: boolean
+          token_hash: string
+        }
+        Update: {
+          audit_id?: string
+          created_at?: string
+          report?: Json
+          revoked?: boolean
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_report_links_audit_id_fkey"
+            columns: ["audit_id"]
+            isOneToOne: false
+            referencedRelation: "audit_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_requests: {
         Row: {
           ad_platform: string | null
@@ -43,24 +99,30 @@ export type Database = {
           ad_spend: string | null
           business_name: string
           challenge: string
+          city: string | null
           created_at: string
           email: string
           facebook: string | null
           goals: string[]
           goals_other: string | null
+          google_report: Json | null
           id: string
           industry_location: string
           instagram: string | null
           instant_breakdown: Json | null
           linkedin: string | null
           links: string | null
+          main_offering: string | null
+          main_service: string | null
           name: string
+          offering_type: string | null
           online_links: Json
           profile_screenshots: Json
           report_preference: string
           running_ads: string
           screenshot_path: string | null
           social_media: string | null
+          state: string | null
           tiktok: string | null
           website: string | null
           website_checks: Json | null
@@ -75,24 +137,30 @@ export type Database = {
           ad_spend?: string | null
           business_name: string
           challenge: string
+          city?: string | null
           created_at?: string
           email: string
           facebook?: string | null
           goals?: string[]
           goals_other?: string | null
+          google_report?: Json | null
           id?: string
           industry_location: string
           instagram?: string | null
           instant_breakdown?: Json | null
           linkedin?: string | null
           links?: string | null
+          main_offering?: string | null
+          main_service?: string | null
           name: string
+          offering_type?: string | null
           online_links?: Json
           profile_screenshots?: Json
           report_preference: string
           running_ads: string
           screenshot_path?: string | null
           social_media?: string | null
+          state?: string | null
           tiktok?: string | null
           website?: string | null
           website_checks?: Json | null
@@ -107,24 +175,30 @@ export type Database = {
           ad_spend?: string | null
           business_name?: string
           challenge?: string
+          city?: string | null
           created_at?: string
           email?: string
           facebook?: string | null
           goals?: string[]
           goals_other?: string | null
+          google_report?: Json | null
           id?: string
           industry_location?: string
           instagram?: string | null
           instant_breakdown?: Json | null
           linkedin?: string | null
           links?: string | null
+          main_offering?: string | null
+          main_service?: string | null
           name?: string
+          offering_type?: string | null
           online_links?: Json
           profile_screenshots?: Json
           report_preference?: string
           running_ads?: string
           screenshot_path?: string | null
           social_media?: string | null
+          state?: string | null
           tiktok?: string | null
           website?: string | null
           website_checks?: Json | null
@@ -235,6 +309,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_audit_cache: {
+        Args: { p_key: string; p_lease: string }
+        Returns: boolean
+      }
       is_audit_owner: { Args: never; Returns: boolean }
     }
     Enums: {

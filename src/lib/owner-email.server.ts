@@ -2,6 +2,7 @@ import type { z } from "zod";
 import type { auditSchema } from "./audit-fields";
 import type { Breakdown } from "./instant-breakdown";
 import type { SignedProfileImage } from "./profile-screenshots";
+import type { GoogleReport } from "./google-audit";
 
 type Answers = z.infer<typeof auditSchema>;
 
@@ -34,7 +35,7 @@ function summarizeChecks(checks: any): string[] {
   return out;
 }
 
-export function buildAuditEmail(a: Answers, breakdown: Breakdown | null, checks: unknown, submittedAt: Date, screenshotUrl: string | null = null, profileImages: SignedProfileImage[] = []) {
+export function buildAuditEmail(a: Answers, breakdown: Breakdown | null, checks: unknown, submittedAt: Date, screenshotUrl: string | null = null, profileImages: SignedProfileImage[] = [], reportDetails?: { report: GoogleReport; url: string | null } | null) {
   const website = a.website ?? "None";
   const socials = a.social_media ?? "None";
   const goals = a.goals.map((g) => (g === "Other" && a.goals_other ? `Other: ${a.goals_other}` : g));
@@ -44,6 +45,8 @@ export function buildAuditEmail(a: Answers, breakdown: Breakdown | null, checks:
   const rows: [string, string][] = [
     ["Name", a.name], ["Business", a.business_name], ["WhatsApp", a.whatsapp], ["Email", a.email],
     ["Industry & location", a.industry_location], ["Website", website],
+    ...(a.offering_type ? [["Business offers", a.offering_type], ["Main offering", a.main_offering ?? "None"], ["Main service", a.main_service ?? "None"], ["City", a.city ?? "None"], ["State", a.state ?? "None"]] as [string, string][] : []),
+    ...(reportDetails ? [["Audit score", reportDetails.report.score.coverage ? `${reportDetails.report.score.earned}/100${reportDetails.report.score.complete ? "" : ` (provisional; ${reportDetails.report.score.coverage}/100 points checked)`}` : "Not available"], ["Audit report", reportDetails.url ?? "Report saved in private inbox; link unavailable"]] as [string, string][] : []),
     ["Instagram", a.instagram ?? "None"], ["Facebook", a.facebook ?? "None"], ["TikTok", a.tiktok ?? "None"],
     ["X (Twitter)", a.x ?? "None"], ["LinkedIn", a.linkedin ?? "None"],
     ...(a.social_media ? [["Social media", socials] as [string, string]] : []), ["Biggest challenge", a.challenge],
@@ -65,14 +68,14 @@ export function buildAuditEmail(a: Answers, breakdown: Breakdown | null, checks:
 }
 
 /** Never throws; email failures must not affect the submission. */
-export async function sendAuditOwnerEmail(a: Answers, breakdown: Breakdown | null, checks: unknown, id: string | null, submittedAt = new Date(), screenshotUrl: string | null = null, profileImages: SignedProfileImage[] = []) {
+export async function sendAuditOwnerEmail(a: Answers, breakdown: Breakdown | null, checks: unknown, id: string | null, submittedAt = new Date(), screenshotUrl: string | null = null, profileImages: SignedProfileImage[] = [], reportDetails?: { report: GoogleReport; url: string | null } | null) {
   try {
     const key = process.env["RESEND_API_KEY"];
     if (!key) {
       console.error("Owner email not sent: RESEND_API_KEY is not configured.");
       return false;
     }
-    const { subject, html, text } = buildAuditEmail(a, breakdown, checks, submittedAt, screenshotUrl, profileImages);
+    const { subject, html, text } = buildAuditEmail(a, breakdown, checks, submittedAt, screenshotUrl, profileImages, reportDetails);
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       signal: AbortSignal.timeout(15_000),

@@ -1,0 +1,23 @@
+// @vitest-environment node
+import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
+const mocks = vi.hoisted(() => ({ website: vi.fn(), analyze: vi.fn(), cache: new Map<string, unknown>(), calls: [] as string[] }));
+vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: {} }));
+vi.mock("@/lib/audit-cache.server", () => ({ cachedAuditCheck: async (key: string, _schema: unknown, work: () => Promise<unknown>, fallback: () => unknown) => { if (mocks.cache.has(key)) return mocks.cache.get(key); let result; try { result = await work(); } catch { result = fallback(); } mocks.cache.set(key, result); return result; }, hashValue: async () => "hash" }));
+vi.mock("@/lib/google-audit-ai.server", () => ({ analyzePages: mocks.analyze, pageEvidence: () => ({ available: false, headline: null, contact: false, quote: false, links: [] }) }));
+vi.mock("@/lib/website-checks.server", () => ({ publicWebsiteURL: (v: string) => new URL(v), runWebsiteChecks: mocks.website }));
+import { generateGoogleReport, matchedMaps, serperRequest } from "@/lib/google-audit.server";
+const context = { business_name: "Ada Shop", offering_type: "Products" as const, main_offering: "shoes", city: "Abuja", state: "Abuja" };
+const checks = { status: "completed" as const, website: "https://ada.ng/", checked_at: "2026-11-04", page: { status: "skipped" }, pagespeed: { status: "completed", performance_score: 0.8, metrics: { "first-contentful-paint": { numericValue: 1800 } } } };
+beforeEach(() => { vi.clearAllMocks(); mocks.cache.clear(); mocks.analyze.mockResolvedValue({ secondary: null, differences: [] }); mocks.website.mockResolvedValue(checks); vi.stubEnv("SERPER_API_KEY", "test-only"); });
+afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
+describe("Server-only Google checks", () => {
+  it("uses Serper search with ng, en and top ten settings", async () => { const request = vi.fn().mockResolvedValue(Response.json({ organic: [] })); await serperRequest("search", "shoes Abuja", request); expect(request.mock.calls[0]?.[0]).toBe("https://google.serper.dev/search"); expect(JSON.parse(request.mock.calls[0]?.[1].body)).toEqual({ q: "shoes Abuja", gl: "ng", hl: "en", num: 10 }); expect(request.mock.calls[0]?.[1].headers["X-API-KEY"]).toBe("test-only"); });
+  it("runs five searches, one Maps lookup and only three competitor speed checks", async () => {
+    const request = vi.fn(async (url: string) => Response.json(url.endsWith("maps") ? { places: [] } : { organic: [1, 2, 3, 4].map(i => ({ title: `Store ${i}`, link: `https://store${i}.ng/products`, position: i })) })); vi.stubGlobal("fetch", request);
+    const report = await generateGoogleReport(context, "https://ada.ng", checks);
+    expect(request.mock.calls.filter(c => c[0].endsWith("search"))).toHaveLength(5); expect(request.mock.calls.filter(c => c[0].endsWith("maps"))).toHaveLength(1); expect(mocks.website).toHaveBeenCalledTimes(3); expect(report.searches[0]?.competitors).toHaveLength(3);
+    await generateGoogleReport(context, "https://ada.ng", checks); expect(request).toHaveBeenCalledTimes(6);
+  });
+  it("preserves speed and partial report when all Serper calls fail", async () => { vi.spyOn(console, "error").mockImplementation(() => {}); vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline"))); const report = await generateGoogleReport(context, "https://ada.ng", checks); expect(report.searches.every(s => s.status === "unavailable")).toBe(true); expect(report.score).toEqual({ earned: 24, coverage: 30, complete: false }); expect(report.maps.status).toBe("unavailable"); });
+  it("only attributes Maps rating with matching name, location and domain", () => { const places = { places: [{ title: "Ada Shop", address: "Abuja", website: "https://ada.ng", rating: 4.5, ratingCount: 17 }] }; expect(matchedMaps(places, context, "ada.ng")).toEqual({ status: "matched", rating: 4.5, reviews: 17 }); expect(matchedMaps(places, context, "other.ng")).toEqual({ status: "unconfirmed", rating: null, reviews: null }); });
+});

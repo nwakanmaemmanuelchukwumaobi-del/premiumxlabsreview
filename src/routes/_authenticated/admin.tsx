@@ -6,6 +6,8 @@ import { LogOut, ChevronLeft, ChevronRight, Save } from "lucide-react";
 import { getAuditSubmissions, saveOwnerProfile } from "@/lib/admin.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { GoogleAuditReport } from "@/components/site/GoogleAuditReport";
+import { reportSchema } from "@/lib/google-audit";
 export const Route = createFileRoute("/_authenticated/admin")({ staticData: { sitemap: false }, head: () => ({ meta: [
   { title: "Private Audit Inbox | premiumxlabs" }, { name: "description", content: "Owner-only premiumxlabs audit answers and website breakdowns." },
   { property: "og:title", content: "Private Audit Inbox | premiumxlabs" }, { property: "og:description", content: "Private owner audit inbox." },
@@ -16,6 +18,7 @@ function AdminPage() {
   const qc = useQueryClient(); const navigate = useNavigate(); const [offset, setOffset] = useState(0); const [selected, setSelected] = useState<string | null>(null); const [profileMessage,setProfileMessage]=useState("");
   const query = useQuery({ queryKey: ["private-audits",offset], queryFn: () => fetchRows({ data: { offset } }), retry: false });
   const row = query.data?.rows.find(r => r.id === selected) ?? query.data?.rows[0];
+  const report = reportSchema.safeParse(row?.google_report);
   async function signOut() { await qc.cancelQueries(); qc.clear(); await supabase.auth.signOut(); await navigate({ to: "/auth", replace: true }); }
   return <section className="mx-auto max-w-7xl px-6 py-10"><div className="flex flex-wrap items-center justify-between gap-4"><h1 className="text-3xl font-bold">Audit inbox</h1><Button variant="outline" onClick={signOut}><LogOut />Sign out</Button></div>
     {query.isPending ? <p className="mt-8">Loading audits…</p> : query.error ? <p role="alert" className="mt-8 text-destructive">{query.error.message}</p> : <>
@@ -25,6 +28,8 @@ function AdminPage() {
     <h3 className="mt-8 font-semibold">Online presence</h3><dl className="mt-2 grid gap-4 sm:grid-cols-2">{Object.entries({ Website: row.website, Instagram: row.instagram, Facebook: row.facebook, TikTok: row.tiktok, "X (Twitter)": row.x, LinkedIn: row.linkedin, ...(row.social_media ? { "Social media": row.social_media } : {}) }).map(([label,value]) => <div key={label}><dt className="text-sm text-muted-foreground">{label}</dt><dd className="break-words text-sm">{value || "Not provided"}</dd></div>)}</dl>
     {row.screenshot_url && <a className="mt-4 inline-block text-cta underline" href={row.screenshot_url} target="_blank" rel="noreferrer">View uploaded screenshot</a>}
     {row.profile_images.length > 0 && <><h3 className="mt-6 font-semibold">Profile screenshots</h3><div className="mt-3 flex flex-wrap gap-4">{row.profile_images.map((image,index) => image.url ? <a key={index} href={image.url} target="_blank" rel="noreferrer" className="text-sm text-cta underline"><img src={image.url} alt={`${image.platform} profile screenshot`} className="mb-2 h-24 w-24 rounded-md object-cover" />{image.platform}: {image.name}</a> : <p key={index}>{image.platform}: link unavailable</p>)}</div></>}
+    {row.offering_type && <dl className="mt-6 grid gap-4 sm:grid-cols-2">{Object.entries({ "Business offers": row.offering_type, "Main offering": row.main_offering, "Main service": row.main_service, City: row.city, State: row.state }).map(([label,value]) => <div key={label}><dt className="text-sm text-muted-foreground">{label}</dt><dd className="break-words text-sm">{value || "Not provided"}</dd></div>)}</dl>}
+    {report.success && <section className="instant-report mt-8 bg-report p-5 sm:p-8"><GoogleAuditReport key={row.id} report={report.data} /></section>}
     <h3 className="mt-8 font-semibold">Instant breakdown shown to client</h3><pre className="mt-2 whitespace-pre-wrap break-words text-sm">{row.instant_breakdown ? JSON.stringify(row.instant_breakdown,null,2) : "No instant breakdown was shown."}</pre>
     <h3 className="mt-8 font-semibold">Saved website check results</h3><pre className="mt-2 max-h-96 overflow-auto whitespace-pre-wrap break-all rounded-md border border-border bg-muted p-4 text-xs">{JSON.stringify(row.website_checks,null,2)}</pre></> : <p>No audit submissions yet.</p>}</div></div></>}
   </section>;

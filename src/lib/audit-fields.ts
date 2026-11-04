@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { internationalPhoneSchema } from "./audit-phone";
 import { profileScreenshotSchema } from "./profile-screenshots";
+import { offerSchema, normalizeState } from "./google-audit";
 
 export const AD_OPTIONS = ["Yes and getting results", "Yes but not getting results", "No, never", "Used to"] as const;
 export const AD_PLATFORMS = ["Facebook / Instagram (Meta)", "Google Ads", "TikTok", "YouTube", "Snapchat", "X (Twitter)", "LinkedIn", "Influencer or promoted posts", "Other"] as const;
@@ -49,6 +50,11 @@ export const auditSchema = z.object({
   email: s(255).email("Enter a valid email"),
   whatsapp: internationalPhoneSchema,
   industry_location: s(200).min(1, "Tell us your industry and location"),
+  offering_type: offerSchema.nullish().transform(v => v ?? null),
+  main_offering: o(150),
+  main_service: o(150),
+  city: o(150),
+  state: o(150).transform(v => v ? normalizeState(v) : null),
   online_links: onlineLinksSchema,
   website: o(1000),
   social_media: o(1000),
@@ -69,6 +75,10 @@ export const auditSchema = z.object({
   whatsapp_consent: z.boolean().default(false),
   screenshot: z.object({ name: s(200), type: s(100), base64: z.string().max(7_000_000) }).optional(),
 }).superRefine((data, ctx) => {
+  if (data.offering_type) {
+    for (const field of ["main_offering", "city", "state"] as const) if (!data[field]) ctx.addIssue({ code: z.ZodIssueCode.custom, path: [field], message: `Please enter your ${field.replace("_", " ")}` });
+    if (data.offering_type === "Both" && !data.main_service) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["main_service"], message: "Please enter your main service" });
+  }
   if (data.goals.includes("Other") && !data.goals_other)
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["goals_other"], message: "Please describe your other goal" });
   if (hasAdHistory(data.running_ads) && data.ad_platforms.includes("Other") && !data.ad_platform_other)

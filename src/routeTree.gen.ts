@@ -19,6 +19,7 @@ import { Route as ServicesRouteImport } from './routes/services'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as WebDesignAbujaRouteImport } from './routes/web-design-abuja'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuditReportTokenRouteImport } from './routes/audit_.report.$token'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -69,6 +70,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuditReportTokenRoute = AuditReportTokenRouteImport.update({
+  id: '/audit_/report/$token',
+  path: '/audit/report/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -80,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/web-design-abuja': typeof WebDesignAbujaRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/audit/report/$token': typeof AuditReportTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -91,6 +98,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/web-design-abuja': typeof WebDesignAbujaRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/audit/report/$token': typeof AuditReportTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -104,6 +112,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/web-design-abuja': typeof WebDesignAbujaRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/audit_/report/$token': typeof AuditReportTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -117,6 +126,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/web-design-abuja'
     | '/admin'
+    | '/audit/report/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/web-design-abuja'
     | '/admin'
+    | '/audit/report/$token'
   id:
     | '__root__'
     | '/'
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/web-design-abuja'
     | '/_authenticated/admin'
+    | '/audit_/report/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -152,6 +164,7 @@ export interface RootRouteChildren {
   ServicesRoute: typeof ServicesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   WebDesignAbujaRoute: typeof WebDesignAbujaRoute
+  AuditReportTokenRoute: typeof AuditReportTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -226,6 +239,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/audit_/report/$token': {
+      id: '/audit_/report/$token'
+      path: '/audit/report/$token'
+      fullPath: '/audit/report/$token'
+      preLoaderRoute: typeof AuditReportTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -250,6 +270,7 @@ const rootRouteChildren: RootRouteChildren = {
   ServicesRoute: ServicesRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   WebDesignAbujaRoute: WebDesignAbujaRoute,
+  AuditReportTokenRoute: AuditReportTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
