@@ -57,10 +57,10 @@ export async function generateGoogleReport(context: SearchContext, website: stri
   };
   // All six search-provider calls start together, without waiting for AI or PageSpeed.
   const mapsPromise = serperRequest("maps", `${context.business_name} ${context.city} ${context.state}`.replace(/\bnigeria\b/gi, "")).then(raw => matchedMaps(raw, context, domain)).catch(() => ({ status: "unavailable" as const, rating: null, reviews: null }));
-  const searches = await Promise.all(auditQueries(context).map(async query => {
+  const searches: GoogleReport["searches"] = await Promise.all(auditQueries(context).map(async query => {
     try {
-      const parsed = await cachedAuditCheck(`search:v3:${query}:${domain}`, providerSearch, () => serperRequest("search", query).then(v => providerSearch.parse(v)), () => ({ organic: [] }), value => value.organic.length > 0);
-      if (!parsed.organic.length) return { query, status: "unavailable" as const, position: null, competitors: [] };
+      const parsed = await cachedAuditCheck(`search:v3:${query}:${domain}`, providerSearch.nullable(), () => serperRequest("search", query).then(v => providerSearch.parse(v)), () => null, value => value !== null);
+      if (!parsed) return { query, status: "unavailable" as const, position: null, competitors: [] };
       const results = parsed.organic.flatMap(r => { const p = organicSchema.safeParse(r); return p.success ? [p.data] : []; }).sort((a,b) => a.position-b.position).slice(0,10);
       return { query, status: "completed" as const, position: results.find(r => sameDomain(r.link, domain))?.position ?? null, competitors: eligibleCompetitors(results, domain).map(r => ({ ...r, speed: { seconds: null, performance: null }, comparison: "" })) };
     } catch { return { query, status: "unavailable" as const, position: null, competitors: [] }; }
