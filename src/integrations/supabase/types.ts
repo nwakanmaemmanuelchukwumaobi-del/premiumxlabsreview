@@ -385,6 +385,16 @@ export type Database = {
         Args: { p_callback: string; p_id: string; p_lease: string }
         Returns: boolean
       }
+      enqueue_audit_report: {
+        Args: {
+          p_audit: string
+          p_callback: string
+          p_hash: string
+          p_report: Json
+          p_token: string
+        }
+        Returns: string
+      }
       is_audit_owner: { Args: never; Returns: boolean }
     }
     Enums: {
