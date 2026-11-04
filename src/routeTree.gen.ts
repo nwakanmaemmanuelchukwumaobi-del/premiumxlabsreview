@@ -19,7 +19,7 @@ import { Route as ServicesRouteImport } from './routes/services'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as WebDesignAbujaRouteImport } from './routes/web-design-abuja'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
-import { Route as AuditReportTokenRouteImport } from './routes/audit.report.$token'
+import { Route as AuditReportTokenRouteImport } from './routes/audit_.report.$token'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -71,15 +71,15 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuditReportTokenRoute = AuditReportTokenRouteImport.update({
-  id: '/report/$token',
-  path: '/report/$token',
-  getParentRoute: () => AuditRoute,
+  id: '/audit_/report/$token',
+  path: '/audit/report/$token',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/audit': typeof AuditRouteWithChildren
+  '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/services': typeof ServicesRoute
@@ -91,7 +91,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/audit': typeof AuditRouteWithChildren
+  '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/services': typeof ServicesRoute
@@ -105,14 +105,14 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/about': typeof AboutRoute
-  '/audit': typeof AuditRouteWithChildren
+  '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/services': typeof ServicesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/web-design-abuja': typeof WebDesignAbujaRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
-  '/audit/report/$token': typeof AuditReportTokenRoute
+  '/audit_/report/$token': typeof AuditReportTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -151,19 +151,20 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/web-design-abuja'
     | '/_authenticated/admin'
-    | '/audit/report/$token'
+    | '/audit_/report/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
-  AuditRoute: typeof AuditRouteWithChildren
+  AuditRoute: typeof AuditRoute
   AuthRoute: typeof AuthRoute
   ContactRoute: typeof ContactRoute
   ServicesRoute: typeof ServicesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   WebDesignAbujaRoute: typeof WebDesignAbujaRoute
+  AuditReportTokenRoute: typeof AuditReportTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -238,12 +239,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/audit/report/$token': {
-      id: '/audit/report/$token'
-      path: '/report/$token'
+    '/audit_/report/$token': {
+      id: '/audit_/report/$token'
+      path: '/audit/report/$token'
       fullPath: '/audit/report/$token'
       preLoaderRoute: typeof AuditReportTokenRouteImport
-      parentRoute: typeof AuditRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -259,26 +260,17 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
-interface AuditRouteChildren {
-  AuditReportTokenRoute: typeof AuditReportTokenRoute
-}
-
-const AuditRouteChildren: AuditRouteChildren = {
-  AuditReportTokenRoute: AuditReportTokenRoute,
-}
-
-const AuditRouteWithChildren = AuditRoute._addFileChildren(AuditRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AboutRoute: AboutRoute,
-  AuditRoute: AuditRouteWithChildren,
+  AuditRoute: AuditRoute,
   AuthRoute: AuthRoute,
   ContactRoute: ContactRoute,
   ServicesRoute: ServicesRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   WebDesignAbujaRoute: WebDesignAbujaRoute,
+  AuditReportTokenRoute: AuditReportTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
