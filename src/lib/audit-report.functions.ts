@@ -25,3 +25,11 @@ export const getAuditProgress = createServerFn({ method: "GET" }).inputValidator
   const report = reportSchema.safeParse(job.report);
   return { status: job.status === "running" && Date.now() - new Date(job.updated_at).getTime() > 120000 ? "failed" : job.status, steps: z.array(z.number().int().min(0).max(3)).catch([]).parse(job.steps), report: report.success ? report.data : null };
 });
+// Fallback when the database webhook cannot reach the worker: claim-once RPC guarantees a single run.
+export const kickAuditReport = createServerFn({ method: "POST" }).inputValidator((v: unknown) => z.object({ token: z.string().regex(/^[a-f0-9]{64}$/) }).parse(v)).handler(async ({ data }) => {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: job } = await supabaseAdmin.from("audit_report_jobs").select("id,callback_token,status,attempts").eq("report_token", data.token).maybeSingle();
+  if (!job || job.status !== "pending" || job.attempts !== 0) return { started: false };
+  const { processAuditReportJob } = await import("./audit-report-job.server");
+  return { started: await processAuditReportJob(job.id, job.callback_token) };
+});
