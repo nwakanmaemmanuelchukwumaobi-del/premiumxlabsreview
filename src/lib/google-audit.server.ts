@@ -24,8 +24,8 @@ export async function serperRequest(endpoint: "search" | "maps", query: string, 
   if (text.length > 1000000) throw new Error("Search response too large");
   return JSON.parse(text);
 }
-const providerSearch = z.object({ organic: z.array(z.object({ title: z.string(), link: z.string(), position: z.number().int() })).default([]) });
-const placesSchema = z.object({ places: z.array(z.object({ title: z.string(), address: z.string().optional(), website: z.string().optional(), rating: z.number().min(0).max(5).optional(), ratingCount: z.number().int().nonnegative().optional() })).default([]) });
+const providerSearch = z.object({ organic: z.array(z.object({ title: z.string(), link: z.string(), position: z.number().int() })) });
+const placesSchema = z.object({ places: z.array(z.object({ title: z.string(), address: z.string().optional(), website: z.string().optional(), rating: z.number().min(0).max(5).optional(), ratingCount: z.number().int().nonnegative().optional() })) });
 export function matchedMaps(raw: unknown, context: SearchContext, domain: string | null): GoogleReport["maps"] {
   const data = placesSchema.safeParse(raw);
   if (!data.success) return { status: "unavailable", rating: null, reviews: null };
@@ -56,7 +56,7 @@ export async function generateGoogleReport(context: SearchContext, website: stri
         return { query, status: "completed" as const, position: results.find(r => sameDomain(r.link, domain))?.position ?? null, competitors: eligibleCompetitors(results, domain).map(r => ({ ...r, speed: { seconds: null, performance: null }, comparison: "" })) };
       } catch { return { query, status: "unavailable" as const, position: null, competitors: [] }; }
     }));
-    const maps = await serperRequest("maps", `${context.business_name} ${context.city} ${context.state}`).then(raw => matchedMaps(raw, context, domain)).catch(() => ({ status: "unavailable" as const, rating: null, reviews: null }));
+    const maps = await serperRequest("maps", `${context.business_name} ${context.city} ${context.state}`.replace(/\bnigeria\b/gi, "").replace(/\s+/g, " ").trim()).then(raw => matchedMaps(raw, context, domain)).catch(() => ({ status: "unavailable" as const, rating: null, reviews: null }));
     const firstCompetitors = searches[0]?.competitors ?? [];
     const competitorChecks = await Promise.all(firstCompetitors.map(c => cachedWebsiteChecks(c.link, process.env['PAGESPEED_API_KEY'])));
     const analysis = await analyzePages(context.main_offering, clientEvidence, competitorChecks.map(c => pageEvidence(c.page)));

@@ -34,7 +34,7 @@ export function GoogleAuditReport({ report, reportUrl }: { report: GoogleReport;
       <CallButton />
       <Button variant="ghost" className="mt-3 w-full gap-2 text-report-accent hover:bg-report-foreground/10" onClick={() => setView("details")}>See the details<ChevronRight className="h-4 w-4" /></Button>
     </section> : <section aria-label="Details" className="pt-6">
-      <p className="text-xs leading-relaxed text-report-muted">Checked {new Date(report.checked_at).toLocaleDateString("en-GB")}. Rankings vary slightly by location and device. Website features are a first look, not proof of why a site ranks.</p>
+      <p className="text-xs leading-relaxed text-report-muted">Checked {new Date(report.checked_at).toLocaleDateString("en-GB", { timeZone: "Africa/Lagos" })}. Rankings vary slightly by location and device. Website features are a first look, not proof of why a site ranks.</p>
       {report.searches.slice(0, 4).map((search, index) => <section key={index} className="border-b border-report-foreground/15 py-6">
         <p className="text-xs font-bold uppercase tracking-wider text-report-accent">SEARCH {index + 1}</p><h3 className="mt-2 break-words text-lg font-bold">“{search.query}”</h3>
         <p className="mt-3 text-sm font-bold">{search.status === "unavailable" ? "⚠️ Search check unavailable" : search.position === null ? "❌ Not on page 1" : `✅ You're #${search.position}, on page 1`}</p>
