@@ -20,6 +20,7 @@ describe("Google audit business rules", () => {
     const entries = [{ title: "Client", link: "https://shop.ng", position: 1 }, { title: "Directory", link: "https://finelib.com/a", position: 2 }, { title: "Shoes", link: "https://jiji.ng", position: 3 }, { title: "Social", link: "https://instagram.com/shop", position: 4 }, { title: "Store A", link: "https://storea.ng", position: 5 }, { title: "Store A again", link: "https://storea.ng/shop", position: 6 }, { title: "Store B", link: "https://storeb.ng", position: 7 }, { title: "Store C", link: "https://storec.ng", position: 8 }, { title: "Store D", link: "https://stored.ng", position: 9 }];
     expect(eligibleCompetitors(entries, "shop.ng").map(r => r.position)).toEqual([5, 7, 8]);
   });
+  it("excludes infoisinfo and OrderNow and advances to real businesses", () => { expect(eligibleCompetitors([{ title: "Shoes", link: "https://ng.infoisinfo.com", position: 1 }, { title: "Shoes", link: "https://ordernow.ng", position: 2 }, { title: "Real store", link: "https://realstore.ng", position: 3 }], null).map(r => r.link)).toEqual(["https://realstore.ng"]); });
   it("expires cache exactly after 24 hours", () => { const now = Date.parse("2026-11-04T12:00:00Z"); const expiry = new Date(now + 24 * 3600000).toISOString(); expect(isFreshCache(expiry, now + 24 * 3600000 - 1)).toBe(true); expect(isFreshCache(expiry, now + 24 * 3600000)).toBe(false); });
   it("normalizes FCT and requires separate product and service for Both", () => {
     expect(normalizeState("Federal Capital Territory")).toBe("Abuja");
