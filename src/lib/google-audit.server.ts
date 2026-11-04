@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { auditSchema } from "./audit-fields";
-import { auditQueries, calculateScore, eligibleCompetitors, reportFixes, reportSchema, sameDomain, websiteDomain, organicSchema, type GoogleReport, type SearchContext } from "./google-audit";
+import { auditQueries, calculateScore, competitorPool, eligibleCompetitors, websiteHealth, reportFixes, reportSchema, sameDomain, websiteDomain, organicSchema, type GoogleReport, type SearchContext } from "./google-audit";
 import { cachedAuditCheck, hashValue } from "./audit-cache.server";
 import { analyzePages, pageEvidence } from "./google-audit-ai.server";
 import { runWebsiteChecks, publicWebsiteURL, type WebsiteChecks } from "./website-checks.server";
@@ -13,7 +13,7 @@ export async function cachedWebsiteChecks(website: string | undefined, key: stri
   let url: URL;
   try { url = publicWebsiteURL(website); } catch { return unavailableChecks(website); }
   const home = `${url.origin}/`;
-  return cachedAuditCheck(`website:v4:${home}`, checksSchema, () => runWebsiteChecks(home, key, fetch, { page: 8000, speed: 20000 }), () => unavailableChecks(home), value => value.page['status'] === "completed" && value.pagespeed['status'] === "completed");
+  return cachedAuditCheck(`website:v5:${home}`, checksSchema, () => runWebsiteChecks(home, key, fetch, { page: 8000, speed: 20000 }), () => unavailableChecks(home), value => value.page['status'] === "completed" && value.pagespeed['status'] === "completed");
 }
 export async function serperRequest(endpoint: "search" | "maps", query: string, request: typeof fetch = fetch): Promise<unknown> {
   const key = process.env["SERPER_API_KEY"];
@@ -52,7 +52,10 @@ export async function generateGoogleReport(context: SearchContext, website: stri
   const publish = async (step: number) => {
     done.add(step); report.speed = speed(checks);
     report.score = calculateScore(report.searches, report.speed.performance, report.maps.rating);
-    report.fixes = reportFixes(report.searches, report.speed, checks.page);
+    const rival = (report.speed_competitors ?? []).filter(c => c.speed.seconds !== null).sort((a, b) => (a.speed.seconds ?? 0) - (b.speed.seconds ?? 0))[0];
+    report.fixes = reportFixes(report.searches, report.speed, checks.page, { offering: context.main_offering, city: context.city, competitorSpeed: rival ? { name: websiteDomain(rival.link) ?? rival.title, seconds: rival.speed.seconds as number } : null });
+    const health = websiteHealth(checks.page, checks.pagespeed, context.main_offering, context.city);
+    if (health) report.health = health; else delete report.health;
     if (progress) await progress(reportSchema.parse(report), [...done]);
   };
   // All six search-provider calls start together, without waiting for AI or PageSpeed.
@@ -66,19 +69,24 @@ export async function generateGoogleReport(context: SearchContext, website: stri
     } catch { return { query, status: "unavailable" as const, position: null, competitors: [] }; }
   }));
   report.searches = searches; await publish(0);
-  const first = searches[0]?.competitors.slice(0,2) ?? [];
+  // Measure the first search's top real competitors, topping up from other searches so "You" is never shown alone.
+  const pool = [...(searches[0]?.competitors ?? []), ...competitorPool(searches)].filter((c, i, all) => all.findIndex(o => websiteDomain(o.link) === websiteDomain(c.link)) === i).slice(0, 4);
   const clientResult = (clientWork ? clientWork() : Promise.resolve(checks)).then(async value => { checks = value; await publish(1); return value; });
-  const [, ...competitors] = await Promise.all([clientResult, ...first.map(c => cachedWebsiteChecks(c.link, process.env['PAGESPEED_API_KEY']))]);
-  first.forEach((c,i) => {
-    const checked = competitors[i]; if (!checked) return;
-    c.speed = speed(checked);
-    const mine = pageEvidence(checks.page), other = pageEvidence(checked.page);
-    if (mine.available && other.available) {
-      if (other.contact && !mine.contact) c.comparison = "A direct contact button makes it easier to enquire.";
-      else if (other.links.length && !mine.links.length) c.comparison = "Dedicated offering pages give customers a clearer next step.";
+  const [, ...measured] = await Promise.all([clientResult, ...pool.map(c => cachedWebsiteChecks(c.link, process.env['PAGESPEED_API_KEY']).catch(() => null))]);
+  const timed = pool.map((c, i) => ({ c, checked: measured[i] ?? null })).map(x => ({ ...x, speed: x.checked ? speed(x.checked) : { seconds: null, performance: null } }));
+  const chosen = [...timed.filter(x => x.speed.seconds !== null), ...timed.filter(x => x.speed.seconds === null)].slice(0, 2);
+  report.speed_competitors = chosen.map(x => ({ title: x.c.title, link: x.c.link, speed: x.speed }));
+  const mineSeconds = speed(checks).seconds;
+  for (const { c, checked, speed: theirs } of chosen) {
+    const target = searches[0]?.competitors.find(o => o.link === c.link); if (!target) continue;
+    target.speed = theirs;
+    const mine = pageEvidence(checks.page), other = checked ? pageEvidence(checked.page) : null;
+    if (other && mine.available && other.available) {
+      if (other.contact && !mine.contact) target.comparison = "A direct contact button makes it easier to enquire.";
+      else if (other.links.length && !mine.links.length) target.comparison = "Dedicated offering pages give customers a clearer next step.";
     }
-    if (c.speed.seconds !== null && speed(checks).seconds !== null && c.speed.seconds < (speed(checks).seconds ?? 0)) c.comparison = "Their homepage loads faster on a phone.";
-  });
+    if (theirs.seconds !== null && mineSeconds !== null && theirs.seconds < mineSeconds) target.comparison = "Their homepage loads faster on a phone.";
+  }
   report.maps = await mapsPromise;
   await publish(2);
   await publish(3);
