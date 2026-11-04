@@ -14,6 +14,7 @@ export const submitAudit = createServerFn({ method: "POST" })
   .handler(async ({ data }) => withSafeSubmission(async () => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { runWebsiteChecks, saveThenCheck } = await import("@/lib/website-checks.server");
+    const upgraded = !!data.offering_type && !!data.main_offering && !!data.city && !!data.state;
     let screenshot_path: string | null = null;
     if (data.screenshot && data.screenshot.type.startsWith("image/")) {
       const bytes = Uint8Array.from(atob(data.screenshot.base64), (c) => c.charCodeAt(0));
@@ -70,7 +71,7 @@ export const submitAudit = createServerFn({ method: "POST" })
         }
         return id;
       },
-      () => runWebsiteChecks(data.website ?? undefined, process.env['PAGESPEED_API_KEY']),
+      async () => upgraded ? (await import("./google-audit.server")).cachedWebsiteChecks(data.website ?? undefined, process.env['PAGESPEED_API_KEY']) : runWebsiteChecks(data.website ?? undefined, process.env['PAGESPEED_API_KEY']),
       async (id, results) => {
         const { error } = await supabaseAdmin.from("audit_requests").update({ website_checks: JSON.parse(JSON.stringify(results)) }).eq("id", id);
         if (error) throw new Error("Could not store checks");
@@ -85,6 +86,13 @@ export const submitAudit = createServerFn({ method: "POST" })
         if (!error) breakdown = generated;
       }
     } catch { /* The audit is saved even if generation or storage fails. */ }
+    let googleReport: { report: import("./google-audit").GoogleReport; url: string | null } | null = null;
+    if (upgraded && savedId) {
+      try {
+        const { createSavedGoogleReport } = await import("./google-audit.server");
+        googleReport = await createSavedGoogleReport(savedId, data, results);
+      } catch { console.error("Google report unavailable; saved audit and website breakdown retained."); }
+    }
     let emailSent = false;
     try {
       const { sendAuditOwnerEmail } = await import("./owner-email.server");
@@ -95,7 +103,7 @@ export const submitAudit = createServerFn({ method: "POST" })
           screenshotUrl = signed?.signedUrl ?? null;
         } catch { console.error("Owner email screenshot link unavailable; saved audit remains in inbox."); }
       }
-      emailSent = await sendAuditOwnerEmail(data, breakdown, results, savedId, submittedAt, screenshotUrl, signedProfileImages);
+      emailSent = await sendAuditOwnerEmail(data, breakdown, results, savedId, submittedAt, screenshotUrl, signedProfileImages, googleReport);
     } catch { console.error("Owner email notification failed; audit submission remains saved."); }
     if (data.whatsapp_consent) {
       try {
@@ -103,7 +111,15 @@ export const submitAudit = createServerFn({ method: "POST" })
         await sendAuditWhatsApp(data.name, data.whatsapp, { website: data.website, social_media: data.social_media, instagram: data.instagram, facebook: data.facebook, tiktok: data.tiktok, x: data.x, linkedin: data.linkedin, profile_screenshots: profileScreenshots, screenshot_path });
       } catch { console.error("WhatsApp notification failed; audit submission remains saved."); }
     }
-    if (!emailSent) throw new Error("Audit saved but owner notification failed.");
+    if (googleReport && savedId) {
+      if (googleReport.url) {
+        const { sendProspectReportEmail } = await import("./prospect-report-email.server");
+        await sendProspectReportEmail(data.email, data.business_name, savedId, googleReport.url, googleReport.report);
+      }
+      if (!emailSent) console.error("Owner notification failed; saved report still shown to prospect.");
+      return { ok: true, breakdown, googleReport: googleReport.report, reportUrl: googleReport.url };
+    }
+    if (!emailSent && !upgraded) throw new Error("Audit saved but owner notification failed.");
     return { ok: true, breakdown };
   }));
 

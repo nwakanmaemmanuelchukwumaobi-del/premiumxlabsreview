@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { SUBMISSION_ERROR } from "@/lib/submission-errors";
 import { AuditPhone } from "./AuditPhone";
 import { internationalPhone, type CountryCode } from "@/lib/audit-phone";
+import type { GoogleReport } from "@/lib/google-audit";
 
 const loadReport = () => import("@/components/site/InstantReport");
 const InstantReport = lazy(() => loadReport().then(module => ({ default: module.InstantReport })));
@@ -40,6 +41,9 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
   const [reportOpen, setReportOpen] = useState(false);
   const [reportClient, setReportClient] = useState<{ name: string; biz: string; pref: string } | null>(null);
   const [reportWebsite, setReportWebsite] = useState<string | null>(null);
+  const [offeringType, setOfferingType] = useState("");
+  const [googleReport, setGoogleReport] = useState<GoogleReport | null>(null);
+  const [reportUrl, setReportUrl] = useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -54,6 +58,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
     const payload = {
       name: get("name"), business_name: get("business_name"), email: get("email"), whatsapp: phone,
       industry_location: get("industry_location"), challenge: get("challenge"),
+      offering_type: get("offering_type"), main_offering: get("main_offering"), main_service: get("main_service"), city: get("city"), state: get("state"),
       website: get("website"), instagram: get("instagram"), facebook: get("facebook"), tiktok: get("tiktok"), x: get("x"), linkedin: get("linkedin"),
       profile_screenshots: [] as { name: string; type: "image/png" | "image/jpeg" | "image/webp"; base64: string }[],
       goals, goals_other: get("goals_other"),
@@ -78,6 +83,8 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
     try {
       const response = await send({ data: parsed.data });
       setBreakdown(response.breakdown);
+      setGoogleReport(response.googleReport ?? null);
+      setReportUrl(response.reportUrl ?? null);
       setDone({ name: parsed.data.name, biz: parsed.data.business_name, pref: parsed.data.report_preference });
     } catch {
       setError(SUBMISSION_ERROR);
@@ -99,9 +106,9 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
         <p className="mt-4 text-sm">
           Questions? <a href={WHATSAPP_URL} target="_blank" rel="noreferrer" className="font-semibold text-cta underline">Message us on WhatsApp.</a>
         </p>
-        <Button variant="outline" className="mt-6" onClick={() => setReportOpen(true)}>{breakdown ? "View my instant breakdown" : "View confirmation"}</Button>
+        <Button variant="outline" className="mt-6" onClick={() => setReportOpen(true)}>{googleReport ? "View my audit report" : breakdown ? "View my instant breakdown" : "View confirmation"}</Button>
       </div>
-      {reportOpen && <Suspense fallback={null}><InstantReport open={reportOpen} onOpenChange={setReportOpen} busy={busy} breakdown={breakdown} client={reportClient} website={reportWebsite} error={error} /></Suspense>}
+      {reportOpen && <Suspense fallback={null}><InstantReport open={reportOpen} onOpenChange={setReportOpen} busy={busy} breakdown={breakdown} client={reportClient} website={reportWebsite} error={error} googleReport={googleReport} reportUrl={reportUrl} /></Suspense>}
       </>
     );
 
@@ -121,6 +128,11 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
         <div><label className={L}>Email</label><input name="email" type="email" className="field" required /></div>
         <AuditPhone />
         <div className="sm:col-span-2"><label className={L}>Industry & location</label><input name="industry_location" className="field" placeholder="e.g. Restaurant, Abuja" required /></div>
+        <div className="sm:col-span-2"><label htmlFor="offering-type" className={L}>Do you sell products, offer services, or both?</label><select id="offering-type" name="offering_type" className="field" required value={offeringType} onChange={e => setOfferingType(e.target.value)}><option value="" disabled>Select one</option><option>Products</option><option>Services</option><option>Both</option></select></div>
+        <div className="sm:col-span-2"><label htmlFor="main-offering" className={L}>{offeringType === "Both" ? "Main product" : "Main product or service"}</label><input id="main-offering" name="main_offering" className="field" maxLength={150} required /></div>
+        {offeringType === "Both" && <div className="sm:col-span-2"><label htmlFor="main-service" className={L}>Main service</label><input id="main-service" name="main_service" className="field" maxLength={150} required /></div>}
+        <div><label htmlFor="audit-city" className={L}>City</label><input id="audit-city" name="city" className="field" maxLength={150} required /></div>
+        <div><label htmlFor="audit-state" className={L}>State (Abuja for FCT)</label><input id="audit-state" name="state" className="field" maxLength={150} required /></div>
         <div className="sm:col-span-2"><label htmlFor="audit-website" className={L}>Website</label><input id="audit-website" name="website" className="field" placeholder="e.g. www.yourbusiness.com" /></div>
         <OnlinePresencePicker socialOnly entries={socialEntries} onChange={setSocialEntries} fields={SOCIAL_FIELDS} platforms={SOCIAL_PLATFORMS} />
         <div className="sm:col-span-2"><ProfileScreenshots platform="Social media" files={profileScreenshots} onChange={setProfileScreenshots} /></div>
@@ -164,7 +176,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
       </Button>
       <p className="mt-3 text-center text-xs text-muted-foreground">Report delivered within 24 hours.</p>
     </form>
-    {reportOpen && <Suspense fallback={null}><InstantReport open={reportOpen} onOpenChange={setReportOpen} busy={busy} breakdown={breakdown} client={reportClient} website={reportWebsite} error={error} /></Suspense>}
+    {reportOpen && <Suspense fallback={null}><InstantReport open={reportOpen} onOpenChange={setReportOpen} busy={busy} breakdown={breakdown} client={reportClient} website={reportWebsite} error={error} googleReport={googleReport} reportUrl={reportUrl} /></Suspense>}
     </>
   );
 }
