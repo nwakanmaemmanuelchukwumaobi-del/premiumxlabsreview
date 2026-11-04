@@ -14,6 +14,12 @@ const date = new Date("2026-10-29T04:56:00Z");
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.restoreAllMocks(); });
 
 describe("Audit owner notifications", () => {
+  it("includes offering/location answers, approved score and clickable saved-report link", () => {
+    const a = auditSchema.parse({ ...answers, offering_type: "Services", main_offering: "design", city: "Wuse", state: "FCT" });
+    const report = { version: 1 as const, business: a.business_name, website: a.website, location: "Wuse, Abuja", checked_at: "2026-11-04", searches: [], speed: { seconds: null, performance: null }, maps: { status: "unavailable" as const, rating: null, reviews: null }, score: { earned: 60, coverage: 60, complete: false }, fixes: [] };
+    const email = buildAuditEmail(a, null, {}, date, null, [], { report, url: "https://premiumxlabs.com/audit/report/token" });
+    expect(email.text).toContain("Business offers: Services"); expect(email.text).toContain("Main offering: design"); expect(email.text).toContain("City: Wuse"); expect(email.text).toContain("State: Abuja"); expect(email.text).toContain("60/100 (provisional; 60/100 points checked)"); expect(email.html).toContain('<a href="https://premiumxlabs.com/audit/report/token">');
+  });
   it("includes the new website and social media independently and handles absent values", () => {
     const populated = auditSchema.parse({ ...answers, online_links: [], website: "www.yourbusiness.com", social_media: "@yourbusiness" });
     const email = buildAuditEmail(populated, null, {}, date);

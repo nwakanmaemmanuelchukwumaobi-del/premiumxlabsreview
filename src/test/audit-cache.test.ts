@@ -1,0 +1,12 @@
+// @vitest-environment node
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { z } from "zod";
+const state = vi.hoisted(() => ({ row: null as { payload: unknown; expires_at: string } | null, claim: vi.fn(), update: vi.fn() }));
+vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { rpc: state.claim, from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: state.row, error: null }) }) }), update: (v: unknown) => ({ eq: () => ({ eq: async () => state.update(v) }) }) }) } }));
+import { cachedAuditCheck } from "@/lib/audit-cache.server";
+beforeEach(() => { vi.clearAllMocks(); state.row = null; state.claim.mockResolvedValue({ data: true, error: null }); state.update.mockResolvedValue({ error: null }); });
+describe("Durable paid-check cache", () => {
+  it("reuses a fresh entry without claiming or repeating checks", async () => { state.row = { payload: "cached", expires_at: new Date(Date.now() + 3600000).toISOString() }; const work = vi.fn(); expect(await cachedAuditCheck("site-context", z.string(), work, () => "fallback")).toBe("cached"); expect(work).not.toHaveBeenCalled(); expect(state.claim).not.toHaveBeenCalled(); });
+  it("claims expired data before checks and stores exactly 24-hour expiry", async () => { const now = Date.now(); state.row = { payload: "old", expires_at: new Date(now - 1).toISOString() }; const work = vi.fn().mockResolvedValue("new"); expect(await cachedAuditCheck("site-context", z.string(), work, () => "fallback")).toBe("new"); expect(state.claim).toHaveBeenCalledOnce(); expect(work).toHaveBeenCalledOnce(); const expires = new Date(state.update.mock.calls[0]?.[0].expires_at).getTime(); expect(expires - now).toBeGreaterThanOrEqual(24 * 3600000); expect(expires - now).toBeLessThan(24 * 3600000 + 2000); });
+  it("does not repeat provider work when another worker fills the cache", async () => { state.claim.mockImplementation(async () => { state.row = { payload: "other-worker", expires_at: new Date(Date.now() + 3600000).toISOString() }; return { data: false, error: null }; }); const work = vi.fn(); vi.useFakeTimers(); const pending = cachedAuditCheck("site-context", z.string(), work, () => "fallback"); await vi.advanceTimersByTimeAsync(2000); expect(await pending).toBe("other-worker"); expect(work).not.toHaveBeenCalled(); vi.useRealTimers(); });
+});
