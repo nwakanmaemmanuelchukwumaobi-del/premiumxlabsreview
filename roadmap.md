@@ -1,4 +1,5 @@
 # Audit form update
+- [ ] Add Serper visibility checks, offering/location fields, 24-hour cache, approved scoring, secure two-page report links, prospect report email and owner report summary; preserve existing YCloud reply. Missing SERPER_API_KEY.
 - [x] Add X (Twitter) and LinkedIn to optional social dropdown and separate saved/downstream fields; all five database columns confirmed, 77 affected tests passed and both phone-sized forms verified for five choices, add/remove and optional fields. No real WhatsApp messages sent.
 - [x] Replace Social media text input with optional multi-platform dropdown; separate Instagram/Facebook/TikTok storage confirmed, 75 affected tests passed for empty/populated saving and downstream handling, both phone-sized forms verified for add/remove. Website/screenshots preserved; no real WhatsApp messages sent.
 - [x] Separate optional website/social media inputs and private screenshots across saving, notifications and report handling; verified empty/populated mocked submissions, applied schema readback, both mobile forms and upload/remove controls. No real WhatsApp sends; live delivery remains unverified.
