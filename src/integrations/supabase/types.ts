@@ -59,11 +59,74 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_report_jobs: {
+        Row: {
+          attempts: number
+          audit_id: string
+          callback_token: string
+          created_at: string
+          email_sent: boolean
+          failure: string | null
+          id: string
+          lease_id: string | null
+          lease_until: string | null
+          owner_email_sent: boolean
+          report: Json | null
+          report_token: string
+          status: string
+          steps: Json
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          audit_id: string
+          callback_token: string
+          created_at?: string
+          email_sent?: boolean
+          failure?: string | null
+          id?: string
+          lease_id?: string | null
+          lease_until?: string | null
+          owner_email_sent?: boolean
+          report?: Json | null
+          report_token: string
+          status?: string
+          steps?: Json
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          audit_id?: string
+          callback_token?: string
+          created_at?: string
+          email_sent?: boolean
+          failure?: string | null
+          id?: string
+          lease_id?: string | null
+          lease_until?: string | null
+          owner_email_sent?: boolean
+          report?: Json | null
+          report_token?: string
+          status?: string
+          steps?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_report_jobs_audit_id_fkey"
+            columns: ["audit_id"]
+            isOneToOne: true
+            referencedRelation: "audit_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_report_links: {
         Row: {
           audit_id: string
           created_at: string
           expires_at: string
+          permanent: boolean
           report: Json
           revoked: boolean
           token_hash: string
@@ -72,6 +135,7 @@ export type Database = {
           audit_id: string
           created_at?: string
           expires_at?: string
+          permanent?: boolean
           report: Json
           revoked?: boolean
           token_hash: string
@@ -80,6 +144,7 @@ export type Database = {
           audit_id?: string
           created_at?: string
           expires_at?: string
+          permanent?: boolean
           report?: Json
           revoked?: boolean
           token_hash?: string
@@ -314,6 +379,10 @@ export type Database = {
     Functions: {
       claim_audit_cache: {
         Args: { p_key: string; p_lease: string }
+        Returns: boolean
+      }
+      claim_audit_report_job: {
+        Args: { p_callback: string; p_id: string; p_lease: string }
         Returns: boolean
       }
       is_audit_owner: { Args: never; Returns: boolean }
