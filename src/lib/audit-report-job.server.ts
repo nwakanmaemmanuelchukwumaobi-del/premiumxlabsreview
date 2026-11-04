@@ -15,9 +15,7 @@ export async function enqueueAuditReport(id: string, answers: z.infer<typeof aud
   const checks: WebsiteChecks = { status: answers.website ? "skipped" : "no website", website: answers.website, checked_at: new Date().toISOString(), page: {}, pagespeed: {} };
   const report = partialReport(context, answers.website, checks);
   report.offering = context.main_offering; report.city = context.city;
-  const { error: linkError } = await supabaseAdmin.from("audit_report_links").insert({ audit_id: id, token_hash: await hashValue(token), report: JSON.parse(JSON.stringify(report)), permanent: true });
-  if (linkError) throw new Error("Could not save report link");
-  const { error } = await supabaseAdmin.from("audit_report_jobs").insert({ audit_id: id, report_token: token, callback_token: `${crypto.randomUUID()}${crypto.randomUUID()}`, report: JSON.parse(JSON.stringify(report)) });
+  const { error } = await supabaseAdmin.rpc("enqueue_audit_report", { p_audit: id, p_token: token, p_hash: await hashValue(token), p_callback: `${crypto.randomUUID()}${crypto.randomUUID()}`, p_report: JSON.parse(JSON.stringify(report)) });
   if (error) throw new Error("Could not queue report");
   return { token, url: `https://premiumxlabs.com/report/${token}` };
 }
@@ -48,7 +46,6 @@ export async function processAuditReportJob(id: string, callback: string) {
     const clientWork = async () => { checks = await cachedWebsiteChecks(answers.website ?? undefined, process.env['PAGESPEED_API_KEY']); return checks; };
     const report = await generateGoogleReport(context, answers.website, initial, publish, clientWork);
     await supabaseAdmin.from("audit_requests").update({ website_checks: JSON.parse(JSON.stringify(checks)) }).eq("id", job.audit_id);
-    await supabaseAdmin.from("audit_report_jobs").update({ status: "complete", lease_until: null, updated_at: new Date().toISOString() }).eq("id", id).eq("lease_id", lease);
     const url = `https://premiumxlabs.com/report/${job.report_token}`;
     const images: SignedProfileImage[] = [];
     const stored = z.array(z.object({ path: z.string(), name: z.string() })).safeParse(row.profile_screenshots);
@@ -58,11 +55,12 @@ export async function processAuditReportJob(id: string, callback: string) {
     }
     let screenshotUrl: string | null = null;
     if (row.screenshot_path) { const { data } = await supabaseAdmin.storage.from("audit-screenshots").createSignedUrl(row.screenshot_path, 7 * 86400); screenshotUrl = data?.signedUrl ?? null; }
+    if (row.screenshot_path) answers.screenshot = { name: "Ad results screenshot", type: "image/png", base64: "" };
     const [emailSent, ownerSent] = await Promise.all([
       sendProspectReportEmail(answers.email, answers.business_name, job.audit_id, url, report),
       sendAuditOwnerEmail(answers, null, checks, job.audit_id, new Date(row.created_at), screenshotUrl, images, { report, url }),
     ]);
-    await supabaseAdmin.from("audit_report_jobs").update({ email_sent: emailSent, owner_email_sent: ownerSent, failure: !emailSent || !ownerSent ? "Email delivery was not accepted." : null }).eq("id", id).eq("lease_id", lease);
+    await supabaseAdmin.from("audit_report_jobs").update({ status: "complete", lease_until: null, email_sent: emailSent, owner_email_sent: ownerSent, failure: !emailSent || !ownerSent ? "Email delivery was not accepted." : null }).eq("id", id).eq("lease_id", lease);
     return true;
   } catch {
     console.error("Saved audit report task failed; submission retained.");

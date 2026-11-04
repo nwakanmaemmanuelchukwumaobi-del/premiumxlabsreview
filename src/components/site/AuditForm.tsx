@@ -84,7 +84,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
     try {
       const response = await send({ data: parsed.data });
       setBreakdown(response.breakdown);
-      setGoogleReport(response.googleReport ?? null);
+      setGoogleReport(null);
       setReportUrl(response.reportUrl ?? null);
       setReportToken(response.reportToken ?? null);
       setDone({ name: parsed.data.name, biz: parsed.data.business_name, pref: parsed.data.report_preference });
