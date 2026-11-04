@@ -127,7 +127,7 @@ function RootComponent() {
     });
     return () => data.subscription.unsubscribe();
   }, [router, queryClient]);
-  const isAudit = useRouterState({ select: (s) => s.location.pathname.startsWith("/audit") });
+  const isAudit = useRouterState({ select: (s) => s.location.pathname.startsWith("/audit") || s.location.pathname.startsWith("/report/") });
 
   return (
     <QueryClientProvider client={queryClient}>
