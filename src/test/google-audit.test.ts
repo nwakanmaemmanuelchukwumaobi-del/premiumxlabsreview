@@ -35,4 +35,17 @@ describe("Google audit business rules", () => {
   });
   it("keeps website, all socials and profile images optional on upgraded forms", () => { const a = auditSchema.parse({ name: "Ada", business_name: "Ada", email: "a@example.com", whatsapp: "09012345678", industry_location: "Retail", challenge: "Low sales", running_ads: "No, never", report_preference: "Email", offering_type: "Products", main_offering: "shoes", city: "Abuja", state: "Abuja" }); expect(a.website).toBeNull(); expect(a.instagram).toBeNull(); expect(a.profile_screenshots).toEqual([]); });
   it("strips contact details and screenshots from shared reports", () => { const parsed = reportSchema.parse({ version: 1, business: "Ada Store", website: null, location: "Abuja", checked_at: "2026-11-04", searches: [], speed: { seconds: null, performance: null }, maps: { status: "unavailable", rating: null, reviews: null }, score: { earned: 0, coverage: 0, complete: false }, fixes: [], email: "private@example.com", whatsapp: "2349012345678", profile_screenshots: ["private/path"] }); expect(parsed).not.toHaveProperty("email"); expect(parsed).not.toHaveProperty("whatsapp"); expect(parsed).not.toHaveProperty("profile_screenshots"); });
+});import { websiteHealth, reportFixes } from "@/lib/google-audit";
+describe("website health and specific fixes", () => {
+  it("scores search setup out of 100 and caps problems at 3", () => {
+    const h = websiteHealth({ status: "completed", title: "", meta_description: null, main_headline: "Quality furniture in Abuja", contact_or_action_evidence: [{ type: "WhatsApp" }], social_links: [{ platform: "instagram.com" }], offering_links: [] }, { status: "completed", seo_score: 0.83 }, "furniture", "Abuja");
+    expect(h?.seo_score).toBe(83);
+    expect(h?.checklist.map(c => c.ok)).toEqual([true, false, false, true]);
+    expect(h?.problems.length).toBe(3);
+  });
+  it("omits the checklist when the homepage can't be read", () => { expect(websiteHealth({ status: "skipped" }, { status: "skipped" })).toBeNull(); });
+  it("names the actual missing search phrase in the first fix", () => {
+    const fixes = reportFixes([{ query: "furniture shop Abuja", status: "completed", position: null, competitors: [] }], { seconds: null, performance: null }, { status: "skipped" });
+    expect(fixes[0]).toContain('"furniture shop Abuja"');
+  });
 });
