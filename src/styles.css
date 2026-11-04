@@ -80,9 +80,13 @@
   --color-report-muted: var(--report-muted);
   --color-report-accent: var(--report-accent);
   --color-report-accent-foreground: var(--report-accent-foreground);
+  --color-report-success: var(--report-success);
+  --color-report-danger: var(--report-danger);
 }
 
 :root {
+  --report-success: oklch(0.82 0.12 157);
+  --report-danger: oklch(0.79 0.13 24);
   --report: oklch(0.25 0.065 266);
   --report-foreground: oklch(1 0 0);
   --report-muted: oklch(0.81 0.018 266);
@@ -151,6 +155,9 @@
   letter-spacing: 0;
 }
 .instant-report h2, .instant-report h3 { letter-spacing: 0; }
+.report-section { animation: report-reveal 0.5s ease both; }
+@keyframes report-reveal { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .report-section { animation: none; } }
 .instant-report > button:last-child {
   color: var(--report-accent);
   background: var(--report);

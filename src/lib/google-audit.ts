@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const CACHE_HOURS = 24;
-export const SOCIAL_REVIEW = "Our team is reviewing your Instagram and Facebook. We'll send findings within 24 hours.";
-export const ADS_NOTE = "Want faster results? Organic ranking takes time. Running Google Ads on your best searches can bring inquiries while we fix your site.";
+export const SOCIAL_REVIEW = "Your social media review will arrive within 24 hours.";
+export const ADS_NOTE = "Want faster results? Running Google Ads on your best searches can bring inquiries while we fix your site.";
 export const offerSchema = z.enum(["Products", "Services", "Both"]);
 export type SearchContext = { business_name: string; offering_type: z.infer<typeof offerSchema>; main_offering: string; main_service?: string | null; city: string; state: string };
 export const normalizeState = (v: string) => /^(fct|federal capital territory)$/i.test(v.trim()) ? "Abuja" : v.trim();
@@ -23,7 +23,7 @@ export function sameDomain(link: string, domain: string | null): boolean {
   const host = websiteDomain(link);
   return !!host && !!domain && (host === domain || host.endsWith(`.${domain}`));
 }
-const EXCLUDED = ["facebook.com", "instagram.com", "tiktok.com", "x.com", "twitter.com", "linkedin.com", "youtube.com", "google.com", "google.com.ng", "business.site", "jiji.ng", "jumia.com.ng", "konga.com", "amazon.com", "alibaba.com", "aliexpress.com", "finelib.com", "businesslist.com.ng", "vconnect.com", "connectnigeria.com", "ngex.com", "yelp.com", "tripadvisor.com", "clutch.co", "sortlist.com", "goodfirms.co", "trustpilot.com", "booking.com", "nigeriagalleria.com", "yellowpages.com", "dealersng.com", "upwork.com", "fiverr.com", "freelancer.com", "peopleperhour.com", "toptal.com", "bark.com", "etsy.com", "ebay.com"];
+const EXCLUDED = ["infoisinfo.com", "infoisinfo.com.ng", "ordernow.ng", "ordernow.com", "facebook.com", "instagram.com", "tiktok.com", "x.com", "twitter.com", "linkedin.com", "youtube.com", "google.com", "google.com.ng", "business.site", "jiji.ng", "jumia.com.ng", "konga.com", "amazon.com", "alibaba.com", "aliexpress.com", "finelib.com", "businesslist.com.ng", "vconnect.com", "connectnigeria.com", "ngex.com", "yelp.com", "tripadvisor.com", "clutch.co", "sortlist.com", "goodfirms.co", "trustpilot.com", "booking.com", "nigeriagalleria.com", "yellowpages.com", "dealersng.com", "upwork.com", "fiverr.com", "freelancer.com", "peopleperhour.com", "toptal.com", "bark.com", "etsy.com", "ebay.com"];
 export const organicSchema = z.object({ title: z.string().max(1000), link: z.string().max(2000), position: z.number().int().min(1).max(10) });
 export type OrganicResult = z.infer<typeof organicSchema>;
 export function eligibleCompetitors(results: OrganicResult[], domain: string | null): OrganicResult[] {
@@ -36,7 +36,7 @@ export function eligibleCompetitors(results: OrganicResult[], domain: string | n
 }
 const speedSchema = z.object({ seconds: z.number().nonnegative().nullable(), performance: z.number().min(0).max(1).nullable() });
 export const searchSchema = z.object({ query: z.string().max(600), status: z.enum(["completed", "unavailable"]), position: z.number().int().min(1).max(10).nullable(), competitors: z.array(organicSchema.extend({ speed: speedSchema, comparison: z.string().max(1200) })).max(3) });
-export const reportSchema = z.object({ version: z.literal(1), business: z.string().max(150), website: z.string().max(2000).nullable(), location: z.string().max(400), checked_at: z.string(), searches: z.array(searchSchema).max(5), speed: speedSchema, maps: z.object({ status: z.enum(["matched", "not found", "unavailable", "unconfirmed"]), rating: z.number().min(0).max(5).nullable(), reviews: z.number().int().nonnegative().nullable() }), score: z.object({ earned: z.number().min(0).max(100), coverage: z.number().min(0).max(100), complete: z.boolean() }), fixes: z.array(z.string().max(600)).max(3) });
+export const reportSchema = z.object({ offering: z.string().max(150).optional(), city: z.string().max(150).optional(), version: z.literal(1), business: z.string().max(150), website: z.string().max(2000).nullable(), location: z.string().max(400), checked_at: z.string(), searches: z.array(searchSchema).max(5), speed: speedSchema, maps: z.object({ status: z.enum(["matched", "not found", "unavailable", "unconfirmed"]), rating: z.number().min(0).max(5).nullable(), reviews: z.number().int().nonnegative().nullable() }), score: z.object({ earned: z.number().min(0).max(100), coverage: z.number().min(0).max(100), complete: z.boolean() }), fixes: z.array(z.string().max(600)).max(3) });
 export type GoogleReport = z.infer<typeof reportSchema>;
 export const visibility = (position: number | null) => position === null ? 0 : (11 - position) / 10;
 export function calculateScore(searches: GoogleReport["searches"], performance: number | null, rating: number | null) {
@@ -59,4 +59,16 @@ export function reportFixes(searches: GoogleReport["searches"], speed: GoogleRep
     if (!page['uses_https']) fixes.push("Secure your website connection to help visitors feel confident.");
   }
   return fixes.slice(0, 3);
+}
+export const REPORT_STEPS = ["Checking Google for your searches", "Testing your website speed", "Comparing you with competitors", "Writing your report"] as const;
+export const scoreBand = (score: number) => score >= 75 ? "Good" : score >= 40 ? "Fair" : "Low";
+export function reportHeadline(report: GoogleReport): string {
+ const checks = report.searches.slice(0, 4).filter(s => s.status === "completed");
+ const found = checks.filter(s => s.position !== null);
+ const offering = report.offering ?? report.searches[0]?.query ?? report.business;
+ const city = report.city ?? report.location.split(",")[0];
+ if (!checks.length) return `Your online visibility report for ${report.business}`;
+ if (!found.length) return `When customers search for ${offering} in ${city}, they find your competitors, not you.`;
+ if (found.length === checks.length) return `Customers can find you when they search for ${offering} in ${city}.`;
+ return `Customers find you for some ${offering} searches in ${city}, but competitors appear for others.`;
 }

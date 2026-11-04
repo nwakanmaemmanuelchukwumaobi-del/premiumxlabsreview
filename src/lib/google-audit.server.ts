@@ -13,7 +13,7 @@ export async function cachedWebsiteChecks(website: string | undefined, key: stri
   let url: URL;
   try { url = publicWebsiteURL(website); } catch { return unavailableChecks(website); }
   const home = `${url.origin}/`;
-  return cachedAuditCheck(`website:v3:${home}`, checksSchema, () => runWebsiteChecks(home, key), () => unavailableChecks(home), value => value.page['status'] === "completed" && value.pagespeed['status'] === "completed");
+  return cachedAuditCheck(`website:v4:${home}`, checksSchema, () => runWebsiteChecks(home, key, fetch, { page: 8000, speed: 20000 }), () => unavailableChecks(home), value => value.page['status'] === "completed" && value.pagespeed['status'] === "completed");
 }
 export async function serperRequest(endpoint: "search" | "maps", query: string, request: typeof fetch = fetch): Promise<unknown> {
   const key = process.env["SERPER_API_KEY"];
@@ -43,35 +43,46 @@ export function partialReport(context: SearchContext, website: string | null, ch
   const clientSpeed = speed(checks);
   return { version: 1, business: context.business_name, website, location: `${context.city}, ${context.state}`, checked_at: new Date().toISOString(), searches, speed: clientSpeed, maps: { status: "unavailable", rating: null, reviews: null }, score: calculateScore(searches, clientSpeed.performance, null), fixes: reportFixes(searches, clientSpeed, checks.page) };
 }
-export async function generateGoogleReport(context: SearchContext, website: string | null, checks: WebsiteChecks): Promise<GoogleReport> {
-  const domain = websiteDomain(checks.website ?? website);
-  return cachedAuditCheck(`google:v2:${domain ?? "no-website"}:${JSON.stringify(context)}`, reportSchema, async () => {
-    const clientEvidence = pageEvidence(checks.page);
-    const secondary = await analyzePages(context.main_offering, clientEvidence);
-    const queries = auditQueries(context, secondary.secondary);
-    const searches: GoogleReport["searches"] = await Promise.all(queries.map(async query => {
-      try {
-        const parsed = providerSearch.parse(await serperRequest("search", query));
-        const results = parsed.organic.flatMap(r => { const p = organicSchema.safeParse(r); return p.success ? [p.data] : []; }).sort((a, b) => a.position - b.position).slice(0, 10);
-        return { query, status: "completed" as const, position: results.find(r => sameDomain(r.link, domain))?.position ?? null, competitors: eligibleCompetitors(results, domain).map(r => ({ ...r, speed: { seconds: null, performance: null }, comparison: "" })) };
-      } catch { return { query, status: "unavailable" as const, position: null, competitors: [] }; }
-    }));
-    const maps = await serperRequest("maps", `${context.business_name} ${context.city} ${context.state}`.replace(/\bnigeria\b/gi, "").replace(/\s+/g, " ").trim()).then(raw => matchedMaps(raw, context, domain)).catch(() => ({ status: "unavailable" as const, rating: null, reviews: null }));
-    const firstCompetitors = searches[0]?.competitors ?? [];
-    const competitorChecks = await Promise.all(firstCompetitors.map(c => cachedWebsiteChecks(c.link, process.env['PAGESPEED_API_KEY'])));
-    const analysis = await analyzePages(context.main_offering, clientEvidence, competitorChecks.map(c => pageEvidence(c.page)));
-    const labels = { headline: "a visible opening headline", contact: "a direct contact button", quote: "an enquiry or quote form", offering_pages: "links to dedicated offering pages" };
-    searches.forEach(s => s.competitors.forEach(c => {
-      const i = firstCompetitors.findIndex(f => websiteDomain(f.link) === websiteDomain(c.link));
-      const checked = competitorChecks[i];
-      if (!checked) return;
-      c.speed = speed(checked);
-      const differences = [...new Set(analysis.differences.filter(d => d.competitor === i).map(d => labels[d.feature]))];
-      c.comparison = differences.length ? `We found ${differences.join(" and ")} on this homepage that we didn't find on yours. These can help visitors take the next step; they don't prove why it ranks higher.` : checked.page['status'] !== "completed" || !clientEvidence.available ? "We couldn't compare both homepages. Ranking alone doesn't tell us why this site appears here." : "We didn't find a clear advantage in the homepage features checked. These checks don't establish why a site ranks higher.";
-    }));
-    const clientSpeed = speed(checks);
-    return { version: 1, business: context.business_name, website: checks.website ?? website, location: `${context.city}, ${context.state}`, checked_at: new Date().toISOString(), searches, speed: clientSpeed, maps, score: calculateScore(searches, clientSpeed.performance, maps.rating), fixes: reportFixes(searches, clientSpeed, checks.page) };
-  }, () => partialReport(context, website, checks), value => value.searches.every(s => s.status === "completed") && value.maps.status !== "unavailable");
+export async function generateGoogleReport(context: SearchContext, website: string | null, initial: WebsiteChecks, progress?: (report: GoogleReport, steps: number[]) => Promise<void>, clientWork?: () => Promise<WebsiteChecks>): Promise<GoogleReport> {
+  const domain = websiteDomain(website);
+  let checks = initial;
+  const report = partialReport(context, website, checks);
+  report.offering = context.main_offering; report.city = context.city;
+  const done = new Set<number>();
+  const publish = async (step: number) => {
+    done.add(step); report.speed = speed(checks);
+    report.score = calculateScore(report.searches, report.speed.performance, report.maps.rating);
+    report.fixes = reportFixes(report.searches, report.speed, checks.page);
+    if (progress) await progress(reportSchema.parse(report), [...done]);
+  };
+  // All six search-provider calls start together, without waiting for AI or PageSpeed.
+  const mapsPromise = serperRequest("maps", `${context.business_name} ${context.city} ${context.state}`.replace(/\bnigeria\b/gi, "")).then(raw => matchedMaps(raw, context, domain)).catch(() => ({ status: "unavailable" as const, rating: null, reviews: null }));
+  const searches: GoogleReport["searches"] = await Promise.all(auditQueries(context).map(async query => {
+    try {
+      const parsed = await cachedAuditCheck(`search:v3:${query}:${domain}`, providerSearch.nullable(), () => serperRequest("search", query).then(v => providerSearch.parse(v)), () => null, value => value !== null);
+      if (!parsed) return { query, status: "unavailable" as const, position: null, competitors: [] };
+      const results = parsed.organic.flatMap(r => { const p = organicSchema.safeParse(r); return p.success ? [p.data] : []; }).sort((a,b) => a.position-b.position).slice(0,10);
+      return { query, status: "completed" as const, position: results.find(r => sameDomain(r.link, domain))?.position ?? null, competitors: eligibleCompetitors(results, domain).map(r => ({ ...r, speed: { seconds: null, performance: null }, comparison: "" })) };
+    } catch { return { query, status: "unavailable" as const, position: null, competitors: [] }; }
+  }));
+  report.searches = searches; await publish(0);
+  const first = searches[0]?.competitors.slice(0,2) ?? [];
+  const clientResult = (clientWork ? clientWork() : Promise.resolve(checks)).then(async value => { checks = value; await publish(1); return value; });
+  const [, ...competitors] = await Promise.all([clientResult, ...first.map(c => cachedWebsiteChecks(c.link, process.env['PAGESPEED_API_KEY']))]);
+  first.forEach((c,i) => {
+    const checked = competitors[i]; if (!checked) return;
+    c.speed = speed(checked);
+    const mine = pageEvidence(checks.page), other = pageEvidence(checked.page);
+    if (mine.available && other.available) {
+      if (other.contact && !mine.contact) c.comparison = "A direct contact button makes it easier to enquire.";
+      else if (other.links.length && !mine.links.length) c.comparison = "Dedicated offering pages give customers a clearer next step.";
+    }
+    if (c.speed.seconds !== null && speed(checks).seconds !== null && c.speed.seconds < (speed(checks).seconds ?? 0)) c.comparison = "Their homepage loads faster on a phone.";
+  });
+  report.maps = await mapsPromise;
+  await publish(2);
+  await publish(3);
+  return reportSchema.parse(report);
 }
 export async function createSavedGoogleReport(id: string, answers: z.infer<typeof auditSchema>, checks: WebsiteChecks) {
   if (!answers.offering_type || !answers.main_offering || !answers.city || !answers.state) return null;

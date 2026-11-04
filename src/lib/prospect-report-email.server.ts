@@ -2,8 +2,7 @@ import { OWNER_EMAIL_FROM } from "./owner-email.server";
 import type { GoogleReport } from "./google-audit";
 
 export function buildProspectReportEmail(business: string, url: string, report: GoogleReport) {
-  const score = report.score.coverage ? `${report.score.earned}/100${report.score.complete ? "" : " (provisional)"}` : "Checks still need a closer look";
-  return { subject: `Your Business Audit: ${business}`, text: `Your premiumxlabs business audit is ready.\n\nBusiness: ${business}\nScore: ${score}\n\nView your report: ${url}\n\nOur team is reviewing your Instagram and Facebook. We'll send findings within 24 hours.\n\nThis link gives access to your report. Only share it with people you want to see it.` };
+  return { subject: "Your Online Visibility Report is ready", text: `Your premiumxlabs online visibility report is ready.\n\nBusiness: ${business}\n\nView your report: ${url}\n\nYour social media review will arrive within 24 hours.\n\nOnly share this link with people you want to see your report.` };
 }
 export async function sendProspectReportEmail(email: string, business: string, id: string, url: string, report: GoogleReport): Promise<boolean> {
   try {

@@ -12,11 +12,11 @@ beforeEach(() => { vi.clearAllMocks(); mocks.cache.clear(); mocks.analyze.mockRe
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 describe("Server-only Google checks", () => {
   it("uses Serper search with ng, en and top ten settings", async () => { const request = vi.fn().mockResolvedValue(Response.json({ organic: [] })); await serperRequest("search", "shoes Abuja", request); expect(request.mock.calls[0]?.[0]).toBe("https://google.serper.dev/search"); expect(JSON.parse(request.mock.calls[0]?.[1].body)).toEqual({ q: "shoes Abuja", gl: "ng", hl: "en", num: 10 }); expect(request.mock.calls[0]?.[1].headers["X-API-KEY"]).toBe("test-only"); });
-  it("runs five searches, one Maps lookup and only three competitor speed checks", async () => {
+  it("runs five searches, one Maps lookup and only two competitor speed checks", async () => {
     const request = vi.fn(async (url: string) => Response.json(url.endsWith("maps") ? { places: [] } : { organic: [1, 2, 3, 4].map(i => ({ title: `Store ${i}`, link: `https://store${i}.ng/products`, position: i })) })); vi.stubGlobal("fetch", request);
     const report = await generateGoogleReport(context, "https://ada.ng", checks);
-    expect(request.mock.calls.filter(c => c[0].endsWith("search"))).toHaveLength(5); expect(request.mock.calls.filter(c => c[0].endsWith("maps"))).toHaveLength(1); expect(mocks.website).toHaveBeenCalledTimes(3); expect(report.searches[0]?.competitors).toHaveLength(3);
-    await generateGoogleReport(context, "https://ada.ng", checks); expect(request).toHaveBeenCalledTimes(6);
+    expect(request.mock.calls.filter(c => c[0].endsWith("search"))).toHaveLength(5); expect(request.mock.calls.filter(c => c[0].endsWith("maps"))).toHaveLength(1); expect(mocks.website).toHaveBeenCalledTimes(2); expect(report.searches[0]?.competitors).toHaveLength(3);
+    await generateGoogleReport(context, "https://ada.ng", checks); expect(request).toHaveBeenCalledTimes(7);
   });
   it("preserves speed and partial report when all Serper calls fail", async () => { vi.spyOn(console, "error").mockImplementation(() => {}); vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline"))); const report = await generateGoogleReport(context, "https://ada.ng", checks); expect(report.searches.every(s => s.status === "unavailable")).toBe(true); expect(report.score).toEqual({ earned: 24, coverage: 30, complete: false }); expect(report.maps.status).toBe("unavailable"); });
   it("only attributes Maps rating with matching name, location and domain", () => { const places = { places: [{ title: "Ada Shop", address: "Abuja", website: "https://ada.ng", rating: 4.5, ratingCount: 17 }] }; expect(matchedMaps(places, context, "ada.ng")).toEqual({ status: "matched", rating: 4.5, reviews: 17 }); expect(matchedMaps(places, context, "other.ng")).toEqual({ status: "unconfirmed", rating: null, reviews: null }); });

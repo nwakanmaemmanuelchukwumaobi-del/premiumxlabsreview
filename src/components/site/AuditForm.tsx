@@ -43,6 +43,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
   const [reportWebsite, setReportWebsite] = useState<string | null>(null);
   const [offeringType, setOfferingType] = useState("");
   const [googleReport, setGoogleReport] = useState<GoogleReport | null>(null);
+  const [reportToken, setReportToken] = useState<string | null>(null);
   const [reportUrl, setReportUrl] = useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -83,8 +84,9 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
     try {
       const response = await send({ data: parsed.data });
       setBreakdown(response.breakdown);
-      setGoogleReport(response.googleReport ?? null);
+      setGoogleReport(null);
       setReportUrl(response.reportUrl ?? null);
+      setReportToken(response.reportToken ?? null);
       setDone({ name: parsed.data.name, biz: parsed.data.business_name, pref: parsed.data.report_preference });
     } catch {
       setError(SUBMISSION_ERROR);
@@ -106,9 +108,9 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
         <p className="mt-4 text-sm">
           Questions? <a href={WHATSAPP_URL} target="_blank" rel="noreferrer" className="font-semibold text-cta underline">Message us on WhatsApp.</a>
         </p>
-        <Button variant="outline" className="mt-6" onClick={() => setReportOpen(true)}>{googleReport ? "View my audit report" : breakdown ? "View my instant breakdown" : "View confirmation"}</Button>
+        <Button variant="outline" className="mt-6" onClick={() => setReportOpen(true)}>{reportToken || googleReport ? "View my audit report" : breakdown ? "View my instant breakdown" : "View confirmation"}</Button>
       </div>
-      {reportOpen && <Suspense fallback={null}><InstantReport open={reportOpen} onOpenChange={setReportOpen} busy={busy} breakdown={breakdown} client={reportClient} website={reportWebsite} error={error} googleReport={googleReport} reportUrl={reportUrl} /></Suspense>}
+      {reportOpen && <Suspense fallback={null}><InstantReport open={reportOpen} onOpenChange={setReportOpen} busy={busy} breakdown={breakdown} client={reportClient} website={reportWebsite} error={error} googleReport={googleReport} reportUrl={reportUrl} reportToken={reportToken} /></Suspense>}
       </>
     );
 
@@ -176,7 +178,7 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
       </Button>
       <p className="mt-3 text-center text-xs text-muted-foreground">Report delivered within 24 hours.</p>
     </form>
-    {reportOpen && <Suspense fallback={null}><InstantReport open={reportOpen} onOpenChange={setReportOpen} busy={busy} breakdown={breakdown} client={reportClient} website={reportWebsite} error={error} googleReport={googleReport} reportUrl={reportUrl} /></Suspense>}
+    {reportOpen && <Suspense fallback={null}><InstantReport open={reportOpen} onOpenChange={setReportOpen} busy={busy} breakdown={breakdown} client={reportClient} website={reportWebsite} error={error} googleReport={googleReport} reportUrl={reportUrl} reportToken={reportToken} /></Suspense>}
     </>
   );
 }
