@@ -83,6 +83,7 @@ export function inspectHTML(html: string, finalURL: string, submittedURL: string
     } catch { return []; }
   }).slice(0, 40);
   const quote_form_found = elements.some(e => e.name === "form" && /quote|enquir|request|consult/i.test(textContent(e)));
+  const contact_form_found = elements.some(e => e.name === "form" && findAll(x => x.name === "textarea" || (x.name === "input" && /^(email|tel)$/i.test(x.attribs['type'] ?? "")), e.children).length > 0);
   const contact: { type: string; text: string; href: string | null }[] = [];
   const social: { platform: string; url: string }[] = [];
   const networks = ["instagram.com", "facebook.com", "tiktok.com", "twitter.com", "x.com", "youtube.com", "youtu.be", "linkedin.com", "snapchat.com"];
@@ -116,7 +117,7 @@ export function inspectHTML(html: string, finalURL: string, submittedURL: string
     main_headline: headline ? clean(textContent(headline)) : null,
     contact_or_action_present: contact.length > 0, contact_or_action_evidence: contact.slice(0, 25),
     social_links_present: social.length > 0, social_links: social.slice(0, 25),
-    offering_links, quote_form_found,
+    offering_links, quote_form_found, contact_form_found,
     method: "Static homepage HTML; does not execute JavaScript. Contact/action detection is heuristic." };
 }
 
@@ -185,7 +186,7 @@ export async function runWebsiteChecks(website: string | undefined, key: string 
     return { ...base, status: "skipped", page: { status: "skipped", reason: "Invalid or non-public website URL" }, pagespeed: { status: "skipped", reason: "Invalid or non-public website URL" } };
   }
   const [page, pagespeed] = await Promise.all([
-    pageChecks(url, request, limits.page).catch(() => ({ status: "skipped", reason: "Website fetch, DNS safety check, or parsing failed" })),
+    pageChecks(url, request, limits.page).catch(() => pageChecks(url, request, limits.page)).catch(() => ({ status: "skipped", reason: "Website fetch, DNS safety check, or parsing failed" })),
     speedChecks(url, key, request, limits.speed).catch(() => ({ status: "skipped", reason: "PageSpeed unavailable or timed out", strategy: "mobile" })),
   ]);
   return { ...base, website: url.href, status: "completed", page, pagespeed };
