@@ -22,8 +22,8 @@ export async function cachedAuditCheck<T>(context: string, schema: z.ZodType<T>,
     const { data: claimed, error } = await supabaseAdmin.rpc("claim_audit_cache", { p_key: key, p_lease: lease });
     if (error) return fallback();
     if (!claimed) {
-      for (let i = 0; i < 55; i++) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
+      for (let i = 0; i < 8; i++) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
         const filled = await read(); if (filled) return filled.value;
       }
       return fallback();

@@ -119,8 +119,8 @@ export function inspectHTML(html: string, finalURL: string, submittedURL: string
     method: "Static homepage HTML; does not execute JavaScript. Contact/action detection is heuristic." };
 }
 
-async function pageChecks(url: URL, request: typeof fetch) {
-  const signal = AbortSignal.timeout(15000);
+async function pageChecks(url: URL, request: typeof fetch, timeout = 15000) {
+  const signal = AbortSignal.timeout(timeout);
   let current = url;
   for (let hop = 0; hop <= 4; hop++) {
     await assertPublicDNS(current, signal, request);
@@ -153,7 +153,7 @@ export function seoFailures(lighthouse: any): string[] {
     .map(({ id, a }) => SEO_PLAIN[id] ?? String(a.title ?? id).slice(0, 120)).slice(0, 8);
 }
 
-async function speedChecks(url: URL, key: string | undefined, request: typeof fetch): Promise<Record<string, unknown>> {
+async function speedChecks(url: URL, key: string | undefined, request: typeof fetch, timeout = 45000): Promise<Record<string, unknown>> {
   if (!key) return { status: "skipped", reason: "PAGESPEED_API_KEY is not configured", strategy: "mobile" };
   const endpoint = new URL("https://www.googleapis.com/pagespeedonline/v5/runPagespeed");
   endpoint.searchParams.set("url", url.href);
@@ -161,7 +161,7 @@ async function speedChecks(url: URL, key: string | undefined, request: typeof fe
   endpoint.searchParams.set("key", key);
   endpoint.searchParams.append("category", "performance");
   endpoint.searchParams.append("category", "seo");
-  const response = await request(endpoint, { signal: AbortSignal.timeout(45000) });
+  const response = await request(endpoint, { signal: AbortSignal.timeout(timeout) });
   // Do not log provider errors: they can contain the request URL and secret.
   if (!response.ok) return { status: "skipped", reason: "PageSpeed request failed", http_status: response.status, strategy: "mobile" };
   const result = JSON.parse(await boundedText(response, 8000000));
@@ -176,7 +176,7 @@ async function speedChecks(url: URL, key: string | undefined, request: typeof fe
     loading_experience: result.loadingExperience ?? null, origin_loading_experience: result.originLoadingExperience ?? null };
 }
 
-export async function runWebsiteChecks(website: string | undefined, key: string | undefined, request: typeof fetch = fetch): Promise<WebsiteChecks> {
+export async function runWebsiteChecks(website: string | undefined, key: string | undefined, request: typeof fetch = fetch, limits: { page?: number; speed?: number } = {}): Promise<WebsiteChecks> {
   const base = { website: website ?? null, checked_at: new Date().toISOString() };
   if (!website) return { ...base, status: "no website", page: { status: "skipped", reason: "no website" }, pagespeed: { status: "skipped", reason: "no website" } };
   let url: URL;
@@ -184,8 +184,8 @@ export async function runWebsiteChecks(website: string | undefined, key: string 
     return { ...base, status: "skipped", page: { status: "skipped", reason: "Invalid or non-public website URL" }, pagespeed: { status: "skipped", reason: "Invalid or non-public website URL" } };
   }
   const [page, pagespeed] = await Promise.all([
-    pageChecks(url, request).catch(() => ({ status: "skipped", reason: "Website fetch, DNS safety check, or parsing failed" })),
-    speedChecks(url, key, request).catch(() => ({ status: "skipped", reason: "PageSpeed unavailable or timed out", strategy: "mobile" })),
+    pageChecks(url, request, limits.page).catch(() => ({ status: "skipped", reason: "Website fetch, DNS safety check, or parsing failed" })),
+    speedChecks(url, key, request, limits.speed).catch(() => ({ status: "skipped", reason: "PageSpeed unavailable or timed out", strategy: "mobile" })),
   ]);
   return { ...base, website: url.href, status: "completed", page, pagespeed };
 }
