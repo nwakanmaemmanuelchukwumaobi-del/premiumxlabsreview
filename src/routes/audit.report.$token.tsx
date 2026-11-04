@@ -7,7 +7,7 @@ import { WHATSAPP_URL } from "@/lib/site";
 import logo from "@/assets/logo.webp.asset.json";
 
 const reportQuery = (token: string) => queryOptions({ queryKey: ["audit-report", token], queryFn: () => /^[a-f0-9]{64}$/.test(token) ? getAuditReport({ data: { token } }) : Promise.resolve(null), staleTime: 0 });
-export const Route = createFileRoute("/audit/report/$token")({
+export const Route = createFileRoute("/audit_/report/$token")({
   staticData: { sitemap: false },
   loader: ({ context, params }) => context.queryClient.ensureQueryData(reportQuery(params.token)),
   head: () => ({ meta: [{ title: "Your Business Audit Report | premiumxlabs" }, { name: "description", content: "Your saved premiumxlabs business audit with Google visibility, mobile website speed and next steps." }, { property: "og:title", content: "Your Business Audit Report | premiumxlabs" }, { property: "og:description", content: "A private-link business audit and practical next steps from premiumxlabs." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex,nofollow,noarchive" }, { name: "referrer", content: "no-referrer" }] }),
