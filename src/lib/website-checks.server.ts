@@ -53,7 +53,8 @@ async function boundedText(response: Response, limit: number): Promise<string> {
 }
 
 async function assertPublicDNS(url: URL, signal: AbortSignal, request: typeof fetch) {
-  const answers = await Promise.all(["A", "AAAA"].map(async (type) => {
+  const answers: string[][] = [];
+  for (const type of ["A", "AAAA"]) {
     const endpoint = new URL("https://cloudflare-dns.com/dns-query");
     endpoint.searchParams.set("name", url.hostname);
     endpoint.searchParams.set("type", type);
@@ -61,8 +62,8 @@ async function assertPublicDNS(url: URL, signal: AbortSignal, request: typeof fe
     if (!response.ok) throw new Error("DNS check failed");
     const result = JSON.parse(await boundedText(response, 64000)) as { Status?: number; Answer?: { type: number; data: string }[] };
     if (result.Status !== 0) throw new Error("DNS check failed");
-    return (result.Answer ?? []).filter((a) => a.type === 1 || a.type === 28).map((a) => a.data);
-  }));
+    answers.push((result.Answer ?? []).filter((a) => a.type === 1 || a.type === 28).map((a) => a.data));
+  }
   const addresses = answers.flat();
   if (!addresses.length || addresses.some((address) => !isPublicAddress(address))) throw new Error("Non-public website blocked");
 }
