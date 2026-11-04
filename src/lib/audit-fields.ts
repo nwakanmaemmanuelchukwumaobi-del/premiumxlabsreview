@@ -50,7 +50,7 @@ export const auditSchema = z.object({
   email: s(255).email("Enter a valid email"),
   whatsapp: internationalPhoneSchema,
   industry_location: s(200).min(1, "Tell us your industry and location"),
-  offering_type: offerSchema.nullish(),
+  offering_type: offerSchema.nullish().transform(v => v ?? null),
   main_offering: o(150),
   main_service: o(150),
   city: o(150),

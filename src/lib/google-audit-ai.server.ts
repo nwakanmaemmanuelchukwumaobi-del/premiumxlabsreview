@@ -35,7 +35,7 @@ export async function analyzePages(main: string, client: PageEvidence, competito
     });
     return result;
   } catch (error) {
-    if (error instanceof GatewayError && [402, 403].includes(error.httpStatus ?? 0)) await supabaseAdmin.from("audit_ai_state").upsert({ id: true, paused: true, reason: "Homepage comparison AI access paused.", status_code: error.httpStatus });
+    if (error instanceof GatewayError && [402, 403].includes(error.httpStatus ?? 0)) await supabaseAdmin.from("audit_ai_state").upsert({ id: true, paused: true, reason: "Homepage comparison AI access paused.", status_code: error.httpStatus ?? null });
     console.error("Homepage comparison unavailable; evidence report retained.");
     return fallback;
   }
