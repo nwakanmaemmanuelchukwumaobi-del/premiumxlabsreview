@@ -7,7 +7,7 @@ export async function hashValue(value: string): Promise<string> {
   return Array.from(new Uint8Array(bytes), b => b.toString(16).padStart(2, "0")).join("");
 }
 /** Durable lease prevents concurrent workers repeating the same paid checks. */
-export async function cachedAuditCheck<T>(context: string, schema: z.ZodType<T>, work: () => Promise<T>, fallback: () => T): Promise<T> {
+export async function cachedAuditCheck<T>(context: string, schema: z.ZodType<T>, work: () => Promise<T>, fallback: () => T, cacheable: (value: T) => boolean = () => true): Promise<T> {
   const key = await hashValue(context);
   try {
     const read = async () => {
@@ -28,10 +28,18 @@ export async function cachedAuditCheck<T>(context: string, schema: z.ZodType<T>,
       }
       return fallback();
     }
-    let value: T;
-    try { value = schema.parse(await work()); } catch { value = fallback(); }
-    const { error: storeError } = await supabaseAdmin.from("audit_check_cache").update({ payload: JSON.parse(JSON.stringify(value)), expires_at: new Date(Date.now() + CACHE_HOURS * 3600000).toISOString(), lease_until: null }).eq("key", key).eq("lease_id", lease);
-    if (storeError) console.error("Audit check cache could not be stored.");
-    return value;
+    try {
+      const value = schema.parse(await work());
+      if (cacheable(value)) {
+        const { error: storeError } = await supabaseAdmin.from("audit_check_cache").update({ payload: JSON.parse(JSON.stringify(value)), expires_at: new Date(Date.now() + CACHE_HOURS * 3600000).toISOString(), lease_until: null }).eq("key", key).eq("lease_id", lease);
+        if (storeError) console.error("Audit check cache could not be stored.");
+      }
+      return value;
+    } catch { return fallback(); }
+    finally {
+      try {
+        await supabaseAdmin.from("audit_check_cache").update({ lease_until: null }).eq("key", key).eq("lease_id", lease);
+      } catch { console.error("Audit cache lease release failed; bounded lease will expire."); }
+    }
   } catch { console.error("Audit cache unavailable; skipping repeated provider calls."); return fallback(); }
 }
