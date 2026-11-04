@@ -67,8 +67,8 @@ export async function generateGoogleReport(context: SearchContext, website: stri
   }));
   report.searches = searches; await publish(0);
   const first = searches[0]?.competitors.slice(0,2) ?? [];
-  const [client, ...competitors] = await Promise.all([clientWork ? clientWork() : Promise.resolve(checks), ...first.map(c => cachedWebsiteChecks(c.link, process.env['PAGESPEED_API_KEY']))]);
-  checks = client ?? checks;
+  const clientResult = (clientWork ? clientWork() : Promise.resolve(checks)).then(async value => { checks = value; await publish(1); return value; });
+  const [, ...competitors] = await Promise.all([clientResult, ...first.map(c => cachedWebsiteChecks(c.link, process.env['PAGESPEED_API_KEY']))]);
   first.forEach((c,i) => {
     const checked = competitors[i]; if (!checked) return;
     c.speed = speed(checked);
@@ -80,7 +80,7 @@ export async function generateGoogleReport(context: SearchContext, website: stri
     if (c.speed.seconds !== null && speed(checks).seconds !== null && c.speed.seconds < (speed(checks).seconds ?? 0)) c.comparison = "Their homepage loads faster on a phone.";
   });
   report.maps = await mapsPromise;
-  await publish(1); await publish(2);
+  await publish(2);
   await publish(3);
   return reportSchema.parse(report);
 }
