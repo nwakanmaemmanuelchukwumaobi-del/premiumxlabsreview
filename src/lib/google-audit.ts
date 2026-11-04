@@ -23,7 +23,7 @@ export function sameDomain(link: string, domain: string | null): boolean {
   const host = websiteDomain(link);
   return !!host && !!domain && (host === domain || host.endsWith(`.${domain}`));
 }
-const EXCLUDED = ["facebook.com", "instagram.com", "tiktok.com", "x.com", "twitter.com", "linkedin.com", "youtube.com", "google.com", "google.com.ng", "business.site", "jiji.ng", "jumia.com.ng", "konga.com", "amazon.com", "alibaba.com", "aliexpress.com", "finelib.com", "businesslist.com.ng", "vconnect.com", "connectnigeria.com", "ngex.com", "yelp.com", "tripadvisor.com", "clutch.co", "sortlist.com", "goodfirms.co", "trustpilot.com", "booking.com", "nigeriagalleria.com", "yellowpages.com", "dealersng.com"];
+const EXCLUDED = ["facebook.com", "instagram.com", "tiktok.com", "x.com", "twitter.com", "linkedin.com", "youtube.com", "google.com", "google.com.ng", "business.site", "jiji.ng", "jumia.com.ng", "konga.com", "amazon.com", "alibaba.com", "aliexpress.com", "finelib.com", "businesslist.com.ng", "vconnect.com", "connectnigeria.com", "ngex.com", "yelp.com", "tripadvisor.com", "clutch.co", "sortlist.com", "goodfirms.co", "trustpilot.com", "booking.com", "nigeriagalleria.com", "yellowpages.com", "dealersng.com", "upwork.com", "fiverr.com", "freelancer.com", "peopleperhour.com", "toptal.com", "bark.com", "etsy.com", "ebay.com"];
 export const organicSchema = z.object({ title: z.string().max(1000), link: z.string().max(2000), position: z.number().int().min(1).max(10) });
 export type OrganicResult = z.infer<typeof organicSchema>;
 export function eligibleCompetitors(results: OrganicResult[], domain: string | null): OrganicResult[] {
