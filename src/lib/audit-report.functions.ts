@@ -23,7 +23,7 @@ export const getAuditProgress = createServerFn({ method: "GET" }).inputValidator
   const { data: job } = await supabaseAdmin.from("audit_report_jobs").select("status,steps,report,updated_at").eq("report_token", data.token).maybeSingle();
   if (!job) return null;
   const report = reportSchema.safeParse(job.report);
-  return { status: job.status === "running" && Date.now() - new Date(job.updated_at).getTime() > 120000 ? "failed" : job.status, steps: z.array(z.number().int().min(0).max(3)).catch([]).parse(job.steps), report: report.success ? report.data : null };
+  return { status: job.status === "running" && Date.now() - new Date(job.updated_at).getTime() > 360000 ? "failed" : job.status, steps: z.array(z.number().int().min(0).max(3)).catch([]).parse(job.steps), report: report.success ? report.data : null };
 });
 // Fallback when the database webhook cannot reach the worker: claim-once RPC guarantees a single run.
 export const kickAuditReport = createServerFn({ method: "POST" }).inputValidator((v: unknown) => z.object({ token: z.string().regex(/^[a-f0-9]{64}$/) }).parse(v)).handler(async ({ data }) => {

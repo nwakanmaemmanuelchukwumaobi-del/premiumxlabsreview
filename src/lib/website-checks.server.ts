@@ -134,7 +134,8 @@ async function pageChecks(url: URL, request: typeof fetch, timeout = 15000) {
       current = publicWebsiteURL(new URL(location, current).href);
       continue;
     }
-    if (!response.ok || !response.headers.get("content-type")?.includes("text/html")) throw new Error("Page unavailable or not HTML");
+    if (!response.ok) { await response.body?.cancel(); throw new Error(`Homepage HTTP ${response.status}`); }
+    if (!response.headers.get("content-type")?.includes("text/html")) { await response.body?.cancel(); throw new Error("Homepage response is not HTML"); }
     return inspectHTML(await boundedText(response, 1500000), current.href, url.href);
   }
   throw new Error("Too many redirects");
@@ -155,39 +156,83 @@ export function seoFailures(lighthouse: any): string[] {
     .map(({ id, a }) => SEO_PLAIN[id] ?? String(a.title ?? id).slice(0, 120)).slice(0, 8);
 }
 
-async function speedChecks(url: URL, key: string | undefined, request: typeof fetch, timeout = 45000): Promise<Record<string, unknown>> {
+const pause = () => new Promise(resolve => setTimeout(resolve, 500));
+function safeFailure(error: unknown): string {
+  if (error instanceof Error) {
+    if (/timeout|abort/i.test(error.name)) return "timeout";
+    if (/^Homepage HTTP \d+$|^Homepage response is not HTML$|^DNS check failed$|^Non-public website blocked$|^Too many redirects$|^Response too large$/.test(error.message)) return error.message;
+    if (error instanceof SyntaxError) return "bad response";
+  }
+  return "network or parsing failure";
+}
+async function speedRun(url: URL, key: string, category: "performance" | "seo", request: typeof fetch, timeout: number): Promise<Record<string, unknown>> {
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    let failure: Record<string, unknown>;
+    try {
+      const endpoint = new URL("https://www.googleapis.com/pagespeedonline/v5/runPagespeed");
+      endpoint.searchParams.set("url", url.href); endpoint.searchParams.set("strategy", "mobile");
+      endpoint.searchParams.set("key", key); endpoint.searchParams.set("category", category);
+      const response = await request(endpoint, { signal: AbortSignal.timeout(timeout) });
+      if (!response.ok) {
+        // Never log raw provider messages or request URLs, which may contain the key.
+        let code: string | null = null;
+        try { const body = JSON.parse(await boundedText(response, 64000)); const status = body?.error?.status; if (typeof status === "string" && /^[A-Z_]{1,80}$/.test(status)) code = status; } catch { /* HTTP status remains useful. */ }
+        failure = { status: "skipped", reason: response.status === 429 ? "rate limit or quota" : "PageSpeed HTTP error", http_status: response.status, provider_code: code };
+      } else {
+        const result = JSON.parse(await boundedText(response, 8000000));
+        const lighthouse = result.lighthouseResult;
+        if (!lighthouse || lighthouse.runtimeError || typeof lighthouse.categories?.[category]?.score !== "number") {
+          const code = lighthouse?.runtimeError?.code;
+          failure = { status: "skipped", reason: "PageSpeed bad response or analysis error", provider_code: typeof code === "string" && /^[A-Z_]{1,80}$/.test(code) ? code : null };
+        } else {
+          const metrics = ["first-contentful-paint", "largest-contentful-paint", "speed-index", "total-blocking-time", "cumulative-layout-shift", "interactive"];
+          return { status: "completed", strategy: "mobile", analysis_time: result.analysisUTCTimestamp ?? null,
+            final_url: lighthouse.finalUrl ?? null, lighthouse_version: lighthouse.lighthouseVersion ?? null,
+            performance_score: category === "performance" ? lighthouse.categories.performance.score : null,
+            seo_score: category === "seo" ? lighthouse.categories.seo.score : null, seo_failed_checks: category === "seo" ? seoFailures(lighthouse) : [],
+            metrics: category === "performance" ? Object.fromEntries(metrics.map(id => [id, lighthouse.audits?.[id] ?? null])) : {},
+            loading_experience: result.loadingExperience ?? null, origin_loading_experience: result.originLoadingExperience ?? null };
+        }
+      }
+    } catch (error) { failure = { status: "skipped", reason: safeFailure(error) }; }
+    console.error("Audit PageSpeed check failed", { host: url.hostname, category, attempt, timeout_ms: timeout, ...failure });
+    if (attempt === 2) return { ...failure, strategy: "mobile" };
+    await pause();
+  }
+  return { status: "skipped", strategy: "mobile" };
+}
+async function speedChecks(url: URL, key: string | undefined, request: typeof fetch, timeout = 30000, includeSEO = true, onPerformance?: (result: Record<string, unknown>) => Promise<void>): Promise<Record<string, unknown>> {
   if (!key) return { status: "skipped", reason: "PAGESPEED_API_KEY is not configured", strategy: "mobile" };
-  const endpoint = new URL("https://www.googleapis.com/pagespeedonline/v5/runPagespeed");
-  endpoint.searchParams.set("url", url.href);
-  endpoint.searchParams.set("strategy", "mobile");
-  endpoint.searchParams.set("key", key);
-  endpoint.searchParams.append("category", "performance");
-  endpoint.searchParams.append("category", "seo");
-  const response = await request(endpoint, { signal: AbortSignal.timeout(timeout) });
-  // Do not log provider errors: they can contain the request URL and secret.
-  if (!response.ok) return { status: "skipped", reason: "PageSpeed request failed", http_status: response.status, strategy: "mobile" };
-  const result = JSON.parse(await boundedText(response, 8000000));
-  const lighthouse = result.lighthouseResult;
-  if (!lighthouse || lighthouse.runtimeError) return { status: "skipped", reason: "PageSpeed could not analyse this website", strategy: "mobile" };
-  const metrics = ["first-contentful-paint", "largest-contentful-paint", "speed-index", "total-blocking-time", "cumulative-layout-shift", "interactive"];
-  return { status: "completed", strategy: "mobile", analysis_time: result.analysisUTCTimestamp ?? null,
-    final_url: lighthouse.finalUrl ?? null, lighthouse_version: lighthouse.lighthouseVersion ?? null,
-    performance_score: lighthouse.categories?.performance?.score ?? null,
-    seo_score: lighthouse.categories?.seo?.score ?? null, seo_failed_checks: seoFailures(lighthouse),
-    metrics: Object.fromEntries(metrics.map((id) => [id, lighthouse.audits?.[id] ?? null])),
-    loading_experience: result.loadingExperience ?? null, origin_loading_experience: result.originLoadingExperience ?? null };
+  const performance = await speedRun(url, key, "performance", request, timeout);
+  if (onPerformance) await onPerformance(performance);
+  if (!includeSEO) return performance;
+  const seo = await speedRun(url, key, "seo", request, timeout);
+  return { ...performance, status: performance['status'] === "completed" || seo['status'] === "completed" ? "completed" : "skipped",
+    seo_status: seo['status'], seo_score: seo['seo_score'] ?? null, seo_failed_checks: seo['seo_failed_checks'] ?? [],
+    seo_error: seo['status'] !== "completed" ? seo : null };
 }
 
-export async function runWebsiteChecks(website: string | undefined, key: string | undefined, request: typeof fetch = fetch, limits: { page?: number; speed?: number } = {}): Promise<WebsiteChecks> {
+export async function runWebsiteChecks(website: string | undefined, key: string | undefined, request: typeof fetch = fetch, limits: { page?: number; speed?: number; seo?: boolean; progress?: (checks: WebsiteChecks) => Promise<void> } = {}): Promise<WebsiteChecks> {
   const base = { website: website ?? null, checked_at: new Date().toISOString() };
   if (!website) return { ...base, status: "no website", page: { status: "skipped", reason: "no website" }, pagespeed: { status: "skipped", reason: "no website" } };
   let url: URL;
   try { url = publicWebsiteURL(website); } catch {
     return { ...base, status: "skipped", page: { status: "skipped", reason: "Invalid or non-public website URL" }, pagespeed: { status: "skipped", reason: "Invalid or non-public website URL" } };
   }
+  const pageWork = (async () => {
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try { return await pageChecks(url, request, limits.page); } catch (error) {
+        const reason = safeFailure(error);
+        console.error("Audit homepage check failed", { host: url.hostname, attempt, reason });
+        if (attempt === 2 || error instanceof Error && /Non-public|blocked|public HTTP|redirect/i.test(error.message)) return { status: "skipped", reason };
+        await pause();
+      }
+    }
+    return { status: "skipped" };
+  })();
   const [page, pagespeed] = await Promise.all([
-    pageChecks(url, request, limits.page).catch((e: unknown) => { if (e instanceof Error && /Non-public|blocked|public HTTP|redirect/i.test(e.message)) throw e; return pageChecks(url, request, limits.page); }).catch(() => ({ status: "skipped", reason: "Website fetch, DNS safety check, or parsing failed" })),
-    speedChecks(url, key, request, limits.speed).catch(() => ({ status: "skipped", reason: "PageSpeed unavailable or timed out", strategy: "mobile" })),
+    pageWork,
+    speedChecks(url, key, request, limits.speed, limits.seo, limits.progress ? async result => { const page = await pageWork; await limits.progress?.({ ...base, website: url.href, status: "completed", page, pagespeed: result }); } : undefined),
   ]);
   return { ...base, website: url.href, status: "completed", page, pagespeed };
 }

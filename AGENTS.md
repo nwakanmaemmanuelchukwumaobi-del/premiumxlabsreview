@@ -19,6 +19,7 @@
 - Focused local service routes reuse scope and audience from the shared catalog and link to the existing preselected service request form, so claims and enquiries remain consistent.
 - Derive sitemap URLs from router inventory with required staticData.sitemap decisions on every route; omit lastmod unless authoritative page-specific dates exist.
 - Keep website inspection in server-only helpers, save audit rows before running independent bounded checks, and store results on the same row so external failures cannot lose submissions.
+- Run client mobile performance before independent SEO with one bounded retry, persist early speed results, batch competitor checks in pairs, and use public-suffix root domains so partial checks and subdomains cannot hide valid evidence.
 - Generate instant breakdowns server-side from an allowlisted fact projection; persist before showing, with deterministic missing/unreachable states and failure-safe submission success.
 - Present audit loading and results in a shared accessible report dialog on both forms; derive display-only finding labels without changing saved AI output.
 - Use the shared submission-error boundary and friendly client fallback for all public forms so upstream failures never reveal internal configuration to visitors.
