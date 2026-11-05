@@ -43,7 +43,14 @@ export async function processAuditReportJob(id: string, callback: string) {
     };
     // Defer the client check until search calls finish to keep outbound headers within six.
     let checks = initial;
-    const clientWork = async () => { checks = await cachedWebsiteChecks(answers.website ?? undefined, process.env['PAGESPEED_API_KEY']); return checks; };
+    const clientWork = async (publishPartial: (checks: WebsiteChecks) => Promise<void>) => {
+      checks = await cachedWebsiteChecks(answers.website ?? undefined, process.env['PAGESPEED_API_KEY'], true, async partial => {
+        checks = partial;
+        await publishPartial(partial);
+        await supabaseAdmin.from("audit_requests").update({ website_checks: JSON.parse(JSON.stringify(partial)) }).eq("id", job.audit_id);
+      });
+      return checks;
+    };
     const report = await generateGoogleReport(context, answers.website, initial, publish, clientWork);
     await supabaseAdmin.from("audit_requests").update({ website_checks: JSON.parse(JSON.stringify(checks)) }).eq("id", job.audit_id);
     const url = `https://premiumxlabs.com/report/${job.report_token}`;

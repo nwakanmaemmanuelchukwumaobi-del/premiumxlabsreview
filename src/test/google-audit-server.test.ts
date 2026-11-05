@@ -11,6 +11,13 @@ const checks = { status: "completed" as const, website: "https://ada.ng/", check
 beforeEach(() => { vi.clearAllMocks(); mocks.cache.clear(); mocks.analyze.mockResolvedValue({ secondary: null, differences: [] }); mocks.website.mockResolvedValue(checks); vi.stubEnv("SERPER_API_KEY", "test-only"); });
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 describe("Server-only Google checks", () => {
+  it("finishes client checks before competitors and limits competitors to two concurrent runs", async () => {
+    let active = 0, peak = 0, clientDone = false;
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => Response.json(url.endsWith("maps") ? { places: [] } : { organic: [1,2,3,4].map(i => ({ title: `Store ${i}`, link: `https://store${i}.ng`, position: i })) })));
+    mocks.website.mockImplementation(async () => { expect(clientDone).toBe(true); active++; peak = Math.max(peak, active); await new Promise(r => setTimeout(r, 5)); active--; return checks; });
+    const result = await generateGoogleReport(context, "https://ada.ng", checks, undefined, async partial => { await partial(checks); clientDone = true; return checks; });
+    expect(peak).toBe(2); expect(result.speed.seconds).toBe(1.8); expect(result.speed_competitors?.every(c => c.speed.seconds === 1.8)).toBe(true);
+  });
   it("uses Serper search with ng, en and top ten settings", async () => { const request = vi.fn().mockResolvedValue(Response.json({ organic: [] })); await serperRequest("search", "shoes Abuja", request); expect(request.mock.calls[0]?.[0]).toBe("https://google.serper.dev/search"); expect(JSON.parse(request.mock.calls[0]?.[1].body)).toEqual({ q: "shoes Abuja", gl: "ng", hl: "en", num: 10 }); expect(request.mock.calls[0]?.[1].headers["X-API-KEY"]).toBe("test-only"); });
   it("runs five searches, one Maps lookup and keeps two measured competitors", async () => {
     const request = vi.fn(async (url: string) => Response.json(url.endsWith("maps") ? { places: [] } : { organic: [1, 2, 3, 4].map(i => ({ title: `Store ${i}`, link: `https://store${i}.ng/products`, position: i })) })); vi.stubGlobal("fetch", request);

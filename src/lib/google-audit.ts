@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { getDomain } from "tldts";
 
 export const CACHE_HOURS = 24;
 export const SOCIAL_REVIEW = "Your social media review will arrive within 24 hours.";
@@ -29,6 +30,7 @@ export function sameDomain(link: string, domain: string | null): boolean {
   const host = websiteDomain(link);
   return !!host && !!domain && (host === domain || host.endsWith(`.${domain}`));
 }
+export function rootDomain(value: string): string | null { const host = websiteDomain(value); return host ? getDomain(host) ?? host : null; }
 const EXCLUDED = ["infoisinfo.com", "infoisinfo.com.ng", "ordernow.ng", "ordernow.com", "facebook.com", "instagram.com", "tiktok.com", "x.com", "twitter.com", "linkedin.com", "youtube.com", "google.com", "google.com.ng", "business.site", "jiji.ng", "jumia.com.ng", "konga.com", "amazon.com", "alibaba.com", "aliexpress.com", "finelib.com", "businesslist.com.ng", "vconnect.com", "connectnigeria.com", "ngex.com", "yelp.com", "tripadvisor.com", "clutch.co", "sortlist.com", "goodfirms.co", "trustpilot.com", "booking.com", "nigeriagalleria.com", "yellowpages.com", "dealersng.com", "upwork.com", "fiverr.com", "freelancer.com", "peopleperhour.com", "toptal.com", "bark.com", "etsy.com", "ebay.com", "indeed.com", "ng.indeed.com", "jobberman.com", "myjobmag.com", "hotnigerianjobs.com", "glassdoor.com", "ngcareers.com", "jobgurus.com.ng", "olx.com.ng", "nairaland.com", "pinterest.com", "quora.com", "reddit.com", "wikipedia.org", "punchng.com", "vanguardngr.com", "guardian.ng", "premiumtimesng.com", "thisdaylive.com", "legit.ng", "pulse.ng", "dailytrust.com", "thenationonlineng.net", "channelstv.com", "bbc.com", "cnn.com", "businessday.ng", "techcabal.com", "nairametrics.com", "tiktok.com", "snapchat.com", "threads.net", "whatsapp.com", "wa.me", "jiji.com.ng", "jumia.com", "kilimall.ng", "slot.ng", "pointekonline.com", "ubuy.com.ng", "takealot.com", "temu.com", "shein.com", "yellowpages.com.ng", "nigeriayellowpages.com", "brownbook.net", "cylex.com.ng", "mapquest.com", "foursquare.com", "waze.com", "bing.com"];
 export const organicSchema = z.object({ title: z.string().max(1000), link: z.string().max(2000), position: z.number().int().min(1).max(10) });
 export type OrganicResult = z.infer<typeof organicSchema>;
@@ -36,13 +38,14 @@ export function eligibleCompetitors(results: OrganicResult[], domain: string | n
   const seen = new Set<string>();
   return results.filter(r => {
     const host = websiteDomain(r.link);
-    if (!host || sameDomain(r.link, domain) || seen.has(host) || EXCLUDED.some(d => sameDomain(r.link, d)) || /\b(directory|marketplace|listings?|top \d+|list of|yellow pages|business listings|jobs?|vacanc(y|ies)|hiring|careers?|classifieds?|news)\b/i.test(r.title) || /(^|\.)(jobs?|careers|news)\./i.test(host)) return false;
-    seen.add(host); return true;
+    const root = rootDomain(r.link);
+    if (!host || !root || root === (domain ? rootDomain(domain) : null) || seen.has(root) || ["infoisinfo.ng", ...EXCLUDED].some(d => root === rootDomain(d)) || /\b(directory|marketplace|listings?|top \d+|list of|yellow pages|business listings|jobs?|vacanc(y|ies)|hiring|careers?|classifieds?|news)\b/i.test(r.title) || /(^|\.)(jobs?|careers|news)\./i.test(host)) return false;
+    seen.add(root); return true;
   }).slice(0, 3);
 }
 export function competitorPool(searches: { competitors: OrganicResult[] }[]): OrganicResult[] {
   const seen = new Set<string>();
-  return searches.slice(0, 4).flatMap(s => s.competitors).filter(c => { const h = websiteDomain(c.link); if (!h || seen.has(h)) return false; seen.add(h); return true; });
+  return searches.slice(0, 4).flatMap(s => s.competitors).filter(c => { const h = rootDomain(c.link); if (!h || seen.has(h)) return false; seen.add(h); return true; });
 }
 const speedSchema = z.object({ seconds: z.number().nonnegative().nullable(), performance: z.number().min(0).max(1).nullable() });
 export const searchSchema = z.object({ query: z.string().max(600), status: z.enum(["completed", "unavailable"]), position: z.number().int().min(1).max(10).nullable(), competitors: z.array(organicSchema.extend({ speed: speedSchema, comparison: z.string().max(1200) })).max(3) });

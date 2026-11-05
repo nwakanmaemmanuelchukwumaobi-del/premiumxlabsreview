@@ -1,19 +1,19 @@
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { auditSchema } from "./audit-fields";
-import { auditQueries, calculateScore, competitorPool, eligibleCompetitors, websiteHealth, reportFixes, reportSchema, sameDomain, websiteDomain, organicSchema, type GoogleReport, type SearchContext } from "./google-audit";
+import { auditQueries, calculateScore, competitorPool, eligibleCompetitors, rootDomain, websiteHealth, reportFixes, reportSchema, sameDomain, websiteDomain, organicSchema, type GoogleReport, type SearchContext } from "./google-audit";
 import { cachedAuditCheck, hashValue } from "./audit-cache.server";
 import { analyzePages, pageEvidence } from "./google-audit-ai.server";
 import { runWebsiteChecks, publicWebsiteURL, type WebsiteChecks } from "./website-checks.server";
 
 const checksSchema: z.ZodType<WebsiteChecks> = z.object({ status: z.enum(["completed", "no website", "skipped"]), website: z.string().nullable(), checked_at: z.string(), page: z.record(z.string(), z.unknown()), pagespeed: z.record(z.string(), z.unknown()) });
 const unavailableChecks = (website: string | null): WebsiteChecks => ({ status: website ? "skipped" : "no website", website, checked_at: new Date().toISOString(), page: { status: "skipped" }, pagespeed: { status: "skipped" } });
-export async function cachedWebsiteChecks(website: string | undefined, key: string | undefined): Promise<WebsiteChecks> {
+export async function cachedWebsiteChecks(website: string | undefined, key: string | undefined, seo = true, progress?: (checks: WebsiteChecks) => Promise<void>): Promise<WebsiteChecks> {
   if (!website) return runWebsiteChecks(undefined, key);
   let url: URL;
   try { url = publicWebsiteURL(website); } catch { return unavailableChecks(website); }
   const home = `${url.origin}/`;
-  return cachedAuditCheck(`website:v5:${home}`, checksSchema, () => runWebsiteChecks(home, key, fetch, { page: 8000, speed: 20000 }), () => unavailableChecks(home), value => value.page['status'] === "completed" && value.pagespeed['status'] === "completed");
+  return cachedAuditCheck(`website:v6:${seo ? "client" : "competitor"}:${home}`, checksSchema, () => runWebsiteChecks(home, key, fetch, { page: 15000, speed: 30000, seo, ...(progress ? { progress } : {}) }), () => unavailableChecks(home), value => value.page['status'] === "completed" && value.pagespeed['status'] === "completed" && (!seo || value.pagespeed['seo_status'] === "completed"));
 }
 export async function serperRequest(endpoint: "search" | "maps", query: string, request: typeof fetch = fetch): Promise<unknown> {
   const key = process.env["SERPER_API_KEY"];
@@ -43,7 +43,7 @@ export function partialReport(context: SearchContext, website: string | null, ch
   const clientSpeed = speed(checks);
   return { version: 1, business: context.business_name, website, location: `${context.city}, ${context.state}`, checked_at: new Date().toISOString(), searches, speed: clientSpeed, maps: { status: "unavailable", rating: null, reviews: null }, score: calculateScore(searches, clientSpeed.performance, null), fixes: reportFixes(searches, clientSpeed, checks.page) };
 }
-export async function generateGoogleReport(context: SearchContext, website: string | null, initial: WebsiteChecks, progress?: (report: GoogleReport, steps: number[]) => Promise<void>, clientWork?: () => Promise<WebsiteChecks>): Promise<GoogleReport> {
+export async function generateGoogleReport(context: SearchContext, website: string | null, initial: WebsiteChecks, progress?: (report: GoogleReport, steps: number[]) => Promise<void>, clientWork?: (partial: (checks: WebsiteChecks) => Promise<void>) => Promise<WebsiteChecks>): Promise<GoogleReport> {
   const domain = websiteDomain(website);
   let checks = initial;
   const report = partialReport(context, website, checks);
@@ -70,9 +70,15 @@ export async function generateGoogleReport(context: SearchContext, website: stri
   }));
   report.searches = searches; await publish(0);
   // Measure the first search's top real competitors, topping up from other searches so "You" is never shown alone.
-  const pool = [...(searches[0]?.competitors ?? []), ...competitorPool(searches)].filter((c, i, all) => all.findIndex(o => websiteDomain(o.link) === websiteDomain(c.link)) === i).slice(0, 4);
-  const clientResult = (clientWork ? clientWork() : Promise.resolve(checks)).then(async value => { checks = value; await publish(1); return value; });
-  const [, ...measured] = await Promise.all([clientResult, ...pool.map(c => cachedWebsiteChecks(c.link, process.env['PAGESPEED_API_KEY']).catch(() => null))]);
+  const pool = [...(searches[0]?.competitors ?? []), ...competitorPool(searches)].filter((c, i, all) => all.findIndex(o => rootDomain(o.link) === rootDomain(c.link)) === i).slice(0, 4);
+  checks = clientWork ? await clientWork(async partial => { checks = partial; await publish(1); }) : checks;
+  await publish(1);
+  const measured: (WebsiteChecks | null)[] = [];
+  // Finish the client first; never test more than two competitor sites together.
+  for (let i = 0; i < pool.length; i += 2) {
+    measured.push(...await Promise.all(pool.slice(i, i + 2).map(c => cachedWebsiteChecks(c.link, process.env['PAGESPEED_API_KEY'], false).catch(() => null))));
+    if (measured.filter(value => value && speed(value).seconds !== null).length >= 2) break;
+  }
   const timed = pool.map((c, i) => ({ c, checked: measured[i] ?? null })).map(x => ({ ...x, speed: x.checked ? speed(x.checked) : { seconds: null, performance: null } }));
   const chosen = [...timed.filter(x => x.speed.seconds !== null), ...timed.filter(x => x.speed.seconds === null)].slice(0, 2);
   report.speed_competitors = chosen.map(x => ({ title: x.c.title, link: x.c.link, speed: x.speed }));
