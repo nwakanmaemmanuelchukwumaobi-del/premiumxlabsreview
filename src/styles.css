@@ -187,3 +187,52 @@
 @media (min-width: 768px) {
   .slant-top { padding-top: calc(4vw + 6rem); }
 }
+
+/* ===== Vintage + dynamic touches (visual only) ===== */
+:root {
+  --vintage-amber: oklch(0.8 0.13 75);
+  --vintage-rust: oklch(0.62 0.14 45);
+  --vintage-cream: oklch(0.97 0.025 85);
+}
+body { background-color: color-mix(in oklab, var(--color-background) 94%, var(--vintage-cream)); }
+/* Soft film grain over the whole page */
+body::after {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 60;
+  opacity: 0.07; mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: vintage-grain 1.2s steps(4) infinite;
+}
+/* Warm faded-photo vignette */
+body::before {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 59;
+  background: radial-gradient(ellipse at center, transparent 60%, color-mix(in oklab, var(--vintage-rust) 14%, transparent) 100%);
+}
+@keyframes vintage-grain {
+  0% { transform: translate(0, 0); } 25% { transform: translate(-2%, 1%); }
+  50% { transform: translate(1%, -2%); } 75% { transform: translate(2%, 2%); } 100% { transform: translate(0, 0); }
+}
+/* Warm sunset glow drifting across textured navy areas */
+.hero-texture {
+  background-image:
+    radial-gradient(color-mix(in oklab, var(--navy-foreground) 8%, transparent) 1px, transparent 1px),
+    radial-gradient(circle at 15% 20%, color-mix(in oklab, var(--vintage-amber) 22%, transparent), transparent 45%),
+    radial-gradient(circle at 85% 80%, color-mix(in oklab, var(--vintage-rust) 20%, transparent), transparent 50%);
+  background-size: 26px 26px, 200% 200%, 200% 200%;
+  animation: vintage-drift 18s ease-in-out infinite alternate;
+}
+@keyframes vintage-drift {
+  from { background-position: 0 0, 0% 0%, 100% 100%; }
+  to { background-position: 0 0, 60% 40%, 40% 60%; }
+}
+/* Retro offset shadow on big headings */
+h1, h2 { text-shadow: 2px 2px 0 color-mix(in oklab, var(--vintage-amber) 35%, transparent); }
+/* Slight warm tone on photos */
+img:not([src*="logo"]) { filter: sepia(0.12) saturate(1.05) contrast(1.02); }
+/* Lift effect on links/buttons */
+a, button { transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease; }
+a[class*="rounded"]:hover, button[class*="rounded"]:hover { transform: translateY(-2px); filter: saturate(1.15); }
+::selection { background: var(--vintage-amber); color: var(--navy); }
+@media (prefers-reduced-motion: reduce) {
+  body::after, .hero-texture { animation: none; }
+  a[class*="rounded"]:hover, button[class*="rounded"]:hover { transform: none; }
+}
