@@ -26,6 +26,10 @@ describe("Google audit business rules", () => {
     expect(eligibleCompetitors(entries, "shop.ng").map(r => r.position)).toEqual([5, 7, 8]);
   });
   it("excludes infoisinfo and OrderNow and advances to real businesses", () => { expect(eligibleCompetitors([{ title: "Shoes", link: "https://ng.infoisinfo.com", position: 1 }, { title: "Shoes", link: "https://ordernow.ng", position: 2 }, { title: "Real store", link: "https://realstore.ng", position: 3 }], null).map(r => r.link)).toEqual(["https://realstore.ng"]); });
+  it("excludes every subdomain of the requested directory, classified and job roots", () => {
+    const links = ["https://abuja.infoisinfo.ng", "https://shops.jiji.ng", "https://ng.indeed.com", "https://realbusiness.ng"];
+    expect(eligibleCompetitors(links.map((link, i) => ({ title: "Furniture", link, position: i + 1 })), null).map(r => r.link)).toEqual(["https://realbusiness.ng"]);
+  });
   it("expires cache exactly after 24 hours", () => { const now = Date.parse("2026-11-04T12:00:00Z"); const expiry = new Date(now + 24 * 3600000).toISOString(); expect(isFreshCache(expiry, now + 24 * 3600000 - 1)).toBe(true); expect(isFreshCache(expiry, now + 24 * 3600000)).toBe(false); });
   it("normalizes FCT and requires separate product and service for Both", () => {
     expect(normalizeState("Federal Capital Territory")).toBe("Abuja");
