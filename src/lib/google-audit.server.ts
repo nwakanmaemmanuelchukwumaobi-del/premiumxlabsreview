@@ -13,7 +13,7 @@ export async function cachedWebsiteChecks(website: string | undefined, key: stri
   let url: URL;
   try { url = publicWebsiteURL(website); } catch { return unavailableChecks(website); }
   const home = `${url.origin}/`;
-  return cachedAuditCheck(`website:v6:${seo ? "client" : "competitor"}:${home}`, checksSchema, () => runWebsiteChecks(home, key, fetch, { page: 15000, speed: 30000, seo, progress }), () => unavailableChecks(home), value => value.page['status'] === "completed" && value.pagespeed['status'] === "completed" && (!seo || value.pagespeed['seo_status'] === "completed"));
+  return cachedAuditCheck(`website:v6:${seo ? "client" : "competitor"}:${home}`, checksSchema, () => runWebsiteChecks(home, key, fetch, { page: 15000, speed: 30000, seo, ...(progress ? { progress } : {}) }), () => unavailableChecks(home), value => value.page['status'] === "completed" && value.pagespeed['status'] === "completed" && (!seo || value.pagespeed['seo_status'] === "completed"));
 }
 export async function serperRequest(endpoint: "search" | "maps", query: string, request: typeof fetch = fetch): Promise<unknown> {
   const key = process.env["SERPER_API_KEY"];
@@ -43,7 +43,7 @@ export function partialReport(context: SearchContext, website: string | null, ch
   const clientSpeed = speed(checks);
   return { version: 1, business: context.business_name, website, location: `${context.city}, ${context.state}`, checked_at: new Date().toISOString(), searches, speed: clientSpeed, maps: { status: "unavailable", rating: null, reviews: null }, score: calculateScore(searches, clientSpeed.performance, null), fixes: reportFixes(searches, clientSpeed, checks.page) };
 }
-export async function generateGoogleReport(context: SearchContext, website: string | null, initial: WebsiteChecks, progress?: (report: GoogleReport, steps: number[]) => Promise<void>, clientWork?: () => Promise<WebsiteChecks>): Promise<GoogleReport> {
+export async function generateGoogleReport(context: SearchContext, website: string | null, initial: WebsiteChecks, progress?: (report: GoogleReport, steps: number[]) => Promise<void>, clientWork?: (partial: (checks: WebsiteChecks) => Promise<void>) => Promise<WebsiteChecks>): Promise<GoogleReport> {
   const domain = websiteDomain(website);
   let checks = initial;
   const report = partialReport(context, website, checks);
@@ -71,7 +71,7 @@ export async function generateGoogleReport(context: SearchContext, website: stri
   report.searches = searches; await publish(0);
   // Measure the first search's top real competitors, topping up from other searches so "You" is never shown alone.
   const pool = [...(searches[0]?.competitors ?? []), ...competitorPool(searches)].filter((c, i, all) => all.findIndex(o => rootDomain(o.link) === rootDomain(c.link)) === i).slice(0, 4);
-  checks = clientWork ? await clientWork() : checks;
+  checks = clientWork ? await clientWork(async partial => { checks = partial; await publish(1); }) : checks;
   await publish(1);
   const measured: (WebsiteChecks | null)[] = [];
   // Finish the client first; never test more than two competitor sites together.

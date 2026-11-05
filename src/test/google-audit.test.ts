@@ -48,6 +48,8 @@ describe("website health and specific fixes", () => {
     expect(h?.problems.length).toBe(3);
   });
   it("omits the checklist when the homepage can't be read", () => { expect(websiteHealth({ status: "skipped" }, { status: "skipped" })).toBeNull(); });
+  it("keeps search setup when homepage fails", () => { expect(websiteHealth({ status: "skipped" }, { status: "completed", seo_score: 0.9 })).toEqual({ seo_score: 90, checklist: [], problems: [] }); });
+  it("keeps homepage checklist when search setup fails", () => { expect(websiteHealth({ status: "completed", main_headline: "Furniture Abuja" }, { status: "skipped" })?.checklist).toHaveLength(4); });
   it("names the actual missing search phrase in the first fix", () => {
     const fixes = reportFixes([{ query: "furniture shop Abuja", status: "completed", position: null, competitors: [] }], { seconds: null, performance: null }, { status: "skipped" });
     expect(fixes[0]).toContain('"furniture shop Abuja"');

@@ -43,14 +43,10 @@ export async function processAuditReportJob(id: string, callback: string) {
     };
     // Defer the client check until search calls finish to keep outbound headers within six.
     let checks = initial;
-    const clientWork = async () => {
+    const clientWork = async (publishPartial: (checks: WebsiteChecks) => Promise<void>) => {
       checks = await cachedWebsiteChecks(answers.website ?? undefined, process.env['PAGESPEED_API_KEY'], true, async partial => {
         checks = partial;
-        const early = partialReport(context, answers.website, partial);
-        early.offering = context.main_offering; early.city = context.city;
-        const { websiteHealth } = await import("./google-audit");
-        early.health = websiteHealth(partial.page, partial.pagespeed, context.main_offering, context.city) ?? undefined;
-        await publish(early, [0, 1]);
+        await publishPartial(partial);
         await supabaseAdmin.from("audit_requests").update({ website_checks: JSON.parse(JSON.stringify(partial)) }).eq("id", job.audit_id);
       });
       return checks;
