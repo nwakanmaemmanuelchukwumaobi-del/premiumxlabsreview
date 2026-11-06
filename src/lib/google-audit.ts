@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { getDomain } from "tldts";
+import { EXCLUDED_DOMAINS, EXCLUDED_SUFFIXES, EXCLUDED_BRANDS, EXCLUDED_BUSINESS, OFFERING_SYNONYMS, RETAIL_ITEMS } from "./competitor-config";
 
 export const CACHE_HOURS = 24;
 export const SOCIAL_REVIEW = "Your social media review will arrive within 24 hours.";
@@ -14,32 +15,39 @@ export function auditQueries(a: SearchContext, second?: string | null): string[]
   const main = queryText(a.main_offering), city = queryText(a.city), state = queryText(normalizeState(a.state));
   const extra = second ? queryText(second) : "";
   const service = queryText(a.main_service || main);
-  const products = [`${main} ${city}`, `${main} shop ${city}`, `best ${main} ${city}`, `buy ${main} ${city}`, `${main} store ${city}`, `${main} ${state}`, `buy ${main} ${state}`, extra && `${extra} ${city}`, `${main} store ${state}`];
-  const services = [`${main} ${city}`, `${main} company ${city}`, `best ${main} ${city}`, `${main} ${state}`, extra && `${extra} ${city}`, `${main} company ${state}`, `best ${main} ${state}`, `${main} services ${city}`];
-  const both = [`${main} ${city}`, `buy ${main} ${city}`, `${service} ${city}`, `${service} company ${city}`, `${main} shop ${city}`, `best ${service} ${city}`, `best ${main} ${city}`, `${main} ${state}`, `${service} ${state}`];
-  const list = a.offering_type === "Products" ? (extra ? [products[0], products[1], products[3], products[7], ...products] : products) : a.offering_type === "Services" ? (extra ? [services[0], services[1], services[2], services[4], ...services] : services) : both;
+  const retail = a.offering_type !== "Services" && RETAIL_ITEMS.test(main);
+  const industrialSteel = /\bsteel\b/i.test(main);
+  const related = industrialSteel ? ["steel suppliers", "steel pipes", "best steel supplier"] : [];
+  const list = retail
+    ? [`${main} ${city}`, `${main} shop ${city}`, extra ? `${extra} ${city}` : `best ${main} ${city}`, `buy ${main} ${city}`, `${main} store ${city}`]
+    : [`${main} ${city}`, ...(extra && extra.toLowerCase() !== main.toLowerCase() ? [`${extra} ${city}`] : []), ...(a.offering_type === "Both" && service.toLowerCase() !== main.toLowerCase() ? [`${service} ${city}`] : []), ...related.map(v => `${v} ${city}`), `${main} ${a.offering_type === "Services" ? "company" : "suppliers"} ${city}`, `best ${main} ${city}`, `${main} ${state}`, `${main} services ${city}`];
   const name = queryText(a.business_name);
   const phrases = dedupe(list.filter(Boolean) as string[]).filter(q => q.toLowerCase() !== name.toLowerCase()).slice(0, 4);
   return [...phrases, name];
 }
 export function websiteDomain(value: string | null | undefined): string | null {
   if (!value) return null;
-  try { const u = new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`); return ["http:", "https:"].includes(u.protocol) ? u.hostname.toLowerCase().replace(/^www\./, "") : null; } catch { return null; }
+  try { const u = new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`); const host = u.hostname.toLowerCase();
+    return ["http:", "https:"].includes(u.protocol) && !u.username && !u.password && !u.port && host.includes(".") && !host.includes(":") && !/^\d+(\.\d+){3}$/.test(host) && !/(^|\.)(localhost|local|internal|lan|home|test|invalid|example)$/.test(host) && !host.endsWith(".") ? host.replace(/^www\./, "") : null; } catch { return null; }
 }
 export function sameDomain(link: string, domain: string | null): boolean {
   const host = websiteDomain(link);
   return !!host && !!domain && (host === domain || host.endsWith(`.${domain}`));
 }
 export function rootDomain(value: string): string | null { const host = websiteDomain(value); return host ? getDomain(host) ?? host : null; }
-const EXCLUDED = ["infoisinfo.com", "infoisinfo.com.ng", "ordernow.ng", "ordernow.com", "facebook.com", "instagram.com", "tiktok.com", "x.com", "twitter.com", "linkedin.com", "youtube.com", "google.com", "google.com.ng", "business.site", "jiji.ng", "jumia.com.ng", "konga.com", "amazon.com", "alibaba.com", "aliexpress.com", "finelib.com", "businesslist.com.ng", "vconnect.com", "connectnigeria.com", "ngex.com", "yelp.com", "tripadvisor.com", "clutch.co", "sortlist.com", "goodfirms.co", "trustpilot.com", "booking.com", "nigeriagalleria.com", "yellowpages.com", "dealersng.com", "upwork.com", "fiverr.com", "freelancer.com", "peopleperhour.com", "toptal.com", "bark.com", "etsy.com", "ebay.com", "indeed.com", "ng.indeed.com", "jobberman.com", "myjobmag.com", "hotnigerianjobs.com", "glassdoor.com", "ngcareers.com", "jobgurus.com.ng", "olx.com.ng", "nairaland.com", "pinterest.com", "quora.com", "reddit.com", "wikipedia.org", "punchng.com", "vanguardngr.com", "guardian.ng", "premiumtimesng.com", "thisdaylive.com", "legit.ng", "pulse.ng", "dailytrust.com", "thenationonlineng.net", "channelstv.com", "bbc.com", "cnn.com", "businessday.ng", "techcabal.com", "nairametrics.com", "tiktok.com", "snapchat.com", "threads.net", "whatsapp.com", "wa.me", "jiji.com.ng", "jumia.com", "kilimall.ng", "slot.ng", "pointekonline.com", "ubuy.com.ng", "takealot.com", "temu.com", "shein.com", "yellowpages.com.ng", "nigeriayellowpages.com", "brownbook.net", "cylex.com.ng", "mapquest.com", "foursquare.com", "waze.com", "bing.com"];
-export const organicSchema = z.object({ title: z.string().max(1000), link: z.string().max(2000), position: z.number().int().min(1).max(10) });
+
+export const organicSchema = z.object({ title: z.string().max(1000), link: z.string().max(2000), position: z.number().int().min(1).max(100), snippet: z.string().max(5000).optional() });
 export type OrganicResult = z.infer<typeof organicSchema>;
-export function eligibleCompetitors(results: OrganicResult[], domain: string | null): OrganicResult[] {
+export function eligibleCompetitors(results: OrganicResult[], domain: string | null, offering?: string): OrganicResult[] {
   const seen = new Set<string>();
   return results.filter(r => {
     const host = websiteDomain(r.link);
     const root = rootDomain(r.link);
-    if (!host || !root || root === (domain ? rootDomain(domain) : null) || seen.has(root) || ["infoisinfo.ng", ...EXCLUDED].some(d => root === rootDomain(d)) || /\b(directory|marketplace|listings?|top \d+|list of|yellow pages|business listings|jobs?|vacanc(y|ies)|hiring|careers?|classifieds?|news)\b/i.test(r.title) || /(^|\.)(jobs?|careers|news)\./i.test(host)) return false;
+    const text = `${r.title} ${r.snippet ?? ""}`;
+    const productWords = (offering ?? "").toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(w => w.length > 2 && !/^(best|buy|shop|store|company|supplier|suppliers|service|services)$/.test(w));
+    const synonyms = Object.entries(OFFERING_SYNONYMS).filter(([key]) => (offering ?? "").toLowerCase().includes(key)).flatMap(([, values]) => values);
+    const relevant = !offering || [...productWords, ...synonyms].some(word => new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/s$/, "")}s?\\b`, "i").test(text));
+    if (!host || !root || root === (domain ? rootDomain(domain) : null) || seen.has(root) || ["infoisinfo.ng", "shop.com", ...EXCLUDED_DOMAINS].some(d => root === rootDomain(d)) || EXCLUDED_SUFFIXES.some(suffix => host.endsWith(suffix)) || EXCLUDED_BRANDS.some(brand => root.split(".").some(part => part.includes(brand))) || EXCLUDED_BUSINESS.test(text) || /(^|\.)(jobs?|careers|news)\./i.test(host) || !relevant) return false;
     seen.add(root); return true;
   }).slice(0, 3);
 }
@@ -47,11 +55,11 @@ export function competitorPool(searches: { competitors: OrganicResult[] }[]): Or
   const seen = new Set<string>();
   return searches.slice(0, 4).flatMap(s => s.competitors).filter(c => { const h = rootDomain(c.link); if (!h || seen.has(h)) return false; seen.add(h); return true; });
 }
-const speedSchema = z.object({ seconds: z.number().nonnegative().nullable(), performance: z.number().min(0).max(1).nullable() });
+const speedSchema = z.object({ seconds: z.number().nonnegative().nullable(), performance: z.number().min(0).max(1).nullable(), status: z.enum(["pending", "completed", "unavailable"]).optional() });
 export const searchSchema = z.object({ query: z.string().max(600), status: z.enum(["completed", "unavailable"]), position: z.number().int().min(1).max(10).nullable(), competitors: z.array(organicSchema.extend({ speed: speedSchema, comparison: z.string().max(1200) })).max(3) });
 export const healthSchema = z.object({ seo_score: z.number().int().min(0).max(100).nullable(), checklist: z.array(z.object({ label: z.string().max(80), ok: z.boolean() })).max(4), problems: z.array(z.string().max(300)).max(3) });
 export type WebsiteHealth = z.infer<typeof healthSchema>;
-export const reportSchema = z.object({ offering: z.string().max(150).optional(), city: z.string().max(150).optional(), version: z.literal(1), business: z.string().max(150), website: z.string().max(2000).nullable(), location: z.string().max(400), checked_at: z.string(), searches: z.array(searchSchema).max(5), speed: speedSchema, maps: z.object({ status: z.enum(["matched", "not found", "unavailable", "unconfirmed"]), rating: z.number().min(0).max(5).nullable(), reviews: z.number().int().nonnegative().nullable() }), score: z.object({ earned: z.number().min(0).max(100), coverage: z.number().min(0).max(100), complete: z.boolean() }), fixes: z.array(z.string().max(600)).max(3), speed_competitors: z.array(z.object({ title: z.string().max(1000), link: z.string().max(2000), speed: speedSchema })).max(2).optional(), health: healthSchema.optional() });
+export const reportSchema = z.object({ offering: z.string().max(150).optional(), city: z.string().max(150).optional(), version: z.literal(1), hasWebsite: z.boolean().optional(), business: z.string().max(150), website: z.string().max(2000).nullable(), location: z.string().max(400), checked_at: z.string(), searches: z.array(searchSchema).max(5), speed: speedSchema, maps: z.object({ status: z.enum(["matched", "not found", "unavailable", "unconfirmed"]), rating: z.number().min(0).max(5).nullable(), reviews: z.number().int().nonnegative().nullable() }), score: z.object({ earned: z.number().min(0).max(100), coverage: z.number().min(0).max(100), complete: z.boolean() }), fixes: z.array(z.string().max(600)).max(3), speed_competitors: z.array(z.object({ title: z.string().max(1000), link: z.string().max(2000), speed: speedSchema })).max(3).optional(), health: healthSchema.optional() });
 export type GoogleReport = z.infer<typeof reportSchema>;
 export const visibility = (position: number | null) => position === null ? 0 : (11 - position) / 10;
 export function calculateScore(searches: GoogleReport["searches"], performance: number | null, rating: number | null) {
@@ -88,8 +96,9 @@ export function websiteHealth(page: Record<string, unknown>, pagespeed: Record<s
   if (offering && !links.some(l => mentions(`${l.label ?? ""} ${l.url ?? ""}`, offering))) problems.push(`There's no separate page for ${offering}, so Google has nothing specific to show buyers searching for it.`);
   return { seo_score: seo, checklist, problems: problems.slice(0, 3) };
 }
-type FixContext = { offering?: string; city?: string; competitorSpeed?: { name: string; seconds: number } | null };
+type FixContext = { hasWebsite?: boolean; offering?: string; city?: string; competitorSpeed?: { name: string; seconds: number } | null };
 export function reportFixes(searches: GoogleReport["searches"], speed: GoogleReport["speed"], page: Record<string, unknown>, ctx: FixContext = {}): string[] {
+  if (ctx.hasWebsite === false) return searches.slice(0, 4).slice(0, 3).map(s => `Build a website with a page for '${s.query}', with that phrase in its title and headline, so buyers searching it can find you.`);
   const fixes: string[] = [];
   const done = searches.slice(0, 4).filter(s => s.status === "completed");
   const missing = done.filter(s => s.position === null);

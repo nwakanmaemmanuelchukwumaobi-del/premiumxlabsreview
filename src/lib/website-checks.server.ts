@@ -165,8 +165,8 @@ function safeFailure(error: unknown): string {
   }
   return "network or parsing failure";
 }
-async function speedRun(url: URL, key: string, category: "performance" | "seo", request: typeof fetch, timeout: number): Promise<Record<string, unknown>> {
-  for (let attempt = 1; attempt <= 2; attempt++) {
+async function speedRun(url: URL, key: string, category: "performance" | "seo", request: typeof fetch, timeout: number, attempts = 2): Promise<Record<string, unknown>> {
+  for (let attempt = 1; attempt <= attempts; attempt++) {
     let failure: Record<string, unknown>;
     try {
       const endpoint = new URL("https://www.googleapis.com/pagespeedonline/v5/runPagespeed");
@@ -196,7 +196,7 @@ async function speedRun(url: URL, key: string, category: "performance" | "seo", 
       }
     } catch (error) { failure = { status: "skipped", reason: safeFailure(error) }; }
     console.error("Audit PageSpeed check failed", { host: url.hostname, category, attempt, timeout_ms: timeout, ...failure });
-    if (attempt === 2) return { ...failure, strategy: "mobile" };
+    if (attempt === attempts) return { ...failure, strategy: "mobile" };
     await pause();
   }
   return { status: "skipped", strategy: "mobile" };
@@ -212,7 +212,13 @@ async function speedChecks(url: URL, key: string | undefined, request: typeof fe
     seo_error: seo['status'] !== "completed" ? seo : null };
 }
 
-export async function runWebsiteChecks(website: string | undefined, key: string | undefined, request: typeof fetch = fetch, limits: { page?: number; speed?: number; seo?: boolean; progress?: (checks: WebsiteChecks) => Promise<void> } = {}): Promise<WebsiteChecks> {
+export async function runMobilePerformance(website: string, key: string | undefined, request: typeof fetch = fetch): Promise<Record<string, unknown>> {
+  if (!key) return { status: "skipped", reason: "PAGESPEED_API_KEY is not configured" };
+  try { return await speedRun(publicWebsiteURL(website), key, "performance", request, 8000, 1); }
+  catch { return { status: "skipped", reason: "Invalid website" }; }
+}
+
+export async function runWebsiteChecks(website: string | undefined, key: string | undefined, request: typeof fetch = fetch, limits: { page?: number; speed?: number; seo?: boolean; performance?: boolean; progress?: (checks: WebsiteChecks) => Promise<void> } = {}): Promise<WebsiteChecks> {
   const base = { website: website ?? null, checked_at: new Date().toISOString() };
   if (!website) return { ...base, status: "no website", page: { status: "skipped", reason: "no website" }, pagespeed: { status: "skipped", reason: "no website" } };
   let url: URL;
@@ -232,7 +238,7 @@ export async function runWebsiteChecks(website: string | undefined, key: string 
   })();
   const [page, pagespeed] = await Promise.all([
     pageWork,
-    speedChecks(url, key, request, limits.speed, limits.seo, limits.progress ? async result => { const page = await pageWork; await limits.progress?.({ ...base, website: url.href, status: "completed", page, pagespeed: result }); } : undefined),
+    limits.performance === false ? Promise.resolve({ status: "skipped" }) : speedChecks(url, key, request, limits.speed, limits.seo, limits.progress ? async result => { const page = await pageWork; await limits.progress?.({ ...base, website: url.href, status: "completed", page, pagespeed: result }); } : undefined),
   ]);
   return { ...base, website: url.href, status: "completed", page, pagespeed };
 }
