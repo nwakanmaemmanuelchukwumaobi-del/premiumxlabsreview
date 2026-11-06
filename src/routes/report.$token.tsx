@@ -13,5 +13,5 @@ export const Route = createFileRoute("/report/$token")({
 function ReportPage() {
   const { token } = Route.useParams();
   const { data: report } = useSuspenseQuery(reportQuery(token));
-  return <div className="min-h-dvh bg-report px-5 py-10 text-report-foreground sm:px-8 sm:py-14"><div className="mx-auto max-w-3xl"><p className="mb-10 font-display text-lg font-bold">premiumxlabs</p>{report ? report.city ? <AuditProgress token={token} /> : <GoogleAuditReport report={report} /> : <section><h1 className="text-2xl font-bold">Report unavailable</h1><p className="mt-4 text-report-muted">This link may be incorrect or no longer active. Message us for help with your report.</p></section>}</div></div>;
+  return <div className="min-h-dvh bg-report px-5 py-10 text-report-foreground sm:px-8 sm:py-14"><div className="mx-auto max-w-3xl"><p className="mb-10 font-display text-lg font-bold">premiumxlabs</p>{report ? report.city ? <AuditProgress token={token} initialReport={report} /> : <GoogleAuditReport report={report} /> : <section><h1 className="text-2xl font-bold">Report unavailable</h1><p className="mt-4 text-report-muted">This link may be incorrect or no longer active. Message us for help with your report.</p></section>}</div></div>;
 }

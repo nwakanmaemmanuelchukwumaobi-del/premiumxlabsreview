@@ -44,7 +44,7 @@ export async function processAuditReportJob(id: string, callback: string) {
     // Defer the client check until search calls finish to keep outbound headers within six.
     let checks = initial;
     const clientWork = async (publishPartial: (checks: WebsiteChecks) => Promise<void>) => {
-      checks = await cachedWebsiteChecks(answers.website ?? undefined, process.env['PAGESPEED_API_KEY'], true, async partial => {
+      checks = await cachedWebsiteChecks(answers.website ?? undefined, process.env['PAGESPEED_API_KEY'], false, async partial => {
         checks = partial;
         await publishPartial(partial);
         await supabaseAdmin.from("audit_requests").update({ website_checks: JSON.parse(JSON.stringify(partial)) }).eq("id", job.audit_id);
@@ -52,6 +52,7 @@ export async function processAuditReportJob(id: string, callback: string) {
       return checks;
     };
     const report = await generateGoogleReport(context, answers.website, initial, publish, clientWork);
+    checks = { ...checks, pagespeed: { status: report.speed.status === "completed" ? "completed" : "skipped", strategy: "mobile", performance_score: report.speed.performance, metrics: { "first-contentful-paint": report.speed.seconds === null ? null : { numericValue: report.speed.seconds * 1000 } } } };
     await supabaseAdmin.from("audit_requests").update({ website_checks: JSON.parse(JSON.stringify(checks)) }).eq("id", job.audit_id);
     const url = `https://premiumxlabs.com/report/${job.report_token}`;
     const images: SignedProfileImage[] = [];
