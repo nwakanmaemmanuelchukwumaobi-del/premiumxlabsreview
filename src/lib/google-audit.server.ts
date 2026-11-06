@@ -18,7 +18,9 @@ const mobileSchema = z.record(z.string(), z.unknown());
 export async function cachedMobilePerformance(website: string): Promise<Record<string, unknown>> {
   const domain = rootDomain(website);
   if (!domain) return { status: "skipped" };
-  return cachedAuditCheck(`mobile-performance:v1:${domain}`, mobileSchema, () => runMobilePerformance(website, process.env['PAGESPEED_API_KEY']), () => ({ status: "skipped" }), () => true, 7 * 24);
+  let home: string;
+  try { home = `${publicWebsiteURL(website).origin}/`; } catch { return { status: "skipped" }; }
+  return cachedAuditCheck(`mobile-performance:v1:${domain}`, mobileSchema, () => runMobilePerformance(home, process.env['PAGESPEED_API_KEY']), () => ({ status: "skipped" }), () => true, 7 * 24);
 }
 export async function serperRequest(endpoint: "search" | "maps", query: string, request: typeof fetch = fetch): Promise<unknown> {
   const key = process.env["SERPER_API_KEY"];
