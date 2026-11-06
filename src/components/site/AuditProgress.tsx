@@ -10,7 +10,7 @@ export function AuditProgress({ token, initialReport }: { token: string; initial
   const { data } = useQuery({ queryKey: ["audit-progress", token], queryFn: () => getAuditProgress({ data: { token } }), refetchInterval: query => ["complete", "failed"].includes(query.state.data?.status ?? "") ? false : 3000, retry: false });
   const [slow, setSlow] = useState(false);
   useEffect(() => { const kick = setTimeout(() => { kickAuditReport({ data: { token } }).catch(() => undefined); }, 4000); const late = setTimeout(() => setSlow(true), 90000); return () => { clearTimeout(kick); clearTimeout(late); }; }, [token]);
-  const finished = data?.status === "complete";
+  const finished = data?.status === "complete" || data === null;
   const failed = data?.status === "failed";
   const report = data?.report ?? initialReport;
   const steps = data?.steps ?? [];

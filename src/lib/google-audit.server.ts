@@ -73,7 +73,7 @@ export async function generateGoogleReport(context: SearchContext, website: stri
       const parsed = await cachedAuditCheck(`search:v4:${query}:${domain}`, providerSearch.nullable(), () => serperRequest("search", query).then(v => providerSearch.parse(v)), () => null, value => value !== null);
       if (!parsed) return { query, status: "unavailable" as const, position: null, competitors: [] };
       const results = parsed.organic.flatMap(r => { const p = organicSchema.safeParse(r); return p.success ? [p.data] : []; }).sort((a,b) => a.position-b.position);
-      return { query, status: "completed" as const, position: results.slice(0, 10).find(r => sameDomain(r.link, domain))?.position ?? null, competitors: eligibleCompetitors(results, domain, context.main_offering).map(r => ({ ...r, speed: { seconds: null, performance: null }, comparison: "" })) };
+      return { query, status: "completed" as const, position: results.filter(r => r.position <= 10).find(r => sameDomain(r.link, domain))?.position ?? null, competitors: eligibleCompetitors(results, domain, context.main_offering).map(r => ({ ...r, speed: { seconds: null, performance: null }, comparison: "" })) };
     } catch { return { query, status: "unavailable" as const, position: null, competitors: [] }; }
   }));
   // Keep all queries for scoring/fixes; phrases with fewer than two relevant businesses are omitted by the report table.
