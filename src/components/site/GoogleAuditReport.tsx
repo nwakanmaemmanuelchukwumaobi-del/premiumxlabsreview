@@ -1,16 +1,16 @@
 import { ArrowUpRight, CheckCircle2, AlertTriangle, XCircle, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SOCIAL_REVIEW, ADS_NOTE, reportHeadline, scoreBand, websiteDomain, type GoogleReport } from "@/lib/google-audit";
+import { SOCIAL_REVIEW, ADS_NOTE, reportHeadline, reportFixes, eligibleCompetitors, scoreBand, websiteDomain, type GoogleReport } from "@/lib/google-audit";
 const CALL_URL = "https://wa.me/2349034340796?text=" + encodeURIComponent("Hi premiumxlabs, I'd like to book a free 15-minute call about my audit.");
 function CallButton() { return <Button asChild className="h-auto w-full gap-2 whitespace-normal rounded-lg bg-report-accent px-4 py-4 font-bold text-report-accent-foreground hover:bg-report-accent/90"><a href={CALL_URL} target="_blank" rel="noreferrer"><MessageCircle className="h-4 w-4 shrink-0" />Book a free 15-minute call<ArrowUpRight className="h-4 w-4 shrink-0" /></a></Button>; }
 export function GoogleAuditReport({ report, pending = false }: { report: GoogleReport; reportUrl?: string | null; pending?: boolean }) {
   const hasWebsite = !!websiteDomain(report.website) && report.hasWebsite !== false;
-  const searches = report.searches.slice(0,4).filter(s => s.status === "completed" && s.competitors.length >= 2);
-  const speeds = [...(hasWebsite ? [{ name: "You", ...report.speed }] : []), ...(report.speed_competitors ?? report.searches[0]?.competitors ?? []).map(c => ({ name: websiteDomain(c.link) ?? c.title, ...c.speed }))];
+  const searches = report.searches.slice(0,4).map(s => ({ ...s, competitors: s.competitors.filter(c => eligibleCompetitors([c], websiteDomain(report.website), report.offering).length > 0) })).filter(s => s.status === "completed" && s.competitors.length >= 2);
+  const speeds = [...(hasWebsite ? [{ name: "You", ...report.speed }] : []), ...(report.speed_competitors ?? report.searches[0]?.competitors ?? []).filter(c => eligibleCompetitors([{ ...c, position: 1 }], websiteDomain(report.website), report.offering).length > 0).map(c => ({ name: websiteDomain(c.link) ?? c.title, ...c.speed }))];
   const measured = speeds.filter((s): s is typeof s & { seconds: number } => s.seconds !== null);
   const maxSpeed = Math.max(1, ...measured.map(s => s.seconds));
   const differences = (report.searches[0]?.competitors ?? []).filter(c => c.comparison);
-  const fixes = report.fixes;
+  const fixes = hasWebsite ? report.fixes : reportFixes(report.searches, { seconds: null, performance: null }, {}, { hasWebsite: false });
   const mine = measured.find(s => s.name === "You"), rivals = measured.filter(s => s.name !== "You");
   const speedVerdict = mine && rivals.length ? (rivals.every(r => mine.seconds <= r.seconds) ? "Good news: your homepage shows up faster on a phone than these competitors." : `${rivals.filter(r => r.seconds < mine.seconds).map(r => r.name).join(" and ")} ${rivals.filter(r => r.seconds < mine.seconds).length > 1 ? "load" : "loads"} faster than you on a phone.`) : null;
   const health = hasWebsite ? report.health : undefined;

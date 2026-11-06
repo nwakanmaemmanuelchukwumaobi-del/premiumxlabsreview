@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { getDomain } from "tldts";
-import { EXCLUDED_DOMAINS, EXCLUDED_SUFFIXES, EXCLUDED_BRANDS, EXCLUDED_BUSINESS, OFFERING_SYNONYMS, RETAIL_ITEMS } from "./competitor-config";
+import { EXCLUDED_DOMAINS, EXTRA_EXCLUDED_DOMAINS, EXCLUDED_CONTENT, EXCLUDED_SUFFIXES, EXCLUDED_BRANDS, EXCLUDED_BUSINESS, OFFERING_SYNONYMS, RETAIL_ITEMS } from "./competitor-config";
 
 export const CACHE_HOURS = 24;
 export const SOCIAL_REVIEW = "Your social media review will arrive within 24 hours.";
@@ -47,7 +47,7 @@ export function eligibleCompetitors(results: OrganicResult[], domain: string | n
     const productWords = (offering ?? "").toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(w => w.length > 2 && !/^(best|buy|shop|store|company|supplier|suppliers|service|services)$/.test(w));
     const synonyms = Object.entries(OFFERING_SYNONYMS).filter(([key]) => (offering ?? "").toLowerCase().includes(key)).flatMap(([, values]) => values);
     const relevant = !offering || [...productWords, ...synonyms].some(word => new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/s$/, "")}s?\\b`, "i").test(text));
-    if (!host || !root || root === (domain ? rootDomain(domain) : null) || seen.has(root) || ["infoisinfo.ng", "shop.com", ...EXCLUDED_DOMAINS].some(d => root === rootDomain(d)) || EXCLUDED_SUFFIXES.some(suffix => host.endsWith(suffix)) || EXCLUDED_BRANDS.some(brand => root.split(".").some(part => part.includes(brand))) || EXCLUDED_BUSINESS.test(text) || /(^|\.)(jobs?|careers|news)\./i.test(host) || !relevant) return false;
+    if (!host || !root || root === (domain ? rootDomain(domain) : null) || seen.has(root) || [...EXTRA_EXCLUDED_DOMAINS, ...EXCLUDED_DOMAINS].some(d => root === rootDomain(d)) || EXCLUDED_SUFFIXES.some(suffix => host.endsWith(suffix)) || EXCLUDED_BRANDS.some(brand => root.split(".").some(part => part.includes(brand))) || EXCLUDED_BUSINESS.test(text) || EXCLUDED_CONTENT.test(`${text} ${r.link}`) || /(^|\.)(jobs?|careers|news)\./i.test(host) || !relevant) return false;
     seen.add(root); return true;
   }).slice(0, 3);
 }
