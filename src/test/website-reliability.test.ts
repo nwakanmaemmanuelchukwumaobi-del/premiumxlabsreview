@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { runWebsiteChecks } from "@/lib/website-checks.server";
+import { runMobilePerformance, runWebsiteChecks } from "@/lib/website-checks.server";
 
 afterEach(() => { vi.restoreAllMocks(); });
 describe("Independent website checks", () => {
@@ -39,4 +39,10 @@ describe("Independent website checks", () => {
     expect(checks.pagespeed['seo_score']).toBe(0.9);
     expect(checks.page['status']).toBe("completed");
   });
+});
+it("uses only mobile performance, one attempt and an eight-second timeout", async () => {
+  const timeout = vi.spyOn(AbortSignal, "timeout");
+  const request = vi.fn(async (input: RequestInfo | URL) => { const url = new URL(String(input)); expect(url.searchParams.get("strategy")).toBe("mobile"); expect(url.searchParams.getAll("category")).toEqual(["performance"]); throw new DOMException("Timed out", "TimeoutError"); });
+  const result = await runMobilePerformance("https://premiumxlabs.com", "test-only", request);
+  expect(request).toHaveBeenCalledOnce(); expect(timeout).toHaveBeenCalledWith(8000); expect(result).toMatchObject({ status:"skipped", reason:"timeout" });
 });
