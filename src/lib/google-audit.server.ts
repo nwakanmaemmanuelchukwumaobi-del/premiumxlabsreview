@@ -3,7 +3,6 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { auditSchema } from "./audit-fields";
 import { auditQueries, calculateScore, competitorPool, eligibleCompetitors, rootDomain, websiteHealth, reportFixes, reportSchema, sameDomain, websiteDomain, organicSchema, type GoogleReport, type SearchContext } from "./google-audit";
 import { cachedAuditCheck, hashValue } from "./audit-cache.server";
-import { analyzePages, pageEvidence } from "./google-audit-ai.server";
 import { runWebsiteChecks, runMobilePerformance, publicWebsiteURL, type WebsiteChecks } from "./website-checks.server";
 
 const checksSchema: z.ZodType<WebsiteChecks> = z.object({ status: z.enum(["completed", "no website", "skipped"]), website: z.string().nullable(), checked_at: z.string(), page: z.record(z.string(), z.unknown()), pagespeed: z.record(z.string(), z.unknown()) });
@@ -13,7 +12,7 @@ export async function cachedWebsiteChecks(website: string | undefined, key: stri
   let url: URL;
   try { url = publicWebsiteURL(website); } catch { return unavailableChecks(website); }
   const home = `${url.origin}/`;
-  return cachedAuditCheck(`website:v6:${seo ? "client" : "competitor"}:${home}`, checksSchema, () => runWebsiteChecks(home, key, fetch, { page: 8000, performance: false, seo: false, ...(progress ? { progress } : {}) }), () => unavailableChecks(home), value => value.page['status'] === "completed" && value.pagespeed['status'] === "completed" && (!seo || value.pagespeed['seo_status'] === "completed"));
+  return cachedAuditCheck(`homepage:v1:${home}`, checksSchema, () => runWebsiteChecks(home, key, fetch, { page: 8000, performance: false, seo: false, ...(progress ? { progress } : {}) }), () => unavailableChecks(home), value => value.page['status'] === "completed");
 }
 const mobileSchema = z.record(z.string(), z.unknown());
 export async function cachedMobilePerformance(website: string): Promise<Record<string, unknown>> {
@@ -79,7 +78,7 @@ export async function generateGoogleReport(context: SearchContext, website: stri
   }));
   // Keep all queries for scoring/fixes; phrases with fewer than two relevant businesses are omitted by the report table.
   report.searches = searches;
-  const pool = competitorPool(searches).slice(0, 3);
+  const pool = competitorPool(searches.filter(s => s.competitors.length >= 2)).slice(0, 3);
   report.speed_competitors = pool.map(c => ({ title: c.title, link: c.link, speed: { seconds: null, performance: null, status: "pending" } }));
   await publish(0);
   const performanceWork = async (url: string) => {

@@ -5,7 +5,7 @@ import { auditQueries, calculateScore, eligibleCompetitors, isFreshCache, normal
 const base = { business_name: "Ada Store", main_offering: "shoes", city: "Wuse", state: "FCT" };
 const searches = (positions: (number | null)[]): GoogleReport["searches"] => positions.map(position => ({ query: "shoes Abuja", status: "completed", position, competitors: [] }));
 describe("Google audit business rules", () => {
-  it("uses buyer phrasing for products with the secondary product", () => { expect(auditQueries({ ...base, offering_type: "Products" }, "sandals")).toEqual(["shoes Wuse", "shoes shop Wuse", "buy shoes Wuse", "sandals Wuse", "Ada Store"]); });
+  it("uses buyer phrasing for products with the secondary product", () => { expect(auditQueries({ ...base, offering_type: "Products" }, "sandals")).toEqual(["shoes Wuse", "shoes shop Wuse", "sandals Wuse", "buy shoes Wuse", "Ada Store"]); });
   it("uses buyer phrasing for services", () => { expect(auditQueries({ ...base, main_offering: "plumbing", offering_type: "Services" })).toEqual(["plumbing Wuse", "plumbing company Wuse", "best plumbing Wuse", "plumbing Abuja", "Ada Store"]); });
   it("never repeats a phrase case-insensitively and never says options", () => {
     const q = auditQueries({ ...base, city: "Abuja", state: "FCT", main_offering: "Furniture", offering_type: "Services" }, "furniture");
@@ -54,4 +54,14 @@ describe("website health and specific fixes", () => {
     const fixes = reportFixes([{ query: "furniture shop Abuja", status: "completed", position: null, competitors: [] }], { seconds: null, performance: null }, { status: "skipped" });
     expect(fixes[0]).toContain('"furniture shop Abuja"');
   });
+});
+
+describe("Offering relevance and institutional exclusions", () => {
+  it("uses the requested steel buyer phrases without retail wording", () => { expect(auditQueries({ business_name: "Steel Co", main_offering: "steel rods", offering_type: "Products", city: "abuja", state: "Abuja" }).slice(0,4)).toEqual(["steel rods abuja", "steel suppliers abuja", "steel pipes abuja", "best steel supplier abuja"]); });
+  it("excludes every requested category, root and subdomain before selecting the next three relevant companies", () => {
+    const blocked = ["works.gov.ng", "agency.gov", "college.edu.ng", "school.edu", "group.org.ng", "infracredit.ng", "bet9ja.com", "sportybet.com", "1xbet.com", "shop.com", "jumia.com.ng", "konga.com", "aliexpress.com", "amazon.co.uk", "alibaba.com", "oriflame.com", "olx.com", "facebook.com", "instagram.com", "wikipedia.org", "youtube.com", "yellowpages.ng", "businesslist.ng", "abuja.infoisinfo.ng"];
+    const rows = [...blocked, "unrelated.ng", "steelcompany.ng", "rebarcompany.ng", "pipescompany.ng"].map((host,i) => ({ link: `https://${host}`, title: host === "unrelated.ng" ? "Furniture company" : host === "rebarcompany.ng" ? "Rebar supplier" : "Steel rods", position: i+1 }));
+    expect(eligibleCompetitors(rows, null, "steel rods").map(r=>r.link)).toEqual(["https://steelcompany.ng", "https://rebarcompany.ng", "https://pipescompany.ng"]);
+  });
+  it("accepts offering evidence in snippets and rejects unrelated businesses", () => { expect(eligibleCompetitors([{ title:"Acme", snippet:"Steel supplier", link:"https://acme.ng", position:12 }, { title:"Furniture", link:"https://furniture.ng", position:2 }], null, "steel rods").map(r=>r.position)).toEqual([12]); });
 });
