@@ -22,6 +22,7 @@ const NAV = [
   { to: "/services", label: "Services" },
   { to: "/about", label: "About" },
   { to: "/contact", label: "Contact" },
+  { to: "/blog", label: "Blog" },
 ] as const;
 
 export function Logo({ light = false, lazy = false }: { light?: boolean; lazy?: boolean }) {

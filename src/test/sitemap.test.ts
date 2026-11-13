@@ -6,9 +6,9 @@ import { routeTree } from "@/routeTree.gen";
 import { sitemapPublicOrigin, sitemapStaticPaths, sitemapXML } from "@/lib/sitemap";
 
 describe("Public sitemap", () => {
-  it("includes the six public pages and excludes the sitemap endpoint", () => {
+  it("includes public pages and the blog while excluding the sitemap endpoint", () => {
     const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
-    expect(sitemapStaticPaths(router)).toEqual(["/", "/about", "/audit", "/contact", "/services", "/web-design-abuja"]);
+    expect(sitemapStaticPaths(router)).toEqual(["/", "/about", "/audit", "/blog", "/blog/how-to-make-my-business-visible-on-google-in-nigeria", "/contact", "/services", "/web-design-abuja"]);
   });
   it("uses the public origin without fabricated lastmod dates", () => {
     expect(sitemapPublicOrigin).toBe("https://premiumxlabs.com");
