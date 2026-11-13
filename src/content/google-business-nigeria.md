@@ -1,32 +1,3 @@
-". Headings are marked with # (H1), ## (H2) and ### (H3), and bullet points start with "-". Use the text exactly as written. Do not rewrite, shorten or reorder it, and do not show the # or - symbols on the page; turn them into real headings and bullet lists.
-
-POST DETAILS
-- URL slug: /blog/how-to-make-my-business-visible-on-google-in-nigeria
-- Meta title: How to Make My Business Visible on Google in Nigeria for Free
-- Meta description: Learn how to make your business visible on Google in Nigeria for free. Set up Google Business Profile and show up on Google Maps step by step.
-- Author: premiumxlabs
-- Publish date: 13 November 2026
-- Category: Google & Local SEO
-
-DESIGN RULES
-- Only one H1 on the page (the title). Section titles are H2. "Step 1" to "Step 6" and the FAQ questions are H3.
-- Bold the lead-in words in the bullet points and in the "Common Problems" paragraphs.
-- Mobile friendly: short paragraphs, comfortable line spacing, readable font size, content width around 700px on desktop.
-- Match the existing premiumxlabs colours, fonts and style.
-
-SEO RULES
-- Add the meta title, meta description, canonical URL and Open Graph tags (title, description, type article).
-- Add Article schema (headline, author, datePublished, publisher premiumxlabs).
-- Add FAQPage schema using the six questions and answers under "Frequently Asked Questions".
-- Add the post to the sitemap and make sure it can be indexed.
-- Add a breadcrumb: Home > Blog > this post.
-
-CALL TO ACTION
-- Turn the last line, "Get your free digital check-up from premiumxlabs today.", into a prominent button linking to the free digital check-up (audit) form on the site.
-- Add a smaller version of the same button after the "Go Beyond Free" section.
-
-BLOG TEXT STARTS HERE
-
 # How to Make My Business Visible on Google in Nigeria for Free
 
 By premiumxlabs
