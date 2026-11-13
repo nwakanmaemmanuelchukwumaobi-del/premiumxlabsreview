@@ -19,6 +19,8 @@ import { Route as ServicesRouteImport } from './routes/services'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as WebDesignAbujaRouteImport } from './routes/web-design-abuja'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
+import { Route as BlogHowToMakeMyBusinessVisibleOnGoogleInNigeriaRouteImport } from './routes/blog.how-to-make-my-business-visible-on-google-in-nigeria'
 import { Route as ReportTokenRouteImport } from './routes/report.$token'
 import { Route as ApiPublicAuditReportWorkerRouteImport } from './routes/api/public/audit-report-worker'
 import { Route as AuditReportTokenRouteImport } from './routes/audit_.report.$token'
@@ -72,6 +74,17 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogHowToMakeMyBusinessVisibleOnGoogleInNigeriaRoute =
+  BlogHowToMakeMyBusinessVisibleOnGoogleInNigeriaRouteImport.update({
+    id: '/blog/how-to-make-my-business-visible-on-google-in-nigeria',
+    path: '/blog/how-to-make-my-business-visible-on-google-in-nigeria',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ReportTokenRoute = ReportTokenRouteImport.update({
   id: '/report/$token',
   path: '/report/$token',
@@ -99,7 +112,9 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/web-design-abuja': typeof WebDesignAbujaRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/blog/how-to-make-my-business-visible-on-google-in-nigeria': typeof BlogHowToMakeMyBusinessVisibleOnGoogleInNigeriaRoute
   '/report/$token': typeof ReportTokenRoute
+  '/blog/': typeof BlogIndexRoute
   '/api/public/audit-report-worker': typeof ApiPublicAuditReportWorkerRoute
   '/audit/report/$token': typeof AuditReportTokenRoute
 }
@@ -113,7 +128,9 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/web-design-abuja': typeof WebDesignAbujaRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/blog/how-to-make-my-business-visible-on-google-in-nigeria': typeof BlogHowToMakeMyBusinessVisibleOnGoogleInNigeriaRoute
   '/report/$token': typeof ReportTokenRoute
+  '/blog': typeof BlogIndexRoute
   '/api/public/audit-report-worker': typeof ApiPublicAuditReportWorkerRoute
   '/audit/report/$token': typeof AuditReportTokenRoute
 }
@@ -129,7 +146,9 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/web-design-abuja': typeof WebDesignAbujaRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/blog/how-to-make-my-business-visible-on-google-in-nigeria': typeof BlogHowToMakeMyBusinessVisibleOnGoogleInNigeriaRoute
   '/report/$token': typeof ReportTokenRoute
+  '/blog/': typeof BlogIndexRoute
   '/api/public/audit-report-worker': typeof ApiPublicAuditReportWorkerRoute
   '/audit_/report/$token': typeof AuditReportTokenRoute
 }
@@ -145,7 +164,9 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/web-design-abuja'
     | '/admin'
+    | '/blog/how-to-make-my-business-visible-on-google-in-nigeria'
     | '/report/$token'
+    | '/blog/'
     | '/api/public/audit-report-worker'
     | '/audit/report/$token'
   fileRoutesByTo: FileRoutesByTo
@@ -159,7 +180,9 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/web-design-abuja'
     | '/admin'
+    | '/blog/how-to-make-my-business-visible-on-google-in-nigeria'
     | '/report/$token'
+    | '/blog'
     | '/api/public/audit-report-worker'
     | '/audit/report/$token'
   id:
@@ -174,7 +197,9 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/web-design-abuja'
     | '/_authenticated/admin'
+    | '/blog/how-to-make-my-business-visible-on-google-in-nigeria'
     | '/report/$token'
+    | '/blog/'
     | '/api/public/audit-report-worker'
     | '/audit_/report/$token'
   fileRoutesById: FileRoutesById
@@ -189,7 +214,9 @@ export interface RootRouteChildren {
   ServicesRoute: typeof ServicesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   WebDesignAbujaRoute: typeof WebDesignAbujaRoute
+  BlogHowToMakeMyBusinessVisibleOnGoogleInNigeriaRoute: typeof BlogHowToMakeMyBusinessVisibleOnGoogleInNigeriaRoute
   ReportTokenRoute: typeof ReportTokenRoute
+  BlogIndexRoute: typeof BlogIndexRoute
   ApiPublicAuditReportWorkerRoute: typeof ApiPublicAuditReportWorkerRoute
   AuditReportTokenRoute: typeof AuditReportTokenRoute
 }
@@ -266,6 +293,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/blog/': {
+      id: '/blog/'
+      path: '/blog'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/how-to-make-my-business-visible-on-google-in-nigeria': {
+      id: '/blog/how-to-make-my-business-visible-on-google-in-nigeria'
+      path: '/blog/how-to-make-my-business-visible-on-google-in-nigeria'
+      fullPath: '/blog/how-to-make-my-business-visible-on-google-in-nigeria'
+      preLoaderRoute: typeof BlogHowToMakeMyBusinessVisibleOnGoogleInNigeriaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/report/$token': {
       id: '/report/$token'
       path: '/report/$token'
@@ -311,7 +352,10 @@ const rootRouteChildren: RootRouteChildren = {
   ServicesRoute: ServicesRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   WebDesignAbujaRoute: WebDesignAbujaRoute,
+  BlogHowToMakeMyBusinessVisibleOnGoogleInNigeriaRoute:
+    BlogHowToMakeMyBusinessVisibleOnGoogleInNigeriaRoute,
   ReportTokenRoute: ReportTokenRoute,
+  BlogIndexRoute: BlogIndexRoute,
   ApiPublicAuditReportWorkerRoute: ApiPublicAuditReportWorkerRoute,
   AuditReportTokenRoute: AuditReportTokenRoute,
 }
