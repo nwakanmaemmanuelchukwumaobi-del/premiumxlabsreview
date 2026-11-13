@@ -12,6 +12,7 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Free Business Audit | premiumxlabs" },
+      { name: "google-site-verification", content: "XEZFAOnaAkUuSuR_6orJGP4EaYmgo-HabJvNg2cQyrA" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "description", content: "Get a free audit of your website, social media, Google presence, branding and ads. Written report within 24 hours. No login required." },
