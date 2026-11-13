@@ -8,7 +8,7 @@ export type ArticleBlock =
 export function parseArticle(text: string): ArticleBlock[] {
   return text.trim().split(/\n\s*\n/).map((part): ArticleBlock => {
     const heading = /^(#{1,3}) (.+)$/.exec(part);
-    if (heading) {
+    if (heading?.[1] && heading[2]) {
       const level = heading[1].length;
       if (level === 1 || level === 2 || level === 3) return { kind: "heading", level, text: heading[2] };
     }
@@ -36,6 +36,7 @@ export function articleFAQs(blocks: ArticleBlock[]) {
   let inFAQ = false;
   for (let i = 0; i < blocks.length; i++) {
     const block = blocks[i];
+    if (!block) continue;
     if (block.kind === "heading" && block.level === 2) inFAQ = block.text === "Frequently Asked Questions";
     if (inFAQ && block.kind === "heading" && block.level === 3) {
       const next = blocks[i + 1];
