@@ -134,6 +134,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
   const privatePage = useRouterState({ select: s => s.location.pathname === "/admin" || s.location.pathname === "/auth" });
+  const pagePath = useRouterState({ select: s => s.location.pathname });
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange(event => {
       if (!["SIGNED_IN", "SIGNED_OUT", "USER_UPDATED"].includes(event)) return;
@@ -143,6 +144,29 @@ function RootComponent() {
     });
     return () => data.subscription.unsubscribe();
   }, [router, queryClient]);
+  useEffect(() => {
+    const measurementId = "G-DSV4RVGFF8";
+    const analyticsWindow = window as Window & {
+      dataLayer?: unknown[][];
+      gtag?: (...args: unknown[]) => void;
+    };
+    analyticsWindow.dataLayer = analyticsWindow.dataLayer ?? [];
+    analyticsWindow.gtag = analyticsWindow.gtag ?? ((...args: unknown[]) => {
+      analyticsWindow.dataLayer?.push(args);
+    });
+
+    if (!document.querySelector(`script[data-ga4-measurement="${measurementId}"]`)) {
+      analyticsWindow.gtag("js", new Date());
+      analyticsWindow.gtag("config", measurementId, { send_page_view: false });
+      const script = document.createElement("script");
+      script.async = true;
+      script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+      script.dataset.ga4Measurement = measurementId;
+      document.head.appendChild(script);
+    }
+
+    analyticsWindow.gtag("event", "page_view", { page_path: pagePath });
+  }, [pagePath]);
   const isAudit = useRouterState({ select: (s) => s.location.pathname.startsWith("/audit") || s.location.pathname.startsWith("/report/") });
 
   return (
