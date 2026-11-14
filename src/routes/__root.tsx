@@ -147,7 +147,7 @@ function RootComponent() {
   useEffect(() => {
     const measurementId = "G-DSV4RVGFF8";
     const analyticsWindow = window as Window & {
-      dataLayer?: unknown[][];
+      dataLayer?: unknown[];
       gtag?: (...args: unknown[]) => void;
     };
     analyticsWindow.dataLayer = analyticsWindow.dataLayer ?? [];
@@ -161,7 +161,7 @@ function RootComponent() {
       const script = document.createElement("script");
       script.async = true;
       script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
-      script.dataset.ga4Measurement = measurementId;
+      script.dataset["ga4Measurement"] = measurementId;
       document.head.appendChild(script);
     }
 
