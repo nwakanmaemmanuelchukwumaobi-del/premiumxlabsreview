@@ -120,7 +120,7 @@ function RootShell({ children }: { children: ReactNode }) {
           <iframe
             src="https://www.googletagmanager.com/ns.html?id=GTM-5V6GSD"
             title="Google Tag Manager"
-            className="hidden h-0 w-0"
+            className="h-0 w-0 border-0"
           />
         </noscript>
         {children}
