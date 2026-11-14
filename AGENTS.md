@@ -33,3 +33,4 @@
 - Cache only successful provider checks for 24 hours and release failed leases; report links are hashed and revocable capabilities, with explicit permanent links for the durable report experience and expiry for legacy links.
 - Enqueue report tasks through private database webhook capabilities, claim each once, persist real stage progress and send completion emails server-side; browser polling reads only validated report data; the progress page may send one claim-once kick so jobs still run if the webhook cannot reach the worker.
 - Keep supplied blog copy in local Markdown with browser-safe post metadata and derive FAQ structured data from the same text; use independent public leaf routes so exact copy, navigation and search metadata stay consistent.
+- Load site-wide third-party scripts from the shared root shell so tracking reaches every route.
