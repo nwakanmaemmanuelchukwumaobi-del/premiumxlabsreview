@@ -87,6 +87,8 @@ export function AuditForm({ glass = false }: { glass?: boolean }) {
       setGoogleReport(null);
       setReportUrl(response.reportUrl ?? null);
       setReportToken(response.reportToken ?? null);
+      const analyticsWindow = window as Window & { gtag?: (...args: unknown[]) => void };
+      analyticsWindow.gtag?.("event", "generate_lead");
       setDone({ name: parsed.data.name, biz: parsed.data.business_name, pref: parsed.data.report_preference });
     } catch {
       setError(SUBMISSION_ERROR);
